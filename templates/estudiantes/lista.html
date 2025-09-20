@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">📋 Lista de Estudiantes</h2>
+    <a href="{{ url_for('estudiantes.nuevo_estudiante') }}" class="btn btn-success mb-3">➕ Nuevo Estudiante</a>
+    <table class="table table-bordered table-hover table-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>NIE</th>
+                <th>Nombres</th>
+                <th>Apellidos</th>
+                <th>Fecha Nacimiento</th>
+                <th>Género</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Padre</th>
+                <th>Madre</th>
+                <th>Tel. Emergencia</th>
+                <th>Activo</th>
+                <th>Fecha Ingreso</th>
+                <th>Fecha Creación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for e in estudiantes %}
+            <tr>
+                <td>{{ e.id_estudiante }}</td>
+                <td>{{ e.nie }}</td>
+                <td>{{ e.nombres }}</td>
+                <td>{{ e.apellidos }}</td>
+                <td>{{ e.fecha_nacimiento }}</td>
+                <td>{{ e.genero }}</td>
+                <td>{{ e.direccion }}</td>
+                <td>{{ e.telefono }}</td>
+                <td>{{ e.email }}</td>
+                <td>{{ e.nombre_padre }}</td>
+                <td>{{ e.nombre_madre }}</td>
+                <td>{{ e.telefono_emergencia }}</td>
+                <td>{% if e.activo %}Sí{% else %}No{% endif %}</td>
+                <td>{{ e.fecha_ingreso }}</td>
+                <td>{{ e.fecha_creacion }}</td>
+                <td>
+                    <a href="{{ url_for('estudiantes.editar_estudiante', id=e.id_estudiante) }}" class="btn btn-warning btn-sm">✏️ Editar</a>
+                    <form action="{{ url_for('estudiantes.eliminar_estudiante', id=e.id_estudiante) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminarlo?');">🗑 Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="16" class="text-center">No hay estudiantes registrados.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

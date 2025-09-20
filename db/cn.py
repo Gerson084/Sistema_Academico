@@ -1,40 +1,30 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 import pymysql
-import os
-from dotenv import load_dotenv
+from flask import Flask
 
-# Cargar variables de entorno
-load_dotenv()
-
-# Instalar PyMySQL como MySQL driver
+# Instalar PyMySQL como driver
 pymysql.install_as_MySQLdb()
 
 # Inicializar SQLAlchemy
 db = SQLAlchemy()
 
 class DatabaseConfig:
-    """Clase para manejar la configuración de la base de datos"""
-    
-    # Configuración de la base de datos usando variables de entorno
-    DB_HOST = os.getenv('DB_HOST', 'localhost')
-    DB_PORT = os.getenv('DB_PORT', '3306')
-    DB_USER = os.getenv('DB_USER', 'root')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
-    DB_NAME = os.getenv('DB_NAME', 'test')
-    
-    # Construir URL de conexión
-    SQLALCHEMY_DATABASE_URI = f'mysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:KdavjHoyqdUFDRgtjZcYkoPcHrTazCgI@tramway.proxy.rlwy.net:35552/sistema_academico"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
+
     @staticmethod
-    def init_app(app):
-        """Inicializar la configuración de la base de datos en la aplicación Flask"""
+    def init_app(app: Flask):
         app.config['SQLALCHEMY_DATABASE_URI'] = DatabaseConfig.SQLALCHEMY_DATABASE_URI
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = DatabaseConfig.SQLALCHEMY_TRACK_MODIFICATIONS
-        
-        # Inicializar SQLAlchemy con la aplicación
+
         db.init_app(app)
-        
+
+        # Reflejar tablas y asegurar que se vean
+        with app.app_context():
+            db.reflect()
+            print("Tablas disponibles:", db.metadata.tables.keys())
+
         return db
 
 def get_db():
@@ -44,12 +34,13 @@ def get_db():
 def test_connection():
     """Función para probar la conexión a la base de datos"""
     try:
-        db.session.execute('SELECT 1')
+        # Usar text() para consultas SQL directas en SQLAlchemy 2.0+
+        result = db.session.execute(text('SELECT DATABASE()')).fetchone()
         db.session.commit()
         return {
             'status': 'success',
             'message': 'Conexión a la base de datos exitosa',
-            'database': 'railway (MySQL)'
+            'database': result[0] if result else 'railway'
         }
     except Exception as e:
         return {
