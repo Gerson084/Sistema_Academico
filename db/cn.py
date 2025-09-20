@@ -1,5 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
+import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 # Instalar PyMySQL como MySQL driver
 pymysql.install_as_MySQLdb()
@@ -10,8 +15,15 @@ db = SQLAlchemy()
 class DatabaseConfig:
     """Clase para manejar la configuración de la base de datos"""
     
-    # Configuración de la base de datos Railway
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:KdavjHoyqdUFDRgtjZcYkoPcHrTazCgI@tramway.proxy.rlwy.net:35552/railway'
+    # Configuración de la base de datos usando variables de entorno
+    DB_HOST = os.getenv('DB_HOST', 'localhost')
+    DB_PORT = os.getenv('DB_PORT', '3306')
+    DB_USER = os.getenv('DB_USER', 'root')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+    DB_NAME = os.getenv('DB_NAME', 'test')
+    
+    # Construir URL de conexión
+    SQLALCHEMY_DATABASE_URI = f'mysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     @staticmethod
