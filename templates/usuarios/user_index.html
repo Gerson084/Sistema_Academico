@@ -16,23 +16,28 @@
             <tr>
                 <th scope="col">Nombre</th>
                 <th scope="col">Email</th>
-                <th scope="col">Materia</th>
-                <th scope="col">Secciones</th>
                 <th scope="col">Estado</th>
                 <th scope="col">Acciones</th>
             </tr>
         </thead>
         <tbody>
-            <tr class="">
-                <td scope="row">R1C1</td>
-                <td>R1C2</td>
-                <td>R1C3</td>
-            </tr>
-            <tr class="">
-                <td scope="row">Item</td>
-                <td>Item</td>
-                <td>Item</td>
-            </tr>
+            
+            {% for list in user_list %}
+            <tr>
+                <td>{{ list.nombres }} {{ list.apellidos }}</td>
+                <td>{{ list.email }}</td>
+                <td>
+                    {% if list.activo %}
+                        <span class="badge bg-success">Activo</span>
+                    {% else %}
+                        <span class="badge bg-danger">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-primary">Editar</button>
+                    <button class="btn btn-sm btn-danger">Eliminar</button>
+                </td>
+            {% endfor %}
         </tbody>
     </table>
 </div>
