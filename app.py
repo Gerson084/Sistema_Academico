@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from db import DatabaseConfig, test_connection
 from appEstudiantes import estudiantes_bp
-from models import Estudiante
+from models import Estudiantes
 
 app = Flask(__name__)
 

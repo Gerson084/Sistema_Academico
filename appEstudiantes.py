@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from models import Estudiante
+from models.Estudiantes import Estudiante
 from db import db
 from datetime import datetime
 
@@ -29,7 +29,7 @@ def nuevo_estudiante():
             nombre_madre=request.form.get('nombre_madre'),
             telefono_emergencia=request.form.get('telefono_emergencia'),
             fecha_ingreso=request.form.get('fecha_ingreso'),
-            activo=True,
+            activo=request.form.get('activo', '1') == '1',
             fecha_creacion=datetime.utcnow()
         )
         db.session.add(nuevo)
@@ -54,6 +54,7 @@ def editar_estudiante(id):
         estudiante.nombre_madre = request.form.get('nombre_madre')
         estudiante.telefono_emergencia = request.form.get('telefono_emergencia')
         estudiante.fecha_ingreso = request.form.get('fecha_ingreso')
+        estudiante.activo = request.form.get('activo') == '1'
         estudiante.fecha_actualizacion = datetime.utcnow()
         db.session.commit()
         return redirect(url_for('estudiantes.lista_estudiantes'))

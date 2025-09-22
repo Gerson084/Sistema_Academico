@@ -1,59 +1,801 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-3">📋 Lista de Estudiantes</h2>
-    <a href="{{ url_for('estudiantes.nuevo_estudiante') }}" class="btn btn-success mb-3">➕ Nuevo Estudiante</a>
-    <table class="table table-bordered table-hover table-sm">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>NIE</th>
-                <th>Nombres</th>
-                <th>Apellidos</th>
-                <th>Fecha Nacimiento</th>
-                <th>Género</th>
-                <th>Dirección</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th>Padre</th>
-                <th>Madre</th>
-                <th>Tel. Emergencia</th>
-                <th>Activo</th>
-                <th>Fecha Ingreso</th>
-                <th>Fecha Creación</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for e in estudiantes %}
-            <tr>
-                <td>{{ e.id_estudiante }}</td>
-                <td>{{ e.nie }}</td>
-                <td>{{ e.nombres }}</td>
-                <td>{{ e.apellidos }}</td>
-                <td>{{ e.fecha_nacimiento }}</td>
-                <td>{{ e.genero }}</td>
-                <td>{{ e.direccion }}</td>
-                <td>{{ e.telefono }}</td>
-                <td>{{ e.email }}</td>
-                <td>{{ e.nombre_padre }}</td>
-                <td>{{ e.nombre_madre }}</td>
-                <td>{{ e.telefono_emergencia }}</td>
-                <td>{% if e.activo %}Sí{% else %}No{% endif %}</td>
-                <td>{{ e.fecha_ingreso }}</td>
-                <td>{{ e.fecha_creacion }}</td>
-                <td>
-                    <a href="{{ url_for('estudiantes.editar_estudiante', id=e.id_estudiante) }}" class="btn btn-warning btn-sm">✏️ Editar</a>
-                    <form action="{{ url_for('estudiantes.eliminar_estudiante', id=e.id_estudiante) }}" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminarlo?');">🗑 Eliminar</button>
-                    </form>
-                </td>
-            </tr>
-        {% else %}
-            <tr><td colspan="16" class="text-center">No hay estudiantes registrados.</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --secondary-blue: #0D2C63;
+        --light-blue: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #d97706;
+        --danger-red: #dc2626;
+        --neutral-gray: #6b7280;
+        --light-gray: #E9E2C3;
+        --border-gray: #e5e7eb;
+        --dark-text: #000000;
+        --medium-text: #374151;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: #E9E2C3;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        margin-top: 0%;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        position: relative;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .action-bar {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .btn-new-student {
+        background: var(--success-green);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+    }
+
+    .btn-new-student:hover {
+        background: #047857;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 300px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid var(--border-gray);
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--neutral-gray);
+        pointer-events: none;
+    }
+
+    .table-container {
+        background: #E9E2C3;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .table-responsive {
+        border-radius: 0.75rem;
+    }
+
+    .custom-table {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .custom-table thead th {
+        background: var(--primary-blue);
+        color: #E9E2C3;
+        font-weight: 600;
+        border: none;
+        padding: 1rem 0.75rem;
+        white-space: nowrap;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .custom-table tbody td {
+        padding: 1rem 0.75rem;
+        border-color: var(--border-gray);
+        vertical-align: middle;
+        color: var(--dark-text);
+    }
+
+    .custom-table tbody tr:hover {
+        background-color: var(--light-blue);
+        transition: background-color 0.2s ease;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .status-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-edit {
+        background: var(--warning-orange);
+        border: none;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-edit:hover {
+        background: #b45309;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    .btn-delete {
+        background: var(--danger-red);
+        border: none;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .btn-delete:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--neutral-gray);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .pagination-btn {
+        padding: 0.5rem 0.75rem;
+        border: 2px solid var(--border-gray);
+        background: white;
+        color: var(--medium-text);
+        border-radius: 0.375rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .pagination-btn:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        text-decoration: none;
+    }
+
+    .pagination-btn.active {
+        background: var(--primary-blue);
+        color: white;
+        border-color: var(--primary-blue);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        border-color: var(--border-gray);
+        color: var(--neutral-gray);
+    }
+
+    .pagination-info {
+        color: var(--medium-text);
+        font-size: 0.9rem;
+        margin: 0 1rem;
+        font-weight: 500;
+    }
+
+    .page-size-selector {
+        margin-left: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--medium-text);
+        font-size: 0.9rem;
+    }
+
+    .page-size-select {
+        padding: 0.375rem 0.5rem;
+        border: 2px solid var(--border-gray);
+        border-radius: 0.375rem;
+        background: white;
+        color: var(--medium-text);
+        font-size: 0.9rem;
+    }
+
+    .pagination-dots {
+        padding: 0.5rem;
+        color: var(--neutral-gray);
+        font-weight: bold;
+    }
+
+    .stats-bar {
+        background: #ffffff;
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--medium-text);
+        font-weight: 500;
+    }
+
+    .stat-number {
+        background: var(--light-blue);
+        color: var(--primary-blue);
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box {
+            min-width: auto;
+        }
+
+        .stats-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .custom-table {
+            font-size: 0.8rem;
+        }
+
+        .custom-table thead th,
+        .custom-table tbody td {
+            padding: 0.5rem 0.4rem;
+        }
+
+        .pagination {
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .page-size-selector {
+            margin-left: 0;
+            margin-top: 0.5rem;
+        }
+
+        .pagination-info {
+            margin: 0;
+            text-align: center;
+        }
+
+        #pageNumbers {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+
+        .pagination-btn {
+            padding: 0.4rem 0.6rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+
+
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-graduation-cap"></i>
+            Gestión de Estudiantes
+        </h1>
+        <p class="page-subtitle">Administra la información de todos los estudiantes registrados en el sistema</p>
+    </div>
 </div>
+
+<div class="container">
+    <!-- Barra de estadísticas -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <i class="fas fa-users text-primary"></i>
+            <span>Total de estudiantes:</span>
+            <span class="stat-number">{{ estudiantes|length }}</span>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-user-check text-success"></i>
+            <span>Activos:</span>
+            <span class="stat-number">{{ estudiantes|selectattr("activo")|list|length }}</span>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-user-times text-danger"></i>
+            <span>Inactivos:</span>
+            <span class="stat-number">{{ estudiantes|rejectattr("activo")|list|length }}</span>
+        </div>
+    </div>
+
+    <!-- Barra de acciones -->
+    <div class="action-bar">
+        <a href="{{ url_for('estudiantes.nuevo_estudiante') }}" class="btn-new-student">
+            <i class="fas fa-plus"></i>
+            Nuevo Estudiante
+        </a>
+        
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="searchInput" placeholder="Buscar estudiante por nombre, NIE o email...">
+        </div>
+    </div>
+
+    <!-- Tabla de estudiantes -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table custom-table" id="studentsTable">
+                <thead>
+                    <tr>
+                        <th>NIE</th>
+                        <th>Nombre Completo</th>
+                        <th>Fecha Nac.</th>
+                        <th>Género</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Tel. Emergencia</th>
+                        <th>Estado</th>
+                        <th>Fecha Ingreso</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for e in estudiantes %}
+                    <tr class="student-row" data-search="{{ (e.nombres + ' ' + e.apellidos + ' ' + e.nie + ' ' + (e.email or ''))|lower }}">
+                        <td><strong>{{ e.nie }}</strong></td>
+                        <td>
+                            <div style="font-weight: 600;">{{ e.nombres }}</div>
+                            <div style="font-size: 0.85em; color: var(--neutral-gray);">{{ e.apellidos }}</div>
+                        </td>
+                        <td>{{ e.fecha_nacimiento.strftime('%d/%m/%Y') if e.fecha_nacimiento else '-' }}</td>
+                        <td>
+                            {% if e.genero == 'M' %}
+                                <i class="fas fa-male text-primary"></i> M
+                            {% elif e.genero == 'F' %}
+                                <i class="fas fa-female text-danger"></i> F
+                            {% else %}
+                                {{ e.genero }}
+                            {% endif %}
+                        </td>
+                        <td>{{ e.telefono or '-' }}</td>
+                        <td>{{ e.email or '-' }}</td>
+                        <td>{{ e.telefono_emergencia or '-' }}</td>
+                        <td>
+                            {% if e.activo %}
+                                <span class="status-badge status-active">
+                                    <i class="fas fa-check-circle"></i> Activo
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-inactive">
+                                    <i class="fas fa-times-circle"></i> Inactivo
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ e.fecha_ingreso.strftime('%d/%m/%Y') if e.fecha_ingreso else '-' }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('estudiantes.editar_estudiante', id=e.id_estudiante) }}" class="btn-edit" title="Editar estudiante">
+                                    <i class="fas fa-edit"></i>
+                                    Editar
+                                </a>
+                                <form action="{{ url_for('estudiantes.eliminar_estudiante', id=e.id_estudiante) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete('{{ e.nombres }} {{ e.apellidos }}');">
+                                    <button type="submit" class="btn-delete" title="Eliminar estudiante">
+                                        <i class="fas fa-trash"></i>
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="10">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <h4>No hay estudiantes registrados</h4>
+                                <p>Comienza agregando el primer estudiante al sistema</p>
+                                <a href="{{ url_for('estudiantes.nuevo_estudiante') }}" class="btn-new-student" style="margin-top: 1rem;">
+                                    <i class="fas fa-plus"></i>
+                                    Agregar Primer Estudiante
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination-container">
+        <div class="pagination" id="paginationControls">
+            <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">
+                <i class="fas fa-chevron-left"></i>
+                Anterior
+            </button>
+            
+            <div id="pageNumbers"></div>
+            
+            <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">
+                Siguiente
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            
+            <span class="pagination-info" id="paginationInfo">
+                Mostrando 0-0 de 0 estudiantes
+            </span>
+            
+            <div class="page-size-selector">
+                <label for="pageSizeSelect">Filas por página:</label>
+                <select id="pageSizeSelect" class="page-size-select" onchange="changePageSize()">
+                    <option value="10">10</option>
+                    <option value="15" selected>15</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">Todos</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+// Variables globales para paginación
+let currentPage = 1;
+let pageSize = 15;
+let filteredRows = [];
+let allRows = [];
+
+// Inicializar paginación
+document.addEventListener('DOMContentLoaded', function() {
+    initializePagination();
+    setupSearch();
+    addAnimations();
+});
+
+function initializePagination() {
+    allRows = Array.from(document.querySelectorAll('.student-row'));
+    filteredRows = [...allRows];
+    updatePagination();
+}
+
+function setupSearch() {
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        filteredRows = allRows.filter(row => {
+            const searchData = row.getAttribute('data-search');
+            return searchData.includes(searchTerm);
+        });
+        
+        currentPage = 1; // Resetear a la primera página
+        updatePagination();
+        handleSearchResults(searchTerm);
+    });
+}
+
+function updatePagination() {
+    const totalRows = filteredRows.length;
+    const totalPages = pageSize === 100 ? 1 : Math.ceil(totalRows / pageSize);
+    
+    // Ocultar todas las filas primero
+    allRows.forEach(row => row.style.display = 'none');
+    
+    // Mostrar filas de la página actual
+    if (pageSize === 100) {
+        // Mostrar todas las filas filtradas
+        filteredRows.forEach(row => row.style.display = '');
+    } else {
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = Math.min(startIndex + pageSize, totalRows);
+        
+        for (let i = startIndex; i < endIndex; i++) {
+            if (filteredRows[i]) {
+                filteredRows[i].style.display = '';
+            }
+        }
+    }
+    
+    updatePaginationControls(totalRows, totalPages);
+    updatePaginationInfo(totalRows);
+}
+
+function updatePaginationControls(totalRows, totalPages) {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageNumbers = document.getElementById('pageNumbers');
+    
+    // Actualizar botones anterior/siguiente
+    prevBtn.disabled = currentPage <= 1;
+    nextBtn.disabled = currentPage >= totalPages || totalPages === 0;
+    
+    // Limpiar números de página
+    pageNumbers.innerHTML = '';
+    
+    // Ocultar controles si no hay filas o si se muestran todas
+    const paginationControls = document.getElementById('paginationControls');
+    if (totalRows === 0 || pageSize === 100) {
+        paginationControls.style.visibility = pageSize === 100 ? 'hidden' : 'visible';
+        return;
+    } else {
+        paginationControls.style.visibility = 'visible';
+    }
+    
+    // Generar números de página
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // Botón primera página
+    if (startPage > 1) {
+        const firstBtn = createPageButton(1, '1');
+        pageNumbers.appendChild(firstBtn);
+        
+        if (startPage > 2) {
+            const dots = document.createElement('span');
+            dots.textContent = '...';
+            dots.className = 'pagination-dots';
+            dots.style.padding = '0.5rem';
+            dots.style.color = 'var(--neutral-gray)';
+            pageNumbers.appendChild(dots);
+        }
+    }
+    
+    // Números de página
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = createPageButton(i, i.toString());
+        pageNumbers.appendChild(pageBtn);
+    }
+    
+    // Botón última página
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const dots = document.createElement('span');
+            dots.textContent = '...';
+            dots.className = 'pagination-dots';
+            dots.style.padding = '0.5rem';
+            dots.style.color = 'var(--neutral-gray)';
+            pageNumbers.appendChild(dots);
+        }
+        
+        const lastBtn = createPageButton(totalPages, totalPages.toString());
+        pageNumbers.appendChild(lastBtn);
+    }
+}
+
+function createPageButton(pageNum, text) {
+    const btn = document.createElement('button');
+    btn.className = `pagination-btn ${pageNum === currentPage ? 'active' : ''}`;
+    btn.textContent = text;
+    btn.onclick = () => goToPage(pageNum);
+    return btn;
+}
+
+function updatePaginationInfo(totalRows) {
+    const info = document.getElementById('paginationInfo');
+    
+    if (totalRows === 0) {
+        info.textContent = 'No hay estudiantes para mostrar';
+        return;
+    }
+    
+    if (pageSize === 100) {
+        info.textContent = `Mostrando todos los ${totalRows} estudiantes`;
+        return;
+    }
+    
+    const startIndex = (currentPage - 1) * pageSize + 1;
+    const endIndex = Math.min(currentPage * pageSize, totalRows);
+    
+    info.textContent = `Mostrando ${startIndex}-${endIndex} de ${totalRows} estudiantes`;
+}
+
+function goToPage(page) {
+    currentPage = page;
+    updatePagination();
+}
+
+function changePage(direction) {
+    const totalPages = Math.ceil(filteredRows.length / pageSize);
+    const newPage = currentPage + direction;
+    
+    if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        updatePagination();
+    }
+}
+
+function changePageSize() {
+    const select = document.getElementById('pageSizeSelect');
+    pageSize = parseInt(select.value);
+    currentPage = 1;
+    updatePagination();
+}
+
+function handleSearchResults(searchTerm) {
+    const tbody = document.querySelector('#studentsTable tbody');
+    let noResultsRow = document.querySelector('.no-results-row');
+    
+    if (filteredRows.length === 0 && searchTerm !== '' && allRows.length > 0) {
+        if (!noResultsRow) {
+            noResultsRow = document.createElement('tr');
+            noResultsRow.className = 'no-results-row';
+            noResultsRow.innerHTML = `
+                <td colspan="10" class="empty-state">
+                    <div style="padding: 2rem;">
+                        <i class="fas fa-search" style="font-size: 2rem; opacity: 0.5; margin-bottom: 1rem;"></i>
+                        <h5>No se encontraron resultados</h5>
+                        <p>Intenta con otros términos de búsqueda</p>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(noResultsRow);
+        }
+        noResultsRow.style.display = '';
+    } else if (noResultsRow) {
+        noResultsRow.style.display = 'none';
+    }
+}
+
+function addAnimations() {
+    // Agregar animación de entrada a las filas
+    const rows = document.querySelectorAll('.student-row');
+    rows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            row.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+}
+
+// Función de confirmación de eliminación mejorada
+function confirmDelete(studentName) {
+    return confirm(`¿Estás seguro de que deseas eliminar al estudiante "${studentName}"?\n\nEsta acción no se puede deshacer.`);
+}
+
+// Mostrar notificaciones si existen (para mensajes flash)
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar animación de entrada a las filas
+    const rows = document.querySelectorAll('.student-row');
+    rows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            row.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+});
+</script>
 {% endblock %}

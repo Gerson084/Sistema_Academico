@@ -1,84 +1,1042 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Editar Estudiante</h2>
-    <form method="POST">
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label for="nie" class="form-label">NIE</label>
-                <input type="text" class="form-control" name="nie" value="{{ estudiante.nie }}" required>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label for="nombres" class="form-label">Nombres</label>
-                <input type="text" class="form-control" name="nombres" value="{{ estudiante.nombres }}" required>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label for="apellidos" class="form-label">Apellidos</label>
-                <input type="text" class="form-control" name="apellidos" value="{{ estudiante.apellidos }}" required>
-            </div>
-        </div>
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --secondary-blue: #0D2C63;
+        --light-blue: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #d97706;
+        --danger-red: #dc2626;
+        --neutral-gray: #6b7280;
+        --light-gray: #E9E2C3;
+        --border-gray: #e5e7eb;
+        --dark-text: #000000;
+        --medium-text: #374151;
+    }
 
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
-                <input type="date" class="form-control" name="fecha_nacimiento" value="{{ estudiante.fecha_nacimiento }}">
-            </div>
-            <div class="col-md-4 mb-3">
-                <label for="genero" class="form-label">Género</label>
-                <select class="form-control" name="genero" required>
-                    <option value="M" {% if estudiante.genero == "M" %}selected{% endif %}>Masculino</option>
-                    <option value="F" {% if estudiante.genero == "F" %}selected{% endif %}>Femenino</option>
-                </select>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label for="telefono" class="form-label">Teléfono</label>
-                <input type="text" class="form-control" name="telefono" value="{{ estudiante.telefono }}">
-            </div>
-        </div>
+    /* Reset de márgenes para eliminar espacios no deseados */
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Sobrescribir el mt-4 del contenedor base */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
 
-        <div class="mb-3">
-            <label for="direccion" class="form-label">Dirección</label>
-            <textarea class="form-control" name="direccion" rows="2">{{ estudiante.direccion }}</textarea>
-        </div>
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: #E9E2C3;
+        padding: 2rem 0;
+        margin: 0 0 2rem 0 !important;
+      
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        width: 100vw;
+        margin-left: calc(-50vw + 50%) !important;
+        position: relative;
+        top: 0;
+    }
 
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="email" class="form-label">Correo</label>
-                <input type="email" class="form-control" name="email" value="{{ estudiante.email }}">
-            </div>
-            <div class="col-md-6 mb-3">
-                <label for="telefono_emergencia" class="form-label">Teléfono emergencia</label>
-                <input type="text" class="form-control" name="telefono_emergencia" value="{{ estudiante.telefono_emergencia }}">
-            </div>
-        </div>
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
 
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="nombre_padre" class="form-label">Nombre del padre</label>
-                <input type="text" class="form-control" name="nombre_padre" value="{{ estudiante.nombre_padre }}">
-            </div>
-            <div class="col-md-6 mb-3">
-                <label for="nombre_madre" class="form-label">Nombre de la madre</label>
-                <input type="text" class="form-control" name="nombre_madre" value="{{ estudiante.nombre_madre }}">
-            </div>
-        </div>
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
 
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label for="activo" class="form-label">Activo</label>
-                <select class="form-control" name="activo">
-                    <option value="1" {% if estudiante.activo %}selected{% endif %}>Sí</option>
-                    <option value="0" {% if not estudiante.activo %}selected{% endif %}>No</option>
-                </select>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label for="fecha_ingreso" class="form-label">Fecha de ingreso</label>
-                <input type="date" class="form-control" name="fecha_ingreso" value="{{ estudiante.fecha_ingreso }}">
-            </div>
-        </div>
+    .student-info-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        border-left: 4px solid var(--warning-orange);
+    }
 
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-        <a href="{{ url_for('estudiantes.lista_estudiantes') }}" class="btn btn-secondary">Cancelar</a>
-    </form>
+    .student-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .student-nie {
+        font-size: 0.9rem;
+        color: var(--neutral-gray);
+        font-weight: 500;
+    }
+
+    .form-container {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-gray);
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: var(--light-blue);
+        border-radius: 0.75rem;
+        border-left: 4px solid var(--primary-blue);
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-blue);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid var(--border-gray);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+        outline: none;
+    }
+
+    .form-control.is-invalid {
+        border-color: var(--danger-red);
+    }
+
+    .form-control.is-valid {
+        border-color: var(--success-green);
+    }
+
+    .form-control.modified {
+        border-color: var(--warning-orange);
+        background-color: #fef3c7;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger-red);
+    }
+
+    .form-control.is-valid, .form-select.is-valid {
+        border-color: var(--success-green);
+    }
+
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--danger-red);
+        background-color: rgba(220, 38, 38, 0.1);
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.25rem;
+        border-left: 3px solid var(--danger-red);
+    }
+
+    .valid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--success-green);
+        background-color: rgba(5, 150, 105, 0.1);
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.25rem;
+        border-left: 3px solid var(--success-green);
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger-red);
+        font-weight: bold;
+    }
+
+    /* Animación para campos inválidos */
+    @keyframes shake {
+        0%, 20%, 40%, 60%, 80% {
+            transform: translateX(0);
+        }
+        10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-5px);
+        }
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        animation: shake 0.5s ease-in-out;
+    }
+
+    /* Resumen de validación */
+    .validation-summary {
+        background: rgba(220, 38, 38, 0.1);
+        border: 1px solid var(--danger-red);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid var(--danger-red);
+    }
+
+    .validation-summary h4 {
+        color: var(--danger-red);
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .validation-summary ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .validation-summary li {
+        color: var(--danger-red);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    /* Botón deshabilitado */
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        border: none;
+        color: #E9E2C3;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(13, 44, 99, 0.2);
+    }
+
+    .btn-primary:hover {
+        background: #0a2354;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(13, 44, 99, 0.3);
+        color: #E9E2C3;
+    }
+
+    .btn-secondary {
+        background: var(--neutral-gray);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-danger {
+        background: var(--danger-red);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid var(--border-gray);
+    }
+
+    .input-icon {
+        position: relative;
+    }
+
+    .input-icon i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--neutral-gray);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .input-icon .form-control {
+        padding-left: 2.5rem;
+    }
+
+    .form-help {
+        font-size: 0.8rem;
+        color: var(--neutral-gray);
+        margin-top: 0.25rem;
+    }
+
+    .changes-indicator {
+        background: #fef3c7;
+        border: 1px solid var(--warning-orange);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: none;
+    }
+
+    .changes-indicator.show {
+        display: block;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .status-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1rem;
+        }
+
+        .form-section {
+            padding: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .student-info-card {
+            padding: 1rem;
+        }
+
+        .student-name {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-user-edit"></i>
+            Editar Estudiante
+        </h1>
+        <p class="page-subtitle">Modifica la información del estudiante registrado en el sistema</p>
+    </div>
 </div>
+
+<div class="container">
+    <!-- Información del estudiante actual -->
+    <div class="student-info-card">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="student-name">
+                    <i class="fas fa-user-graduate"></i>
+                    {{ estudiante.nombres }} {{ estudiante.apellidos }}
+                </h3>
+                <p class="student-nie">NIE: {{ estudiante.nie }}</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                {% if estudiante.activo %}
+                    <span class="status-badge status-active">
+                        <i class="fas fa-check-circle"></i> Activo
+                    </span>
+                {% else %}
+                    <span class="status-badge status-inactive">
+                        <i class="fas fa-times-circle"></i> Inactivo
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador de cambios -->
+    <div class="changes-indicator" id="changesIndicator">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+            <strong>¡Tienes cambios sin guardar!</strong>
+            <span class="ms-2">Recuerda hacer clic en "Actualizar" para guardar los cambios.</span>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="form-container">
+        <form method="POST" id="editStudentForm">
+            <!-- Información Personal -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-user"></i>
+                    Información Personal
+                </h3>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="nie" class="form-label required-field">NIE</label>
+                        <div class="input-icon">
+                            <i class="fas fa-id-card"></i>
+                            <input type="text" class="form-control" name="nie" id="nie" 
+                                   value="{{ estudiante.nie }}" required maxlength="10" 
+                                   data-original="{{ estudiante.nie }}">
+                        </div>
+                        <div class="form-help">Número de Identificación Estudiantil</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="nombres" class="form-label required-field">Nombres</label>
+                        <div class="input-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" class="form-control" name="nombres" id="nombres" 
+                                   value="{{ estudiante.nombres }}" required 
+                                   data-original="{{ estudiante.nombres }}" oninput="this.value = this.value.toUpperCase()">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="apellidos" class="form-label required-field">Apellidos</label>
+                        <div class="input-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" class="form-control" name="apellidos" id="apellidos" 
+                                   value="{{ estudiante.apellidos }}" required 
+                                   data-original="{{ estudiante.apellidos }}" oninput="this.value = this.value.toUpperCase()">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="fecha_nacimiento" class="form-label required-field">Fecha de Nacimiento</label>
+                        <div class="input-icon">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" class="form-control" name="fecha_nacimiento" id="fecha_nacimiento" 
+                                   value="{{ estudiante.fecha_nacimiento }}" required
+                                   data-original="{{ estudiante.fecha_nacimiento }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="genero" class="form-label required-field">Género</label>
+                        <select class="form-select" name="genero" id="genero" required 
+                                data-original="{{ estudiante.genero }}">
+                            <option value="M" {% if estudiante.genero == "M" %}selected{% endif %}>👨 Masculino</option>
+                            <option value="F" {% if estudiante.genero == "F" %}selected{% endif %}>👩 Femenino</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-address-book"></i>
+                    Información de Contacto
+                </h3>
+                <div class="mb-3">
+                    <label for="direccion" class="form-label required-field">Dirección Residencial</label>
+                    <div class="input-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <textarea class="form-control" name="direccion" id="direccion" rows="3" required
+                                  data-original="{{ estudiante.direccion or '' }}" oninput="this.value = this.value.toUpperCase()">{{ estudiante.direccion }}</textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="telefono" class="form-label">Teléfono del Encargado</label>
+                        <div class="input-icon">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" class="form-control" name="telefono" id="telefono" 
+                                   value="{{ estudiante.telefono }}" 
+                                   data-original="{{ estudiante.telefono or '' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <div class="input-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" class="form-control" name="email" id="email" 
+                                   value="{{ estudiante.email }}" 
+                                   data-original="{{ estudiante.email or '' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="telefono_emergencia" class="form-label">Teléfono de Emergencia</label>
+                        <div class="input-icon">
+                            <i class="fas fa-phone-square-alt"></i>
+                            <input type="tel" class="form-control" name="telefono_emergencia" id="telefono_emergencia" 
+                                   value="{{ estudiante.telefono_emergencia }}" 
+                                   data-original="{{ estudiante.telefono_emergencia or '' }}">
+                        </div>
+                        <div class="form-help">Contacto en caso de emergencia</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Familiar -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-users"></i>
+                    Información Familiar
+                </h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nombre_padre" class="form-label">Nombre del Padre o Tutor</label>
+                        <div class="input-icon">
+                            <i class="fas fa-male"></i>
+                            <input type="text" class="form-control" name="nombre_padre" id="nombre_padre" 
+                                   value="{{ estudiante.nombre_padre }}" 
+                                   data-original="{{ estudiante.nombre_padre or '' }}"
+                                    oninput="this.value = this.value.toUpperCase()">
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="nombre_madre" class="form-label">Nombre de la Madre o Tutora</label>
+                        <div class="input-icon">
+                            <i class="fas fa-female"></i>
+                            <input type="text" class="form-control" name="nombre_madre" id="nombre_madre" 
+                                   value="{{ estudiante.nombre_madre }}" 
+                                   data-original="{{ estudiante.nombre_madre or '' }}" 
+                                    oninput="this.value = this.value.toUpperCase()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración del Sistema -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-cog"></i>
+                    Configuración del Sistema
+                </h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="activo" class="form-label">Estado del Estudiante</label>
+                        <select class="form-select" name="activo" id="activo" 
+                                data-original="{{ '1' if estudiante.activo else '0' }}">
+                            <option value="1" {% if estudiante.activo %}selected{% endif %}>✅ Activo</option>
+                            <option value="0" {% if not estudiante.activo %}selected{% endif %}>❌ Inactivo</option>
+                        </select>
+                        <div class="form-help">Estado actual del estudiante en el sistema</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="fecha_ingreso" class="form-label">Fecha de Ingreso</label>
+                        <div class="input-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                            <input type="date" class="form-control" name="fecha_ingreso" id="fecha_ingreso" 
+                                   value="{{ estudiante.fecha_ingreso }}" 
+                                   data-original="{{ estudiante.fecha_ingreso }}">
+                        </div>
+                        <div class="form-help">Fecha de ingreso al sistema educativo</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen de Validación -->
+            <div id="validation-summary" class="validation-summary" style="display: none;">
+                <h4><i class="fas fa-exclamation-triangle"></i> Campos pendientes por completar:</h4>
+                <ul id="validation-list"></ul>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary" id="updateBtn">
+                    <i class="fas fa-save"></i>
+                    Actualizar Estudiante
+                </button>
+                <a href="{{ url_for('estudiantes.lista_estudiantes') }}" class="btn btn-secondary" id="cancelBtn">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Font Awesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editStudentForm');
+    const changesIndicator = document.getElementById('changesIndicator');
+    const updateBtn = document.getElementById('updateBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    let hasChanges = false;
+    
+    // Obtener todos los campos del formulario
+    const formFields = form.querySelectorAll('input, select, textarea');
+    
+    // Función para detectar cambios
+    function detectChanges() {
+        let changesDetected = false;
+        
+        formFields.forEach(field => {
+            const originalValue = field.getAttribute('data-original') || '';
+            const currentValue = field.value || '';
+            
+            if (originalValue !== currentValue) {
+                field.classList.add('modified');
+                changesDetected = true;
+            } else {
+                field.classList.remove('modified');
+            }
+        });
+        
+        if (changesDetected !== hasChanges) {
+            hasChanges = changesDetected;
+            
+            if (hasChanges) {
+                changesIndicator.classList.add('show');
+                updateBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+                updateBtn.classList.add('btn-warning');
+                updateBtn.classList.remove('btn-primary');
+            } else {
+                changesIndicator.classList.remove('show');
+                updateBtn.innerHTML = '<i class="fas fa-save"></i> Actualizar Estudiante';
+                updateBtn.classList.add('btn-primary');
+                updateBtn.classList.remove('btn-warning');
+            }
+        }
+    }
+    
+    // Agregar listeners a todos los campos
+    formFields.forEach(field => {
+        field.addEventListener('input', detectChanges);
+        field.addEventListener('change', detectChanges);
+    });
+    
+    // Función para validar un campo específico
+    function validateField(field) {
+        const value = field.value.trim();
+        const fieldType = field.type;
+        const fieldName = field.name;
+        let isValid = true;
+        let errorMessage = '';
+
+        // Validación básica de campos requeridos
+        if (field.hasAttribute('required') && !value) {
+            isValid = false;
+            errorMessage = 'Este campo es obligatorio';
+        }
+        
+        // Validaciones específicas por tipo de campo
+        if (value && isValid) {
+            switch (fieldName) {
+                case 'nie':
+                    if (!/^\d{8,10}$/.test(value)) {
+                        isValid = false;
+                        errorMessage = 'El NIE debe tener entre 8 y 10 dígitos';
+                    }
+                    break;
+                
+                case 'nombres':
+                case 'apellidos':
+                    if (value.length < 2) {
+                        isValid = false;
+                        errorMessage = 'Debe tener al menos 2 caracteres';
+                    }
+                    if (!/^[A-ZÁÉÍÓÚÜÑ\s]+$/.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Solo se permiten letras y espacios';
+                    }
+                    break;
+                
+                case 'email':
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Formato de email inválido';
+                    }
+                    break;
+                
+                case 'telefono':
+                case 'telefono_emergencia':
+                    const phoneRegex = /^\d{4}-\d{4}$/;
+                    if (value && !phoneRegex.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Formato debe ser 0000-0000';
+                    }
+                    break;
+                
+                case 'fecha_nacimiento':
+                    const birthDate = new Date(value);
+                    const today = new Date();
+                    const minAge = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
+                    const maxAge = new Date(today.getFullYear() - 3, today.getMonth(), today.getDate());
+                    
+                    if (birthDate > maxAge) {
+                        isValid = false;
+                        errorMessage = 'La edad mínima es de 3 años';
+                    }
+                    if (birthDate < minAge) {
+                        isValid = false;
+                        errorMessage = 'Fecha no válida';
+                    }
+                    break;
+                
+                case 'direccion':
+                    if (value.length < 10) {
+                        isValid = false;
+                        errorMessage = 'La dirección debe ser más específica (mín. 10 caracteres)';
+                    }
+                    break;
+            }
+        }
+
+        // Aplicar clases CSS según validación
+        if (isValid) {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            removeErrorMessage(field);
+        } else {
+            field.classList.remove('is-valid');
+            field.classList.add('is-invalid');
+            showErrorMessage(field, errorMessage);
+        }
+
+        return isValid;
+    }
+
+    // Función para mostrar mensaje de error
+    function showErrorMessage(field, message) {
+        removeErrorMessage(field);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback';
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        field.parentNode.appendChild(errorDiv);
+    }
+
+    // Función para remover mensaje de error
+    function removeErrorMessage(field) {
+        const errorMsg = field.parentNode.querySelector('.invalid-feedback');
+        if (errorMsg) {
+            errorMsg.remove();
+        }
+    }
+
+    // Validación mejorada del NIE
+    const nieInput = document.getElementById('nie');
+    nieInput.addEventListener('input', function() {
+        const value = this.value;
+        
+        // Solo permitir números
+        if (!/^\d*$/.test(value)) {
+            this.value = value.replace(/\D/g, '');
+            return;
+        }
+        
+        // Validación visual inmediata
+        if (value.length > 0 && value.length < 8) {
+            this.classList.remove('is-valid', 'is-invalid');
+        } else if (value.length >= 8) {
+            validateField(this);
+        } else {
+            this.classList.remove('is-valid', 'is-invalid');
+        }
+        
+        updateValidationSummary();
+        detectChanges();
+    });
+    
+    // Función para actualizar el resumen de validación
+    function updateValidationSummary() {
+        const validationSummary = document.getElementById('validation-summary');
+        const validationList = document.getElementById('validation-list');
+        const updateBtn = document.getElementById('updateBtn');
+        const requiredFields = form.querySelectorAll('[required]');
+        const invalidFields = [];
+
+        requiredFields.forEach(field => {
+            if (!field.value.trim() || field.classList.contains('is-invalid')) {
+                const fieldLabel = field.closest('.mb-3').querySelector('.form-label').textContent.replace('*', '').trim();
+                const section = field.closest('.form-section');
+                const sectionTitle = section ? section.querySelector('.section-title').textContent.trim() : 'Formulario';
+                invalidFields.push(`${sectionTitle}: ${fieldLabel}`);
+            }
+        });
+
+        if (invalidFields.length > 0) {
+            validationList.innerHTML = invalidFields.map(field => `<li>${field}</li>`).join('');
+            validationSummary.style.display = 'block';
+            updateBtn.disabled = true;
+        } else {
+            validationSummary.style.display = 'none';
+            updateBtn.disabled = false;
+        }
+    }
+
+    // Validación mejorada del email
+    const emailInput = document.getElementById('email');
+    emailInput.addEventListener('input', function() {
+        validateField(this);
+        updateValidationSummary();
+        detectChanges();
+    });
+    
+    // Validación en tiempo real para todos los campos
+    const allInputs = form.querySelectorAll('input, select, textarea');
+    allInputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            validateField(this);
+            updateValidationSummary();
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                validateField(this);
+            }
+            updateValidationSummary();
+        });
+    });
+    
+    // Formateo de teléfonos
+    const phoneInputs = document.querySelectorAll('input[type="tel"]');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length >= 4) {
+                value = value.substring(0, 4) + '-' + value.substring(4, 8);
+            }
+            this.value = value;
+            validateField(this);
+            updateValidationSummary();
+            detectChanges();
+        });
+    });
+    
+    // Advertencia antes de salir con cambios sin guardar
+    window.addEventListener('beforeunload', function(e) {
+        if (hasChanges) {
+            e.preventDefault();
+            e.returnValue = '¿Estás seguro de que deseas salir? Los cambios no guardados se perderán.';
+            return e.returnValue;
+        }
+    });
+    
+    // Confirmación al cancelar con cambios
+    cancelBtn.addEventListener('click', function(e) {
+        if (hasChanges) {
+            if (!confirm('¿Estás seguro de que deseas cancelar? Los cambios no guardados se perderán.')) {
+                e.preventDefault();
+            }
+        }
+    });
+    
+    // Validación antes de enviar
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        const allFields = form.querySelectorAll('input, select, textarea');
+        let firstInvalidField = null;
+        let errorMessages = [];
+        
+        // Validar todos los campos
+        allFields.forEach(field => {
+            const fieldValid = validateField(field);
+            if (!fieldValid) {
+                isValid = false;
+                if (!firstInvalidField) {
+                    firstInvalidField = field;
+                }
+                
+                // Recopilar errores por sección
+                const section = field.closest('.form-section');
+                const sectionTitle = section ? section.querySelector('.section-title').textContent.trim() : 'Formulario';
+                const fieldLabel = field.closest('.mb-3').querySelector('.form-label').textContent.replace('*', '').trim();
+                errorMessages.push(`${sectionTitle}: ${fieldLabel}`);
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            
+            // Crear mensaje de error detallado
+            let alertMessage = '⚠️ Por favor, corrija los siguientes errores:\n\n';
+            errorMessages.forEach((msg, index) => {
+                alertMessage += `${index + 1}. ${msg}\n`;
+            });
+            
+            alert(alertMessage);
+            
+            // Scroll al primer campo inválido
+            if (firstInvalidField) {
+                firstInvalidField.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                setTimeout(() => {
+                    firstInvalidField.focus();
+                }, 500);
+            }
+        } else {
+            // Validación final adicional
+            const finalValidation = performFinalValidation();
+            if (!finalValidation.isValid) {
+                e.preventDefault();
+                alert('⚠️ Validación final:\n\n' + finalValidation.message);
+                return;
+            }
+            
+            // Mostrar confirmación antes de enviar si hay cambios
+            if (hasChanges) {
+                const confirmMessage = '✅ ¿Está seguro que desea guardar los cambios?\n\n' +
+                                     `NIE: ${form.nie.value}\n` +
+                                     `Nombre: ${form.nombres.value} ${form.apellidos.value}\n` +
+                                     `Fecha de Nacimiento: ${form.fecha_nacimiento.value || 'No especificada'}\n` +
+                                     `Género: ${form.genero.options[form.genero.selectedIndex]?.text || 'No especificado'}`;
+                
+                if (!confirm(confirmMessage)) {
+                    e.preventDefault();
+                }
+            } else {
+                e.preventDefault();
+                alert('ℹ️ No se han detectado cambios en el formulario.');
+            }
+        }
+    });
+
+    // Función de validación final
+    function performFinalValidation() {
+        const warnings = [];
+        
+        // Verificar que nombres y apellidos no sean muy cortos
+        if (form.nombres.value.trim().length < 3) {
+            warnings.push('- El nombre parece muy corto');
+        }
+        
+        if (form.apellidos.value.trim().length < 3) {
+            warnings.push('- Los apellidos parecen muy cortos');
+        }
+        
+        // Verificar edad lógica
+        if (form.fecha_nacimiento.value) {
+            const birthDate = new Date(form.fecha_nacimiento.value);
+            const today = new Date();
+            const age = Math.floor((today - birthDate) / (365.25 * 24 * 60 * 60 * 1000));
+            
+            if (age < 5) {
+                warnings.push('- La edad del estudiante parece muy joven para el sistema');
+            }
+            if (age > 25) {
+                warnings.push('- La edad del estudiante parece alta para educación básica');
+            }
+        }
+        
+        // Verificar longitud del NIE
+        if (form.nie.value.length < 8) {
+            warnings.push('- El NIE debe tener al menos 8 dígitos');
+        }
+        
+        return {
+            isValid: warnings.length === 0,
+            message: warnings.length > 0 ? warnings.join('\n') : ''
+        };
+    }
+    
+    // Animación de entrada
+    const sections = document.querySelectorAll('.form-section');
+    sections.forEach((section, index) => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            section.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            section.style.opacity = '1';
+            section.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Ejecutar detección inicial para campos que ya tienen valores
+    detectChanges();
+    
+    // Actualizar resumen inicial de validación
+    updateValidationSummary();
+});
+</script>
 {% endblock %}
