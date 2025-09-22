@@ -1,8 +1,9 @@
 from flask import Flask, jsonify, render_template
 from db import DatabaseConfig, test_connection
 from appEstudiantes import estudiantes_bp
-from models import Estudiante
+
 from routes.user_route import users
+from models import Estudiantes
 
 app = Flask(__name__)
 
