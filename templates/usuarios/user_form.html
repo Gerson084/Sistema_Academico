@@ -1,0 +1,745 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    :root {
+    --primary-blue: #0D2C63;
+    --secondary-blue: #0D2C63;
+    --light-blue: #E9E2C3;
+    --success-green: #059669;
+    --warning-orange: #d97706;
+    --danger-red: #dc2626;
+    --neutral-gray: #6b7280;
+    --light-gray: #E9E2C3;
+    --border-gray: #e5e7eb;
+    --dark-text: #000000;
+    --medium-text: #374151;
+    }
+    body { margin:0 !important; padding:0 !important; }
+    
+    /* Sobrescribir el mt-4 del contenedor base */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: #E9E2C3;
+        padding: 2rem 0;
+        margin: 0 0 2rem 0 !important;
+      
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        width: 100vw;
+        margin-left: calc(-50vw + 50%) !important;
+        position: relative;
+        top: 0;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .form-container {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-gray);
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: var(--light-blue);
+        border-radius: 0.75rem;
+        border-left: 4px solid var(--primary-blue);
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-blue);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid var(--border-gray);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+        outline: none;
+    }
+
+    .form-control.is-invalid {
+        border-color: var(--danger-red);
+    }
+
+    .form-control.is-valid {
+        border-color: var(--success-green);
+    }
+
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--danger-red);
+        background-color: rgba(220, 38, 38, 0.1);
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.25rem;
+        border-left: 3px solid var(--danger-red);
+    }
+
+    .valid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--success-green);
+        background-color: rgba(5, 150, 105, 0.1);
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.25rem;
+        border-left: 3px solid var(--success-green);
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger-red);
+        font-weight: bold;
+    }
+
+    @keyframes shake {
+        0%, 20%, 40%, 60%, 80% {
+            transform: translateX(0);
+        }
+        10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-5px);
+        }
+    }
+
+    .form-control.is-invalid {
+        animation: shake 0.5s ease-in-out;
+    }
+
+    .validation-summary {
+        background: rgba(220, 38, 38, 0.1);
+        border: 1px solid var(--danger-red);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid var(--danger-red);
+    }
+
+    .validation-summary h4 {
+        color: var(--danger-red);
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .validation-summary ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .validation-summary li {
+        color: var(--danger-red);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        border: none;
+        color: #E9E2C3;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(13, 44, 99, 0.2);
+    }
+
+    .btn-primary:hover {
+        background: #0a2354;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(13, 44, 99, 0.3);
+        color: #E9E2C3;
+    }
+
+    .btn-success {
+        background: var(--success-green);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+    }
+
+    .btn-success:hover {
+        background: #047857;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--neutral-gray);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid var(--border-gray);
+    }
+
+    .input-icon {
+        position: relative;
+    }
+
+    .input-icon i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--neutral-gray);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .input-icon .form-control {
+        padding-left: 2.5rem;
+    }
+
+    .form-help {
+        font-size: 0.8rem;
+        color: var(--neutral-gray);
+        margin-top: 0.25rem;
+    }
+
+    .progress-indicator {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+    }
+
+    .progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        position: relative;
+    }
+
+    .step-circle {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: var(--primary-blue);
+        color: #E9E2C3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .step-label {
+        font-size: 0.8rem;
+        color: var(--medium-text);
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .progress-line {
+        position: absolute;
+        top: 1.25rem;
+        left: 50%;
+        right: -50%;
+        height: 2px;
+        background: var(--border-gray);
+        z-index: 1;
+    }
+
+    .progress-step:last-child .progress-line {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1rem;
+        }
+
+        .form-section {
+            padding: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .progress-steps {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .progress-line {
+            display: none;
+        }
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid var(--primary-blue);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-user-plus"></i>
+            {% if user %}Editar Usuario{% else %}Nuevo Usuario{% endif %}
+        </h1>
+        <p class="page-subtitle">
+            {% if user %}Actualiza la información del usuario{% else %}Registra un nuevo usuario en el sistema{% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="progress-indicator">
+        <div class="progress-steps">
+            <div class="progress-step">
+                <div class="step-circle"><i class="fas fa-user"></i></div>
+                <div class="step-label">Datos Personales</div>
+                <div class="progress-line"></div>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle"><i class="fas fa-cog"></i></div>
+                <div class="step-label">Configuración</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" id="userForm" novalidate>
+            <!-- Datos Personales -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-user"></i>Datos Personales</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nombres" class="form-label required-field">Nombres</label>
+                        <input type="text" class="form-control" name="nombres" id="nombres"
+                               value="{{ user.nombres if user else '' }}"
+                               oninput="this.value = this.value.toUpperCase()" required>
+                        <div class="invalid-feedback">Ingrese los nombres.</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="apellidos" class="form-label required-field">Apellidos</label>
+                        <input type="text" class="form-control" name="apellidos" id="apellidos"
+                               value="{{ user.apellidos if user else '' }}"
+                               oninput="this.value = this.value.toUpperCase()" required>
+                        <div class="invalid-feedback">Ingrese los apellidos.</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label required-field">Correo Electrónico</label>
+                        <input type="email" class="form-control" name="email" id="email"
+                               value="{{ user.email if user else '' }}" required>
+                        <div class="invalid-feedback">Ingrese un email válido.</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" name="telefono" id="telefono"
+                               value="{{ user.telefono if user else '' }}" placeholder="0000-0000"
+                               pattern="[0-9]{4}-[0-9]{4}">
+                        <div class="invalid-feedback">Ingrese un teléfono válido (0000-0000).</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="identificador" class="form-label required-field">DUI</label>
+                        <input type="text" class="form-control" name="identificador" id="identificador"
+                            value="{{ user.identificador if user else '' }}" placeholder="00000000-0" required>
+                        <div class="invalid-feedback">Ingrese un DUI válido.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-cog"></i>Configuración</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="usuario" class="form-label required-field">Usuario</label>
+                        <input type="text" class="form-control" name="usuario" id="usuario"
+                               value="{{ user.usuario if user else '' }}" required>
+                        <div class="invalid-feedback">Ingrese un usuario.</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="password" class="form-label {% if not user %}required-field{% endif %}">Contraseña</label>
+                        <input type="password" class="form-control" name="password" id="password"
+                               {% if not user %}required{% endif %}>
+                        <div class="form-help">
+                            {% if user %}Dejar vacío para mantener la contraseña actual{% endif %}
+                        </div>
+                        <div class="invalid-feedback">Ingrese una contraseña.</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_rol" class="form-label required-field">Rol</label>
+                        <select class="form-select" name="id_rol" id="id_rol" required>
+                            <option value="1" {% if user and user.id_rol == 1 %}selected{% endif %}>Administrador</option>
+                            <option value="2" {% if user and user.id_rol == 2 %}selected{% endif %}>Docente</option>
+                        </select>
+                        <div class="invalid-feedback">Seleccione un rol.</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="activo" class="form-label">Estado</label>
+                        <select class="form-select" name="activo" id="activo">
+                            <option value="1" {% if not user or user.activo %}selected{% endif %}>Activo</option>
+                            <option value="0" {% if user and not user.activo %}selected{% endif %}>Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-success" id="submitBtn">
+                    <i class="fas fa-save"></i>
+                    {% if user %}Actualizar Usuario{% else %}Guardar Usuario{% endif %}
+                </button>
+                <a href="{{ url_for('user.user_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    let form = document.getElementById('userForm');
+    let submitBtn = document.getElementById('submitBtn');
+    let loadingOverlay = document.getElementById('loadingOverlay');
+
+    // --- Reglas de validación ---
+    const reglas = {
+        nombres: {
+            required: true,
+            pattern: /^[A-ZÁÉÍÓÚÑ\s]+$/i,
+            msg: "Ingrese nombres válidos (solo letras)."
+        },
+        apellidos: {
+            required: true,
+            pattern: /^[A-ZÁÉÍÓÚÑ\s]+$/i,
+            msg: "Ingrese apellidos válidos (solo letras)."
+        },
+        email: {
+            required: true,
+            pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            msg: "Ingrese un correo válido (ejemplo@dominio.com)."
+        },
+        telefono: {
+            required: false,
+            pattern: /^[0-9]{4}-[0-9]{4}$/,
+            msg: "Formato correcto: 0000-0000"
+        },
+        identificador: {
+            required: true,
+            pattern: /^[0-9]{8}-[0-9]{1}$/,
+            msg: "Formato correcto: 00000000-0"
+        },
+        usuario: {
+            required: true,
+            pattern: /^[A-Za-z0-9._-]{4,20}$/,
+            msg: "El usuario debe tener entre 4 y 20 caracteres."
+        },
+        password: {
+            required: form.querySelector("#password").hasAttribute("required"),
+            pattern: /^.{6,}$/,
+            msg: "La contraseña debe tener al menos 6 caracteres."
+        }
+    };
+
+    // --- Función de validación de campo ---
+    function validarCampo(input){
+        let regla = reglas[input.id];
+        if(!regla) return true;
+
+        let valor = input.value.trim();
+        let valido = true;
+
+        if(regla.required && !valor){
+            valido = false;
+            regla.msg = "Este campo es obligatorio.";
+        } else if(valor && regla.pattern && !regla.pattern.test(valor)){
+            valido = false;
+        }
+
+        let feedback = input.parentElement.querySelector(".invalid-feedback, .valid-feedback");
+        if(!feedback){
+            feedback = document.createElement("div");
+            input.parentElement.appendChild(feedback);
+        }
+
+        if(!valido){
+            input.classList.add("is-invalid");
+            input.classList.remove("is-valid");
+            feedback.className = "invalid-feedback";
+            feedback.textContent = regla.msg;
+            feedback.style.display = "block";
+        } else {
+            input.classList.remove("is-invalid");
+            input.classList.add("is-valid");
+            feedback.className = "valid-feedback";
+            feedback.textContent = "✔ Campo válido";
+            feedback.style.display = "block";
+        }
+        return valido;
+    }
+
+    // --- Escuchar inputs en tiempo real ---
+    form.querySelectorAll(".form-control, .form-select").forEach(input => {
+        input.addEventListener("input", () => validarCampo(input));
+        input.addEventListener("blur", () => validarCampo(input));
+        input.addEventListener("change", () => validarCampo(input));
+    });
+
+    // --- Mostrar loading ---
+    function showLoading() {
+        loadingOverlay.style.display = 'flex';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+    }
+
+    // --- Ocultar loading ---
+    function hideLoading() {
+        loadingOverlay.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> {% if user %}Actualizar Usuario{% else %}Guardar Usuario{% endif %}';
+    }
+
+    // --- Manejar respuesta del servidor ---
+    function handleServerResponse(response) {
+        if (response.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: response.mensaje,
+                confirmButtonColor: '#0D2C63',
+                timer: 2000,
+                showConfirmButton: true
+            }).then(() => {
+                if (response.redirect) {
+                    window.location.href = response.redirect;
+                }
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: response.mensaje,
+                confirmButtonColor: '#0D2C63'
+            });
+        }
+    }
+
+    // --- Enviar formulario vía AJAX ---
+    async function submitForm(formData) {
+        try {
+            const response = await fetch('{{ url_for("user.create_user") if not user else url_for("user.edit_user", id=user.id_usuario) }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error:', error);
+            return {
+                success: false,
+                mensaje: 'Error de conexión. Por favor, intente nuevamente.'
+            };
+        }
+    }
+
+    // --- Validación al enviar ---
+    form.addEventListener("submit", async function(e){
+        e.preventDefault();
+        
+        let valido = true;
+        form.querySelectorAll(".form-control, .form-select").forEach(input => {
+            if(!validarCampo(input)) valido = false;
+        });
+
+        if(!valido){
+            Swal.fire({
+                icon: "error",
+                title: "Revisa los campos",
+                text: "Hay errores en el formulario, corrígelos antes de continuar.",
+                confirmButtonColor: "#0D2C63"
+            });
+            return false;
+        }
+
+        // Confirmación antes de enviar
+        const result = await Swal.fire({
+            icon: "question",
+            title: "Confirmar",
+            text: "¿Desea guardar los cambios?",
+            showCancelButton: true,
+            confirmButtonText: "Sí, guardar",
+            cancelButtonText: "Cancelar",
+            confirmButtonColor: "#0D2C63"
+        });
+
+        if(result.isConfirmed){
+            showLoading();
+            
+            try {
+                const formData = new FormData(form);
+                const response = await submitForm(formData);
+                
+                handleServerResponse(response);
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error inesperado. Por favor, intente nuevamente.',
+                    confirmButtonColor: '#0D2C63'
+                });
+            } finally {
+                hideLoading();
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

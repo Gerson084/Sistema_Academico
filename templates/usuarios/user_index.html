@@ -1,45 +1,720 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div
-    class="table-responsive"
->
-    <table
-        class="table table-primary"
-    >
-        <thead>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1>Gestion de docentes </h1>
-                <button>Agregar docente</button>
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --secondary-blue: #0D2C63;
+        --light-blue: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #d97706;
+        --danger-red: #dc2626;
+        --neutral-gray: #6b7280;
+        --border-gray: #e5e7eb;
+        --dark-text: #000000;
+        --medium-text: #374151;
+    }
 
-            </div>
-            <tr>
-                <th scope="col">Nombre</th>
-                <th scope="col">Email</th>
-                <th scope="col">Estado</th>
-                <th scope="col">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            
-            {% for list in user_list %}
-            <tr>
-                <td>{{ list.nombres }} {{ list.apellidos }}</td>
-                <td>{{ list.email }}</td>
-                <td>
-                    {% if list.activo %}
-                        <span class="badge bg-success">Activo</span>
-                    {% else %}
-                        <span class="badge bg-danger">Inactivo</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-primary">Editar</button>
-                    <button class="btn btn-sm btn-danger">Eliminar</button>
-                </td>
-            {% endfor %}
-        </tbody>
-    </table>
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        color: #E9E2C3;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        box-shadow: 0 4px 6px rgba(0,0,0,.1);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        margin: 0;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: .9;
+        margin: .5rem 0 0;
+    }
+
+    .action-bar {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: .75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .btn-new {
+        background: var(--success-green);
+        border: none;
+        color: white;
+        padding: .75rem 1.5rem;
+        border-radius: .5rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .btn-new:hover { background: #047857; transform: translateY(-1px); color: white; }
+
+    .search-box {
+        position: relative;
+        min-width: 300px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: .75rem 1rem .75rem 2.5rem;
+        border: 2px solid var(--border-gray);
+        border-radius: .5rem;
+        font-size: .95rem;
+    }
+
+    .search-input:focus {
+        border-color: var(--primary-blue);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13,44,99,.15);
+    }
+
+    .search-icon {
+        position: absolute;
+        top: 50%;
+        left: .75rem;
+        transform: translateY(-50%);
+        color: var(--neutral-gray);
+    }
+
+    .table-container {
+        background: var(--light-blue);
+        border-radius: .75rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .custom-table thead th {
+        background: var(--primary-blue);
+        color: #E9E2C3;
+        font-weight: 600;
+        text-align: center;
+        padding: 1rem;
+        white-space: nowrap;
+    }
+
+    .custom-table tbody td {
+        padding: 1rem;
+        color: var(--dark-text);
+        border-color: var(--border-gray);
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+
+    .custom-table tbody tr:hover { background-color: rgba(233, 226, 195, 0.5); }
+
+    .status-badge {
+        padding: .3rem .75rem;
+        border-radius: 9999px;
+        font-size: .8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .status-active { background: #dcfce7; color: #166534; }
+    .status-inactive { background: #fee2e2; color: #991b1b; }
+
+    .role-badge {
+        padding: .3rem .5rem;
+        border-radius: .375rem;
+        font-size: .75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .role-admin { background: #dbeafe; color: #1e40af; }
+    .role-teacher { background: #f0fdf4; color: #166534; }
+
+    .action-buttons {
+        display: flex;
+        gap: .5rem;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: nowrap;
+        min-width: 200px;
+    }
+
+    .btn-edit {
+        background: var(--warning-orange);
+        color: #fff;
+        border: none;
+        padding: .5rem .8rem;
+        border-radius: .375rem;
+        font-size: .8rem;
+        transition: all .2s ease;
+        white-space: nowrap;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        cursor: pointer;
+    }
+    .btn-edit:hover { background: #b45309; transform: translateY(-1px); }
+
+    .btn-deactivate {
+        background: var(--danger-red);
+        color: #fff;
+        border: none;
+        padding: .5rem .8rem;
+        border-radius: .375rem;
+        font-size: .8rem;
+        transition: all .2s ease;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        cursor: pointer;
+    }
+    .btn-deactivate:hover { background: #b91c1c; transform: translateY(-1px); }
+
+    .btn-activate {
+        background: var(--success-green);
+        color: #fff;
+        border: none;
+        padding: .5rem .8rem;
+        border-radius: .375rem;
+        font-size: .8rem;
+        transition: all .2s ease;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        cursor: pointer;
+    }
+    .btn-activate:hover { background: #047857; transform: translateY(-1px); }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--neutral-gray);
+    }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: .5; }
+
+    /* Mejoras para tabla responsive */
+    .table-responsive {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    /* Estilos para información adicional */
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        gap: .2rem;
+    }
+
+    .user-detail {
+        font-size: .8rem;
+        color: var(--neutral-gray);
+    }
+
+    /* Paginación Mejorada */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: white;
+        border-radius: .75rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .pagination-info {
+        color: var(--neutral-gray);
+        font-size: .9rem;
+    }
+
+    .pagination {
+        display: flex;
+        gap: .5rem;
+        align-items: center;
+    }
+
+    .pagination button {
+        background: white;
+        border: 1px solid var(--border-gray);
+        padding: .5rem .9rem;
+        border-radius: .375rem;
+        font-size: .9rem;
+        cursor: pointer;
+        transition: all .2s ease;
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+    }
+
+    .pagination button:hover:not(:disabled) { 
+        background: var(--light-blue); 
+    }
+
+    .pagination button.active {
+        background: var(--primary-blue);
+        color: #fff;
+        border-color: var(--primary-blue);
+    }
+
+    .pagination button:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    .page-numbers {
+        display: flex;
+        gap: .3rem;
+    }
+
+    .page-input {
+        width: 60px;
+        padding: .4rem;
+        border: 1px solid var(--border-gray);
+        border-radius: .375rem;
+        text-align: center;
+        font-size: .9rem;
+    }
+
+    .page-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+    }
+
+    /* Responsive para móviles */
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-width: auto;
+        }
+        
+        .btn-edit, .btn-deactivate, .btn-activate {
+            padding: .4rem .6rem;
+            font-size: .75rem;
+        }
+        
+        .custom-table thead th, 
+        .custom-table tbody td {
+            padding: .75rem .5rem;
+        }
+    }
+</style>
+
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title"><i class="fas fa-chalkboard-teacher"></i> Gestión de Docentes</h1>
+    <p class="page-subtitle">Administra la información de todos los docentes registrados</p>
+  </div>
 </div>
-{% endblock %}
 
+<div class="container">
+  <!-- Barra de acciones -->
+  <div class="action-bar">
+    <a href="{{ url_for('user.create_user') }}" class="btn-new"><i class="fas fa-plus"></i> Nuevo Docente</a>
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, email, usuario o DUI...">
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table custom-table" id="teachersTable">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Información Personal</th>
+            <th>Contacto</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Fecha Creación</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          {% for d in user_list %}
+          <tr class="teacher-row" data-search="{{ (d.nombres + ' ' + d.apellidos + ' ' + d.email + ' ' + d.usuario + ' ' + d.identificador)|lower }}">
+            <td>
+                <strong>{{ d.usuario }}</strong>
+                <div class="user-detail">ID: {{ d.id_usuario }}</div>
+            </td>
+            <td>
+                <div class="user-info">
+                    <strong>{{ d.nombres }} {{ d.apellidos }}</strong>
+                    <div class="user-detail">DUI: {{ d.identificador }}</div>
+                </div>
+            </td>
+            <td>
+                <div class="user-info">
+                    <strong>{{ d.email }}</strong>
+                    <div class="user-detail">{{ d.telefono if d.telefono else 'Sin teléfono' }}</div>
+                </div>
+            </td>
+            <td>
+                <span class="role-badge {% if d.id_rol == 1 %}role-admin{% else %}role-teacher{% endif %}">
+                    {% if d.id_rol == 1 %}
+                    <i class="fas fa-shield-alt"></i> Admin
+                    {% else %}
+                    <i class="fas fa-chalkboard-teacher"></i> Docente
+                    {% endif %}
+                </span>
+            </td>
+            <td>
+              {% if d.activo %}
+              <span class="status-badge status-active"><i class="fas fa-check-circle"></i> Activo</span>
+              {% else %}
+              <span class="status-badge status-inactive"><i class="fas fa-times-circle"></i> Inactivo</span>
+              {% endif %}
+            </td>
+            <td>
+                <div class="user-info">
+                    <strong>{{ d.fecha_creacion.strftime('%d/%m/%Y') if d.fecha_creacion else 'N/A' }}</strong>
+                    <div class="user-detail">{{ d.fecha_creacion.strftime('%H:%M') if d.fecha_creacion else '' }}</div>
+                </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="{{ url_for('user.edit_user', id=d.id_usuario) }}" class="btn-edit" title="Editar usuario">
+                  <i class="fas fa-edit"></i> Editar
+                </a>
+                {% if d.activo %}
+                <button type="button" class="btn-deactivate" onclick="deactivateUser({{ d.id_usuario }}, '{{ d.nombres }} {{ d.apellidos }}')" title="Desactivar usuario">
+                  <i class="fas fa-ban"></i> Desac.
+                </button>
+                {% else %}
+                <button type="button" class="btn-activate" onclick="activateUser({{ d.id_usuario }}, '{{ d.nombres }} {{ d.apellidos }}')" title="Activar usuario">
+                  <i class="fas fa-check"></i> Activar
+                </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="fas fa-chalkboard"></i>
+                <h4>No hay docentes registrados</h4>
+                <p>Comienza agregando el primer docente al sistema</p>
+                <a href="{{ url_for('user.create_user') }}" class="btn-new" style="margin-top:1rem;">
+                  <i class="fas fa-plus"></i> Agregar Primer Docente
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Paginación Mejorada -->
+  <div class="pagination-container">
+    <div class="pagination-info" id="paginationInfo">
+      Mostrando 0 de 0 registros
+    </div>
+    <div class="pagination">
+      <button id="firstPage" class="pagination-btn">
+        <i class="fas fa-angle-double-left"></i>
+      </button>
+      <button id="prevPage" class="pagination-btn">
+        <i class="fas fa-angle-left"></i>
+      </button>
+      
+      <div class="page-numbers" id="pageNumbers"></div>
+      
+      <div style="display: flex; align-items: center; gap: .5rem;">
+        <span>Ir a:</span>
+        <input type="number" class="page-input" id="pageInput" min="1" value="1">
+      </div>
+      
+      <button id="nextPage" class="pagination-btn">
+        <i class="fas fa-angle-right"></i>
+      </button>
+      <button id="lastPage" class="pagination-btn">
+        <i class="fas fa-angle-double-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- JS buscador + paginación mejorada -->
+<script>
+  const rowsPerPage = 10;
+  let currentPage = 1;
+  let filteredRows = [];
+
+  const tableBody = document.getElementById("tableBody");
+  const rows = Array.from(document.querySelectorAll(".teacher-row"));
+  const paginationInfo = document.getElementById("paginationInfo");
+  const pageNumbers = document.getElementById("pageNumbers");
+  const pageInput = document.getElementById("pageInput");
+  
+  // Botones de navegación
+  const firstPageBtn = document.getElementById("firstPage");
+  const prevPageBtn = document.getElementById("prevPage");
+  const nextPageBtn = document.getElementById("nextPage");
+  const lastPageBtn = document.getElementById("lastPage");
+
+  // Inicializar filas filtradas
+  filteredRows = rows;
+
+  function updatePaginationInfo() {
+    const totalRows = filteredRows.length;
+    const start = Math.min((currentPage - 1) * rowsPerPage + 1, totalRows);
+    const end = Math.min(currentPage * rowsPerPage, totalRows);
+    
+    paginationInfo.textContent = `Mostrando ${start} - ${end} de ${totalRows} registros`;
+    
+    pageInput.value = currentPage;
+    pageInput.max = Math.ceil(totalRows / rowsPerPage);
+  }
+
+  function renderTable() {
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    rows.forEach(row => row.style.display = "none");
+    
+    filteredRows.slice(start, end).forEach(row => {
+      row.style.display = "";
+    });
+
+    updatePaginationInfo();
+    renderPagination();
+    updateNavigationButtons();
+  }
+
+  function renderPagination() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    pageNumbers.innerHTML = "";
+
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      btn.classList.add("pagination-btn");
+      if (i === currentPage) btn.classList.add("active");
+      
+      btn.addEventListener("click", () => {
+        currentPage = i;
+        renderTable();
+      });
+      
+      pageNumbers.appendChild(btn);
+    }
+  }
+
+  function updateNavigationButtons() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    
+    firstPageBtn.disabled = currentPage === 1;
+    prevPageBtn.disabled = currentPage === 1;
+    nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+    lastPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+  }
+
+  // Event listeners para búsqueda
+  document.getElementById("searchInput").addEventListener("keyup", function() {
+    const searchValue = this.value.toLowerCase();
+    
+    filteredRows = rows.filter(row => {
+      const text = row.getAttribute("data-search");
+      return text.includes(searchValue);
+    });
+    
+    currentPage = 1;
+    renderTable();
+  });
+
+  // Event listeners para navegación
+  firstPageBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage = 1;
+      renderTable();
+    }
+  });
+
+  prevPageBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderTable();
+    }
+  });
+
+  nextPageBtn.addEventListener("click", () => {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderTable();
+    }
+  });
+
+  lastPageBtn.addEventListener("click", () => {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    if (currentPage < totalPages) {
+      currentPage = totalPages;
+      renderTable();
+    }
+  });
+
+  // Event listener para input de página
+  pageInput.addEventListener("change", function() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    let page = parseInt(this.value);
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    currentPage = page;
+    renderTable();
+  });
+
+  pageInput.addEventListener("keypress", function(e) {
+    if (e.key === 'Enter') {
+      this.blur();
+    }
+  });
+
+  // Función para desactivar usuario
+  async function deactivateUser(userId, userName) {
+    const result = await Swal.fire({
+        title: '¿Desactivar usuario?',
+        text: `¿Estás seguro de que deseas desactivar a ${userName}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, desactivar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`/user/deactivate/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    title: '¡Desactivado!',
+                    text: data.mensaje,
+                    icon: 'success',
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.mensaje,
+                    icon: 'error',
+                    confirmButtonColor: '#0D2C63'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Error de conexión. Por favor, intente nuevamente.',
+                icon: 'error',
+                confirmButtonColor: '#0D2C63'
+            });
+        }
+    }
+  }
+
+  // Función para activar usuario
+  async function activateUser(userId, userName) {
+    const result = await Swal.fire({
+        title: '¿Activar usuario?',
+        text: `¿Estás seguro de que deseas activar a ${userName}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, activar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`/user/activate/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    title: '¡Activado!',
+                    text: data.mensaje,
+                    icon: 'success',
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.mensaje,
+                    icon: 'error',
+                    confirmButtonColor: '#0D2C63'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Error de conexión. Por favor, intente nuevamente.',
+                icon: 'error',
+                confirmButtonColor: '#0D2C63'
+            });
+        }
+    }
+  }
+
+  // Inicializar
+  renderTable();
+</script>
+{% endblock %}
