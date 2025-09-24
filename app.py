@@ -3,10 +3,11 @@ from db import DatabaseConfig, test_connection
 from appEstudiantes import estudiantes_bp
 
 from routes.user_route import users
-from routes.rol_route import rol
+#from routes.rol_route import rol
 from models import Estudiantes
 from routes.appSecciones import secciones_bp
 from dotenv import load_dotenv
+from routes.auth_route import auth_bp
 import os
 
 # Cargar variables de entorno desde .env
@@ -24,7 +25,9 @@ db = DatabaseConfig.init_app(app)
 app.register_blueprint(estudiantes_bp, url_prefix="/estudiantes")
 app.register_blueprint(users)
 app.register_blueprint(secciones_bp, url_prefix="/secciones")
-app.register_blueprint(rol)
+#app.register_blueprint(rol)
+app.register_blueprint(auth_bp, url_prefix="/auth")
+
 
 
 

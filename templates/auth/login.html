@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="login-page">
+    <div class="login-card">
+
+        <!-- Logo -->
+        <img src="{{ url_for('static', filename='img/logo_colegio.png') }}" alt="Logo Colegio Santa María">
+
+        <!-- Títulos -->
+        <h3>Colegio Santa María</h3>
+        <h5>Iniciar Sesión</h5>
+
+        <!-- Formulario -->
+        <form method="POST" action="{{ url_for('auth.login') }}" onsubmit="return validarFormulario()">
+            <div class="form-floating">
+                <input type="text" name="usuario" id="usuario" class="form-control" placeholder="Usuario" required>
+                <label for="usuario">Usuario</label>
+            </div>
+            <div class="form-floating">
+                <input type="password" name="password" id="password" class="form-control" placeholder="Contraseña" required>
+                <label for="password">Contraseña</label>
+            </div>
+            <button type="submit">Ingresar</button>
+        </form>
+
+        <!-- Mensajes de error -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="w-100">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+    </div>
+</div>
+
+<script>
+function validarFormulario() {
+    let usuario = document.getElementById("usuario").value.trim();
+    let password = document.getElementById("password").value.trim();
+    if (usuario === "" || password === "") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campos obligatorios',
+            text: 'Por favor completa todos los campos'
+        });
+        return false;
+    }
+    return true;
+}
+</script>
+
+<!-- SweetAlert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
