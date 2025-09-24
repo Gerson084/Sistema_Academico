@@ -3,6 +3,7 @@ from db import DatabaseConfig, test_connection
 from appEstudiantes import estudiantes_bp
 from routes.user_route import users
 from models import Estudiantes
+from routes.appSecciones import secciones_bp
 from dotenv import load_dotenv
 import os
 
@@ -20,6 +21,7 @@ db = DatabaseConfig.init_app(app)
 # Registrar blueprints
 app.register_blueprint(estudiantes_bp, url_prefix="/estudiantes")
 app.register_blueprint(users)
+app.register_blueprint(secciones_bp, url_prefix="/secciones")
 
 @app.route('/')
 def home():
