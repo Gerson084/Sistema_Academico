@@ -1,0 +1,757 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --secondary-blue: #0D2C63;
+        --light-blue: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #d97706;
+        --danger-red: #dc2626;
+        --neutral-gray: #6b7280;
+        --light-gray: #E9E2C3;
+        --border-gray: #e5e7eb;
+        --dark-text: #000000;
+        --medium-text: #374151;
+    }
+
+    /* Reset de márgenes para eliminar espacios no deseados */
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Sobrescribir el mt-4 del contenedor base */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: #E9E2C3;
+        padding: 2rem 0;
+        margin: 0 0 2rem 0 !important;
+        border-radius: 0 0 1rem 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        width: 100vw;
+        margin-left: calc(-50vw + 50%) !important;
+        position: relative;
+        top: 0;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .action-bar {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .btn-new-section {
+        background: var(--success-green);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+    }
+
+    .btn-new-section:hover {
+        background: #047857;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 300px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid var(--border-gray);
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--neutral-gray);
+        pointer-events: none;
+    }
+
+    .table-container {
+        background: #E9E2C3;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .table-responsive {
+        border-radius: 0.75rem;
+    }
+
+    .custom-table {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .custom-table thead th {
+        background: var(--primary-blue);
+        color: #E9E2C3;
+        font-weight: 600;
+        border: none;
+        padding: 1rem 0.75rem;
+        white-space: nowrap;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .custom-table tbody td {
+        padding: 1rem 0.75rem;
+        border-color: var(--border-gray);
+        vertical-align: middle;
+        color: var(--dark-text);
+    }
+
+    .custom-table tbody tr:hover {
+        background-color: var(--light-blue);
+        transition: background-color 0.2s ease;
+    }
+
+    .section-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+        white-space: nowrap;
+        background: var(--primary-blue);
+        color: #E9E2C3;
+    }
+
+    .grade-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: var(--light-blue);
+        color: var(--primary-blue);
+        border: 1px solid var(--primary-blue);
+    }
+
+    .year-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #d97706;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-edit {
+        background: var(--warning-orange);
+        border: none;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-edit:hover {
+        background: #b45309;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    .btn-delete {
+        background: var(--danger-red);
+        border: none;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .btn-delete:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--neutral-gray);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .stats-bar {
+        background: #ffffff;
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--medium-text);
+        font-weight: 500;
+    }
+
+    .stat-number {
+        background: var(--light-blue);
+        color: var(--primary-blue);
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-weight: 700;
+    }
+
+    .filter-tabs {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 0.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        display: flex;
+        gap: 0.25rem;
+        overflow-x: auto;
+    }
+
+    .filter-tab {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        background: transparent;
+        border: none;
+        color: var(--medium-text);
+        font-weight: 500;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .filter-tab.active {
+        background: var(--primary-blue);
+        color: #E9E2C3;
+    }
+
+    .filter-tab:hover:not(.active) {
+        background: var(--light-blue);
+        color: var(--primary-blue);
+    }
+
+    .alert-success {
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        display: none;
+        position: relative;
+    }
+
+    .alert-success.show {
+        display: block;
+        animation: slideDown 0.4s ease-out;
+    }
+
+    .alert-success .close-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        color: #166534;
+        cursor: pointer;
+        font-size: 1.2rem;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+    .alert-success .close-btn:hover {
+        opacity: 1;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+            max-height: 0;
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 100px;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 100px;
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-20px);
+            max-height: 0;
+        }
+    }
+
+    .alert-success.hiding {
+        animation: slideUp 0.3s ease-out forwards;
+    }
+
+    @media (max-width: 768px) {
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box {
+            min-width: auto;
+        }
+
+        .stats-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .custom-table {
+            font-size: 0.8rem;
+        }
+
+        .custom-table thead th,
+        .custom-table tbody td {
+            padding: 0.5rem 0.4rem;
+        }
+
+        .filter-tabs {
+            flex-wrap: wrap;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-layer-group"></i>
+            Gestión de Secciones
+        </h1>
+        <p class="page-subtitle">Administra las secciones académicas y su organización por grados y años lectivos</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Mensaje de éxito -->
+    <div class="alert-success" id="successAlert">
+        <button class="close-btn" onclick="closeAlert()">&times;</button>
+        <div class="d-flex align-items-center">
+            <i class="fas fa-check-circle me-2"></i>
+            <div>
+                <strong id="successTitle">¡Operación exitosa!</strong>
+                <div id="successMessage">La operación se ha completado correctamente.</div>
+            </div>
+        </div>
+    </div>
+    <!-- Barra de estadísticas -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <i class="fas fa-layer-group text-primary"></i>
+            <span>Total de secciones:</span>
+            <span class="stat-number">{{ secciones|length }}</span>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-graduation-cap text-success"></i>
+            <span>Grados activos:</span>
+            <span class="stat-number">{{ secciones|map(attribute='id_grado')|unique|list|length }}</span>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-calendar-alt text-warning"></i>
+            <span>Años lectivos:</span>
+            <span class="stat-number">{{ secciones|map(attribute='id_ano_lectivo')|unique|list|length }}</span>
+        </div>
+    </div>
+
+    <!-- Filtros por tabs -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterSections('all')">
+            <i class="fas fa-list"></i> Todas las Secciones
+        </button>
+        <button class="filter-tab" onclick="filterSections('grade')">
+            <i class="fas fa-sort-numeric-up"></i> Por Grado
+        </button>
+        <button class="filter-tab" onclick="filterSections('year')">
+            <i class="fas fa-calendar"></i> Por Año Lectivo
+        </button>
+    </div>
+
+    <!-- Barra de acciones -->
+    <div class="action-bar">
+        <a href="{{ url_for('secciones.nueva_seccion') }}" class="btn-new-section">
+            <i class="fas fa-plus"></i>
+            Nueva Sección
+        </a>
+        
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="searchInput" placeholder="Buscar sección por nombre, grado o año...">
+        </div>
+    </div>
+
+    <!-- Tabla de secciones -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table custom-table" id="sectionsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Grado</th>
+                        <th>Nombre de Sección</th>
+                        <th>Año Lectivo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for seccion in secciones %}
+                    <tr class="section-row" 
+                        data-search="{{ (seccion.nombre_seccion + ' ' + seccion.id_grado|string + ' ' + seccion.id_ano_lectivo|string)|lower }}"
+                        data-grade="{{ seccion.id_grado }}"
+                        data-year="{{ seccion.id_ano_lectivo }}">
+                        <td>
+                            <span class="section-badge">
+                                #{{ seccion.id_seccion }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="grade-badge">
+                                <i class="fas fa-graduation-cap"></i>
+                                {{ seccion.id_grado }}° Grado
+                            </span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; font-size: 1rem;">
+                                <i class="fas fa-users"></i>
+                                {{ seccion.nombre_seccion }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="year-badge">
+                                <i class="fas fa-calendar-alt"></i>
+                                {{ seccion.id_ano_lectivo }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('secciones.editar_seccion', id=seccion.id_seccion) }}" class="btn-edit" title="Editar sección">
+                                    <i class="fas fa-edit"></i>
+                                    Editar
+                                </a>
+                                <form action="{{ url_for('secciones.eliminar_seccion', id=seccion.id_seccion) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete('{{ seccion.nombre_seccion }}', '{{ seccion.id_grado }}');">
+                                    <button type="submit" class="btn-delete" title="Eliminar sección">
+                                        <i class="fas fa-trash"></i>
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-layer-group"></i>
+                                </div>
+                                <h4>No hay secciones registradas</h4>
+                                <p>Comienza creando la primera sección académica</p>
+                                <a href="{{ url_for('secciones.nueva_seccion') }}" class="btn-new-section" style="margin-top: 1rem;">
+                                    <i class="fas fa-plus"></i>
+                                    Crear Primera Sección
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+// Variables globales
+let currentFilter = 'all';
+
+// Función para mostrar mensaje de éxito
+function showSuccessMessage(title, message, duration = 5000) {
+    const alert = document.getElementById('successAlert');
+    const titleElement = document.getElementById('successTitle');
+    const messageElement = document.getElementById('successMessage');
+    
+    titleElement.textContent = title;
+    messageElement.textContent = message;
+    
+    alert.classList.remove('hiding');
+    alert.classList.add('show');
+    
+    // Auto-ocultar después del tiempo especificado
+    setTimeout(() => {
+        closeAlert();
+    }, duration);
+}
+
+// Función para cerrar el mensaje de éxito
+function closeAlert() {
+    const alert = document.getElementById('successAlert');
+    alert.classList.add('hiding');
+    
+    setTimeout(() => {
+        alert.classList.remove('show', 'hiding');
+    }, 300);
+}
+
+// Detectar mensajes de éxito desde el backend
+function checkForSuccessMessage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const action = urlParams.get('action');
+    
+    if (success === 'true') {
+        let title, message;
+        
+        switch(action) {
+            case 'created':
+                title = '¡Sección creada exitosamente!';
+                message = 'La nueva sección se ha registrado correctamente en el sistema.';
+                break;
+            case 'updated':
+                title = '¡Sección actualizada!';
+                message = 'Los cambios en la sección se han guardado correctamente.';
+                break;
+            case 'deleted':
+                title = '¡Sección eliminada!';
+                message = 'La sección se ha eliminado permanentemente del sistema.';
+                break;
+            default:
+                title = '¡Operación exitosa!';
+                message = 'La operación se ha completado correctamente.';
+        }
+        
+        showSuccessMessage(title, message);
+        
+        // Limpiar la URL sin recargar la página
+        const newUrl = window.location.pathname;
+        history.replaceState({}, document.title, newUrl);
+    }
+}
+
+// Función de búsqueda en tiempo real
+document.getElementById('searchInput').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('.section-row');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const searchData = row.getAttribute('data-search');
+        const matchesSearch = searchData.includes(searchTerm);
+        const matchesFilter = checkFilterMatch(row);
+        
+        if (matchesSearch && matchesFilter) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Mostrar mensaje si no hay resultados
+    handleNoResults(visibleCount, searchTerm);
+});
+
+// Función para verificar si una fila coincide con el filtro actual
+function checkFilterMatch(row) {
+    if (currentFilter === 'all') return true;
+    
+    // Aquí puedes agregar lógica específica para filtros por grado o año
+    return true;
+}
+
+// Función para manejar filtros por tabs
+function filterSections(filterType) {
+    currentFilter = filterType;
+    
+    // Actualizar tabs activos
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Aplicar filtro
+    const rows = document.querySelectorAll('.section-row');
+    rows.forEach(row => {
+        let shouldShow = true;
+        
+        switch(filterType) {
+            case 'all':
+                shouldShow = true;
+                break;
+            case 'grade':
+                // Puedes agregar lógica específica aquí
+                shouldShow = true;
+                break;
+            case 'year':
+                // Puedes agregar lógica específica aquí
+                shouldShow = true;
+                break;
+        }
+        
+        if (shouldShow) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Reactivar búsqueda si hay términos
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput.value) {
+        searchInput.dispatchEvent(new Event('input'));
+    }
+}
+
+
+
+// Función de confirmación de eliminación mejorada
+function confirmDelete(sectionName, grade) {
+    return confirm(`¿Estás seguro de que deseas eliminar la sección "${sectionName}" del ${grade}° grado?\n\nEsta acción no se puede deshacer.`);
+}
+
+// Inicialización cuando se carga la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar mensaje de éxito al cargar la página
+    checkForSuccessMessage();
+    
+    // Agregar animación de entrada a las filas
+    const rows = document.querySelectorAll('.section-row');
+    rows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            row.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+    
+    // Animación para las estadísticas
+    const stats = document.querySelectorAll('.stat-number');
+    stats.forEach((stat, index) => {
+        const finalNumber = parseInt(stat.textContent);
+        stat.textContent = '0';
+        
+        setTimeout(() => {
+            let current = 0;
+            const increment = Math.ceil(finalNumber / 20);
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= finalNumber) {
+                    current = finalNumber;
+                    clearInterval(timer);
+                }
+                stat.textContent = current;
+            }, 50);
+        }, index * 200);
+    });
+});
+</script>
+{% endblock %}

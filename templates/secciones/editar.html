@@ -1,0 +1,697 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --secondary-blue: #0D2C63;
+        --light-blue: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #d97706;
+        --danger-red: #dc2626;
+        --neutral-gray: #6b7280;
+        --light-gray: #E9E2C3;
+        --border-gray: #e5e7eb;
+        --dark-text: #000000;
+        --medium-text: #374151;
+    }
+
+    /* Reset de márgenes para eliminar espacios no deseados */
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Sobrescribir el mt-4 del contenedor base */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: #E9E2C3;
+        padding: 2rem 0;
+        margin: 0 0 2rem 0 !important;
+        border-radius: 0 0 1rem 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        width: 100vw;
+        margin-left: calc(-50vw + 50%) !important;
+        position: relative;
+        top: 0;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .section-info-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        border-left: 4px solid var(--warning-orange);
+    }
+
+    .section-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-details {
+        font-size: 0.9rem;
+        color: var(--neutral-gray);
+        font-weight: 500;
+        margin-top: 0.5rem;
+    }
+
+    .form-container {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-gray);
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: var(--light-blue);
+        border-radius: 0.75rem;
+        border-left: 4px solid var(--primary-blue);
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-blue);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid var(--border-gray);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        background: white;
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+        outline: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: var(--danger-red);
+        background-color: #fef2f2;
+    }
+
+    .form-control.is-valid, .form-select.is-valid {
+        border-color: var(--success-green);
+        background-color: #f0fdf4;
+    }
+
+    .form-control.modified, .form-select.modified {
+        border-color: var(--warning-orange);
+        background-color: #fef3c7;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: var(--danger-red);
+        font-weight: bold;
+    }
+
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--danger-red);
+        font-weight: 500;
+    }
+
+    .valid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--success-green);
+        font-weight: 500;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        border: none;
+        color: #E9E2C3;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(13, 44, 99, 0.2);
+    }
+
+    .btn-primary:hover {
+        background: #0a2354;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(13, 44, 99, 0.3);
+        color: #E9E2C3;
+    }
+
+    .btn-secondary {
+        background: var(--neutral-gray);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid var(--border-gray);
+    }
+
+    .input-icon {
+        position: relative;
+    }
+
+    .input-icon i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--neutral-gray);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .input-icon .form-control,
+    .input-icon .form-select {
+        padding-left: 2.5rem;
+    }
+
+    .form-help {
+        font-size: 0.8rem;
+        color: var(--neutral-gray);
+        margin-top: 0.25rem;
+    }
+
+    .changes-indicator {
+        background: #fef3c7;
+        border: 1px solid var(--warning-orange);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: none;
+    }
+
+    .changes-indicator.show {
+        display: block;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .char-counter {
+        font-size: 0.75rem;
+        color: var(--neutral-gray);
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+
+    .char-counter.warning {
+        color: var(--warning-orange);
+        font-weight: 600;
+    }
+
+    .char-counter.danger {
+        color: var(--danger-red);
+        font-weight: 600;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1rem;
+        }
+
+        .form-section {
+            padding: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .section-info-card {
+            padding: 1rem;
+        }
+
+        .section-name {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-edit"></i>
+            Editar Sección
+        </h1>
+        <p class="page-subtitle">Modifica la información de la sección académica</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Información de la sección actual -->
+    <div class="section-info-card">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="section-name">
+                    <i class="fas fa-layer-group"></i>
+                    Sección {{ seccion.nombre_seccion }}
+                </h3>
+                <div class="section-details">
+                    <i class="fas fa-graduation-cap"></i> Grado: {{ seccion.id_grado }}° &nbsp;&nbsp;
+                    <i class="fas fa-calendar-alt"></i> Año Lectivo: {{ seccion.id_ano_lectivo }}
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <span style="padding: 0.25rem 0.75rem; background: var(--light-blue); color: var(--primary-blue); border-radius: 0.375rem; font-size: 0.8rem; font-weight: 600;">
+                    <i class="fas fa-hashtag"></i> ID: {{ seccion.id_seccion }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador de cambios -->
+    <div class="changes-indicator" id="changesIndicator">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+            <strong>¡Tienes cambios sin guardar!</strong>
+            <span class="ms-2">Recuerda hacer clic en "Actualizar" para guardar los cambios.</span>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="form-container">
+        <form method="POST" id="editSectionForm">
+            <!-- Configuración Académica -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-cog"></i>
+                    Configuración Académica
+                </h3>
+                
+                <div class="form-group">
+                    <label for="id_grado" class="form-label required-field">Grado Académico</label>
+                    <div class="input-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                        <select name="id_grado" id="id_grado" class="form-select" required 
+                                data-original="{{ seccion.id_grado }}">
+                            <option value="">-- Selecciona un grado --</option>
+                            {% for grado in grados %}
+                            <option value="{{ grado.id_grado }}"
+                                {% if grado.id_grado == seccion.id_grado %}selected{% endif %}>
+                                {{ grado.nombre_grado }} ({{ grado.nivel }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-help">Selecciona el grado académico al que pertenece esta sección</div>
+                    <div class="invalid-feedback" id="gradeError"></div>
+                    <div class="valid-feedback" id="gradeSuccess"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_ano_lectivo" class="form-label required-field">Año Lectivo</label>
+                    <div class="input-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                        <select name="id_ano_lectivo" id="id_ano_lectivo" class="form-select" required 
+                                data-original="{{ seccion.id_ano_lectivo }}">
+                            <option value="">-- Selecciona un año lectivo --</option>
+                            {% for ano in anos_lectivos %}
+                            <option value="{{ ano.id_ano_lectivo }}"
+                                {% if ano.id_ano_lectivo == seccion.id_ano_lectivo %}selected{% endif %}>
+                                {{ ano.ano }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-help">Año lectivo en el que está activa esta sección</div>
+                    <div class="invalid-feedback" id="yearError"></div>
+                    <div class="valid-feedback" id="yearSuccess"></div>
+                </div>
+            </div>
+
+            <!-- Información de la Sección -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-users"></i>
+                    Información de la Sección
+                </h3>
+                
+                <div class="form-group">
+                    <label for="nombre_seccion" class="form-label required-field">Nombre de la Sección</label>
+                    <div class="input-icon">
+                        <i class="fas fa-tag"></i>
+                        <input type="text" name="nombre_seccion" id="nombre_seccion" class="form-control" 
+                               maxlength="10" value="{{ seccion.nombre_seccion }}" required 
+                               data-original="{{ seccion.nombre_seccion }}" placeholder="Ej: A, B, 1A, 2B" oninput="this.value = this.value.toUpperCase()">
+                    </div>
+                    <div class="char-counter" id="charCounter">
+                        <span id="charCount">{{ seccion.nombre_seccion|length }}</span>/10 caracteres
+                    </div>
+                    <div class="form-help">Identificador único de la sección (máximo 10 caracteres)</div>
+                    <div class="invalid-feedback" id="nameError"></div>
+                    <div class="valid-feedback" id="nameSuccess"></div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary" id="updateBtn">
+                    <i class="fas fa-save"></i>
+                    Actualizar Sección
+                </button>
+                <a href="{{ url_for('secciones.lista_secciones') }}" class="btn btn-secondary" id="cancelBtn">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Font Awesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editSectionForm');
+    const changesIndicator = document.getElementById('changesIndicator');
+    const updateBtn = document.getElementById('updateBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    let hasChanges = false;
+    
+    // Elementos del formulario
+    const gradeSelect = document.getElementById('id_grado');
+    const yearSelect = document.getElementById('id_ano_lectivo');
+    const nameInput = document.getElementById('nombre_seccion');
+    const charCount = document.getElementById('charCount');
+    const charCounter = document.getElementById('charCounter');
+    
+    // Obtener todos los campos del formulario
+    const formFields = form.querySelectorAll('input, select');
+    
+    // Función para validar un campo individual
+    function validateField(field) {
+        const fieldId = field.id;
+        const value = field.value.trim();
+        let isValid = true;
+        let errorMsg = '';
+        let successMsg = '';
+        
+        // Limpiar estados previos
+        field.classList.remove('is-invalid', 'is-valid');
+        
+        switch(fieldId) {
+            case 'id_grado':
+                if (!value) {
+                    isValid = false;
+                    errorMsg = 'Debe seleccionar un grado académico';
+                } else {
+                    successMsg = 'Grado seleccionado correctamente';
+                }
+                break;
+                
+            case 'id_ano_lectivo':
+                if (!value) {
+                    isValid = false;
+                    errorMsg = 'Debe seleccionar un año lectivo';
+                } else {
+                    successMsg = 'Año lectivo seleccionado correctamente';
+                }
+                break;
+                
+            case 'nombre_seccion':
+                if (!value) {
+                    isValid = false;
+                    errorMsg = 'El nombre de la sección es obligatorio';
+                } else if (value.length < 1) {
+                    isValid = false;
+                    errorMsg = 'El nombre debe tener al menos 1 carácter';
+                } else if (value.length > 10) {
+                    isValid = false;
+                    errorMsg = 'El nombre no puede exceder 10 caracteres';
+                } else if (!/^[A-Za-z0-9\s-]+$/.test(value)) {
+                    isValid = false;
+                    errorMsg = 'Solo se permiten letras, números, espacios y guiones';
+                } else {
+                    successMsg = 'Nombre de sección válido';
+                }
+                break;
+        }
+        
+        // Aplicar estilos y mensajes
+        if (isValid) {
+            field.classList.add('is-valid');
+            const successElement = document.getElementById(fieldId.replace('id_', '') + 'Success') || 
+                                 document.getElementById('nameSuccess');
+            if (successElement) {
+                successElement.textContent = successMsg;
+            }
+        } else {
+            field.classList.add('is-invalid');
+            const errorElement = document.getElementById(fieldId.replace('id_', '') + 'Error') || 
+                               document.getElementById('nameError');
+            if (errorElement) {
+                errorElement.textContent = errorMsg;
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Función para detectar cambios
+    function detectChanges() {
+        let changesDetected = false;
+        
+        formFields.forEach(field => {
+            const originalValue = field.getAttribute('data-original') || '';
+            const currentValue = field.value || '';
+            
+            if (originalValue !== currentValue) {
+                field.classList.add('modified');
+                changesDetected = true;
+            } else {
+                field.classList.remove('modified');
+            }
+        });
+        
+        if (changesDetected !== hasChanges) {
+            hasChanges = changesDetected;
+            
+            if (hasChanges) {
+                changesIndicator.classList.add('show');
+                updateBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+                updateBtn.style.background = 'var(--warning-orange)';
+            } else {
+                changesIndicator.classList.remove('show');
+                updateBtn.innerHTML = '<i class="fas fa-save"></i> Actualizar Sección';
+                updateBtn.style.background = 'var(--primary-blue)';
+            }
+        }
+    }
+    
+    // Función para actualizar el contador de caracteres
+    function updateCharCounter() {
+        const length = nameInput.value.length;
+        charCount.textContent = length;
+        
+        charCounter.classList.remove('warning', 'danger');
+        
+        if (length >= 8) {
+            charCounter.classList.add('warning');
+        }
+        if (length >= 10) {
+            charCounter.classList.add('danger');
+        }
+    }
+    
+    // Event listeners para validación en tiempo real
+    formFields.forEach(field => {
+        field.addEventListener('input', function() {
+            validateField(this);
+            detectChanges();
+            if (this.id === 'nombre_seccion') {
+                updateCharCounter();
+            }
+        });
+        
+        field.addEventListener('change', function() {
+            validateField(this);
+            detectChanges();
+        });
+        
+        field.addEventListener('blur', function() {
+            validateField(this);
+        });
+    });
+    
+    // Validación completa del formulario
+    function validateForm() {
+        let isFormValid = true;
+        
+        formFields.forEach(field => {
+            if (!validateField(field)) {
+                isFormValid = false;
+            }
+        });
+        
+        return isFormValid;
+    }
+    
+    // Event listener para envío del formulario
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+            // Scroll al primer campo inválido
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
+            }
+            
+            // Mostrar mensaje de error
+            alert('Por favor, corrija los errores en el formulario antes de continuar.');
+            return;
+        }
+        
+        // Confirmar actualización
+        if (confirm('¿Estás seguro de que deseas actualizar esta sección?')) {
+            // Si la validación pasa, enviar el formulario
+            this.submit();
+        }
+    });
+    
+    // Advertencia antes de salir con cambios sin guardar
+    window.addEventListener('beforeunload', function(e) {
+        if (hasChanges) {
+            e.preventDefault();
+            e.returnValue = '¿Estás seguro de que deseas salir? Los cambios no guardados se perderán.';
+            return e.returnValue;
+        }
+    });
+    
+    // Confirmación al cancelar con cambios
+    cancelBtn.addEventListener('click', function(e) {
+        if (hasChanges) {
+            if (!confirm('¿Estás seguro de que deseas cancelar? Los cambios no guardados se perderán.')) {
+                e.preventDefault();
+            }
+        }
+    });
+    
+    // Inicialización
+    updateCharCounter();
+    
+    // Animación de entrada
+    const sections = document.querySelectorAll('.form-section');
+    sections.forEach((section, index) => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            section.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            section.style.opacity = '1';
+            section.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Validación inicial para campos que ya tienen valores
+    formFields.forEach(field => {
+        if (field.value) {
+            validateField(field);
+        }
+    });
+    
+    detectChanges();
+});
+</script>
+{% endblock %}
