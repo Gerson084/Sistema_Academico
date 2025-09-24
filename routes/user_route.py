@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, url_for
 from models.usuarios import Usuario
+from models.roles import Rol  # Importa el modelo de roles
 from db import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash
@@ -10,8 +11,11 @@ users = Blueprint('user', __name__, template_folder="templates")
 # LISTAR
 @users.route("/user_index")
 def user_index():
+    #Una lista de todos los usuarios
     user_list = Usuario.query.all()
-    return render_template("usuarios/user_index.html", user_list=user_list)
+    list_rol = Rol.query.all()  # Obtiene los roles 
+    print(list_rol)
+    return render_template("usuarios/user_index.html", user_list=user_list, list_rol=list_rol)
 
 # CREAR
 @users.route("/user/create", methods=['GET', 'POST'])

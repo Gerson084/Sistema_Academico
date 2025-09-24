@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <form>
+        <div class="mb-3 row">
+            <label for="inputName" class="col-4 col-form-label">Nombre del rol:</label>
+            <div class="col-8" >
+                <input
+                    type="text"
+                    class="form-control"
+                    name="inputName"
+                    id="inputName"
+                    placeholder="Name"/>
+            </div>
+        </div>
+    
+        <div class="mb-3 row">
+            <div class="offset-sm-4 col-sm-8">
+                <button type="submit" class="btn btn-primary">
+                    Action
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+{% endblock %}
