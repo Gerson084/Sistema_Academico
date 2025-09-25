@@ -3,6 +3,7 @@
 <div class="container text-center mt-5">
     <h1 style="color:#0D2C63;">Panel de Administrador</h1>
     <p>Bienvenido {{ session['user_name'] }}</p>
+    <a href="{{ url_for('change_password.cambiar_contrasena') }}" class="btn btn-warning me-2">Cambiar Contraseña</a>
     <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Cerrar Sesión</a>
 </div>
 {% endblock %}

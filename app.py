@@ -9,6 +9,7 @@ from routes.appSecciones import secciones_bp
 from dotenv import load_dotenv
 from routes.auth_route import auth_bp
 from routes.rol_route import rol
+from routes.change_password_route import change_password_bp
 import os
 
 # Cargar variables de entorno desde .env
@@ -28,7 +29,9 @@ app.register_blueprint(users)
 app.register_blueprint(rol)
 app.register_blueprint(secciones_bp, url_prefix="/secciones")
 #app.register_blueprint(rol)
+
 app.register_blueprint(auth_bp, url_prefix="/auth")
+app.register_blueprint(change_password_bp, url_prefix="/auth")
 
 
 
