@@ -1,0 +1,968 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* (Mantener todos los estilos igual) */
+    :root {
+        --primary-blue: #0D2C63;
+        --secondary-blue: #0D2C63;
+        --light-blue: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #d97706;
+        --danger-red: #dc2626;
+        --neutral-gray: #6b7280;
+        --border-gray: #e5e7eb;
+        --dark-text: #000000;
+        --medium-text: #374151;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        color: #E9E2C3;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        box-shadow: 0 4px 6px rgba(0,0,0,.1);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        margin: 0;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: .9;
+        margin: .5rem 0 0;
+    }
+
+    .action-bar {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: .75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .btn-new {
+        background: var(--success-green);
+        border: none;
+        color: white;
+        padding: .75rem 1.5rem;
+        border-radius: .5rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .btn-new:hover { background: #047857; transform: translateY(-1px); color: white; }
+
+    .filters-container {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: .75rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .filters-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--primary-blue);
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        font-size: .9rem;
+        color: var(--medium-text);
+    }
+
+    .filter-select {
+        padding: .75rem;
+        border: 2px solid var(--border-gray);
+        border-radius: .5rem;
+        font-size: .95rem;
+        background: white;
+    }
+
+    .filter-select:focus {
+        border-color: var(--primary-blue);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13,44,99,.15);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+
+    .btn-filter {
+        background: var(--primary-blue);
+        border: none;
+        color: white;
+        padding: .75rem 1.5rem;
+        border-radius: .5rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .btn-filter:hover { background: #0a1f4d; transform: translateY(-1px); }
+
+    .btn-clear {
+        background: var(--neutral-gray);
+        border: none;
+        color: white;
+        padding: .75rem 1.5rem;
+        border-radius: .5rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .btn-clear:hover { background: #4b5563; transform: translateY(-1px); }
+
+    .search-box {
+        position: relative;
+        min-width: 300px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: .75rem 1rem .75rem 2.5rem;
+        border: 2px solid var(--border-gray);
+        border-radius: .5rem;
+        font-size: .95rem;
+    }
+
+    .search-input:focus {
+        border-color: var(--primary-blue);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13,44,99,.15);
+    }
+
+    .search-icon {
+        position: absolute;
+        top: 50%;
+        left: .75rem;
+        transform: translateY(-50%);
+        color: var(--neutral-gray);
+    }
+
+    .table-container {
+        background: var(--light-blue);
+        border-radius: .75rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .custom-table thead th {
+        background: var(--primary-blue);
+        color: #E9E2C3;
+        font-weight: 600;
+        text-align: center;
+        padding: 1rem;
+        white-space: nowrap;
+    }
+
+    .custom-table tbody td {
+        padding: 1rem;
+        color: var(--dark-text);
+        border-color: var(--border-gray);
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+
+    .custom-table tbody tr:hover { background-color: rgba(233, 226, 195, 0.5); }
+
+    .status-badge {
+        padding: .3rem .75rem;
+        border-radius: 9999px;
+        font-size: .8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .status-active { background: #dcfce7; color: #166534; }
+    .status-inactive { background: #fee2e2; color: #991b1b; }
+
+    .action-buttons {
+        display: flex;
+        gap: .5rem;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: nowrap;
+        min-width: 200px;
+    }
+
+    .btn-edit {
+        background: var(--warning-orange);
+        color: #fff;
+        border: none;
+        padding: .5rem .8rem;
+        border-radius: .375rem;
+        font-size: .8rem;
+        transition: all .2s ease;
+        white-space: nowrap;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        cursor: pointer;
+    }
+    .btn-edit:hover { background: #b45309; transform: translateY(-1px); }
+
+    .btn-deactivate {
+        background: var(--danger-red);
+        color: #fff;
+        border: none;
+        padding: .5rem .8rem;
+        border-radius: .375rem;
+        font-size: .8rem;
+        transition: all .2s ease;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        cursor: pointer;
+    }
+    .btn-deactivate:hover { background: #b91c1c; transform: translateY(-1px); }
+
+    .btn-activate {
+        background: var(--success-green);
+        color: #fff;
+        border: none;
+        padding: .5rem .8rem;
+        border-radius: .375rem;
+        font-size: .8rem;
+        transition: all .2s ease;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        cursor: pointer;
+    }
+    .btn-activate:hover { background: #047857; transform: translateY(-1px); }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--neutral-gray);
+    }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: .5; }
+
+    .table-responsive {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    .matricula-info {
+        display: flex;
+        flex-direction: column;
+        gap: .2rem;
+    }
+
+    .matricula-detail {
+        font-size: .8rem;
+        color: var(--neutral-gray);
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: white;
+        border-radius: .75rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .pagination-info {
+        color: var(--neutral-gray);
+        font-size: .9rem;
+    }
+
+    .pagination {
+        display: flex;
+        gap: .5rem;
+        align-items: center;
+    }
+
+    .pagination button {
+        background: white;
+        border: 1px solid var(--border-gray);
+        padding: .5rem .9rem;
+        border-radius: .375rem;
+        font-size: .9rem;
+        cursor: pointer;
+        transition: all .2s ease;
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+    }
+
+    .pagination button:hover:not(:disabled) { 
+        background: var(--light-blue); 
+    }
+
+    .pagination button.active {
+        background: var(--primary-blue);
+        color: #fff;
+        border-color: var(--primary-blue);
+    }
+
+    .pagination button:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    .page-numbers {
+        display: flex;
+        gap: .3rem;
+    }
+
+    .page-input {
+        width: 60px;
+        padding: .4rem;
+        border: 1px solid var(--border-gray);
+        border-radius: .375rem;
+        text-align: center;
+        font-size: .9rem;
+    }
+
+    .page-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+    }
+
+    @media (max-width: 768px) {
+        .filters-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-width: auto;
+        }
+        
+        .btn-edit, .btn-deactivate, .btn-activate {
+            padding: .4rem .6rem;
+            font-size: .75rem;
+        }
+        
+        .custom-table thead th, 
+        .custom-table tbody td {
+            padding: .75rem .5rem;
+        }
+    }
+</style>
+
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title"><i class="fas fa-user-graduate"></i> Gestión de Matrículas</h1>
+    <p class="page-subtitle">Administra todas las matrículas registradas en el sistema</p>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Barra de acciones -->
+  <div class="action-bar">
+    <a href="{{ url_for('matricula.crear_matricula') }}" class="btn-new"><i class="fas fa-plus"></i> Nueva Matrícula</a>
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por estudiante, sección o año lectivo...">
+    </div>
+  </div>
+
+  <!-- Filtros Avanzados -->
+  <div class="filters-container">
+    <div class="filters-title">
+      <i class="fas fa-filter"></i> Filtros Avanzados
+    </div>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label class="filter-label">Año Lectivo</label>
+        <select class="filter-select" id="filterAno">
+          <option value="">Todos los años</option>
+          {% for ano in anos_lectivos %}
+          <option value="{{ ano.ano }}">{{ ano.ano }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Grado</label>
+        <select class="filter-select" id="filterGrado">
+          <option value="">Todos los grados</option>
+          {% for grado in grados %}
+          <option value="{{ grado.nombre_grado }}">{{ grado.nombre_grado }} - {{ grado.nivel }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Sección</label>
+        <select class="filter-select" id="filterSeccion">
+          <option value="">Todas las secciones</option>
+          {% for seccion in secciones %}
+          <option value="{{ seccion.nombre_seccion }}">{{ seccion.nombre_seccion }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Estado</label>
+        <select class="filter-select" id="filterEstado">
+          <option value="">Todos los estados</option>
+          <option value="activa">Activas</option>
+          <option value="inactiva">Inactivas</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-clear" onclick="clearFilters()">
+        <i class="fas fa-times"></i> Limpiar Filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table custom-table" id="matriculasTable">
+        <thead>
+          <tr>
+            <th>ID Matrícula</th>
+            <th>Estudiante</th>
+            <th>Grado</th>
+            <th>Sección</th>
+            <th>Año Lectivo</th>
+            <th>N° Lista</th>
+            <th>Fecha Matrícula</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          {% for m in matriculas %}
+          {# Verificar si es un diccionario (consulta SQL) o un objeto (fallback) #}
+          {% set is_dict = m is mapping %}
+          <tr class="matricula-row" 
+              data-ano="{{ m.ano_lectivo if is_dict else (m.seccion.ano_lectivo.ano if m.seccion and m.seccion.ano_lectivo else 'N/A') }}"
+              data-grado="{{ m.nombre_grado if is_dict else (m.seccion.grado.nombre_grado if m.seccion and m.seccion.grado else 'N/A') }}"
+              data-seccion="{{ m.nombre_seccion if is_dict else (m.seccion.nombre_seccion if m.seccion else 'N/A') }}"
+              data-estado="{{ 'activa' if m.activa else 'inactiva' }}"
+              data-search="{{ ((m.estudiante_nombres if is_dict else m.estudiante.nombres) + ' ' + (m.estudiante_apellidos if is_dict else m.estudiante.apellidos) + ' ' + (m.nombre_seccion if is_dict else (m.seccion.nombre_seccion if m.seccion else '')) + ' ' + (m.nombre_grado if is_dict else (m.seccion.grado.nombre_grado if m.seccion and m.seccion.grado else '')) + ' ' + (m.ano_lectivo|string if is_dict else (m.seccion.ano_lectivo.ano|string if m.seccion and m.seccion.ano_lectivo else '')) + ' ' + (m.numero_lista|string if m.numero_lista else ''))|lower }}">
+            <td>
+                <strong>#{{ m.id_matricula }}</strong>
+            </td>
+            <td>
+                <div class="matricula-info">
+                    <strong>
+                        {{ m.estudiante_nombres if is_dict else m.estudiante.nombres }} 
+                        {{ m.estudiante_apellidos if is_dict else m.estudiante.apellidos }}
+                    </strong>
+                    <div class="matricula-detail">
+                        NIE: {{ m.estudiante_nie if is_dict else (m.estudiante.nie or 'Sin NIE') }}
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="matricula-info">
+                    {% if is_dict %}
+                    <strong>{{ m.nombre_grado }}</strong>
+                    <div class="matricula-detail">{{ m.grado_nivel }}</div>
+                    {% else %}
+                    {% if m.seccion and m.seccion.grado %}
+                    <strong>{{ m.seccion.grado.nombre_grado }}</strong>
+                    <div class="matricula-detail">{{ m.seccion.grado.nivel }}</div>
+                    {% else %}
+                    <strong>N/A</strong>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </td>
+            <td>
+                <div class="matricula-info">
+                    <strong>{{ m.nombre_seccion if is_dict else (m.seccion.nombre_seccion if m.seccion else 'N/A') }}</strong>
+                </div>
+            </td>
+            <td>
+                <div class="matricula-info">
+                    {% if is_dict %}
+                    <strong>{{ m.ano_lectivo }}</strong>
+                    <div class="matricula-detail">
+                        {{ m.fecha_inicio.strftime('%d/%m/%Y') }} - 
+                        {{ m.fecha_fin.strftime('%d/%m/%Y') }}
+                    </div>
+                    {% else %}
+                    {% if m.seccion and m.seccion.ano_lectivo %}
+                    <strong>{{ m.seccion.ano_lectivo.ano }}</strong>
+                    <div class="matricula-detail">
+                        {{ m.seccion.ano_lectivo.fecha_inicio.strftime('%d/%m/%Y') }} - 
+                        {{ m.seccion.ano_lectivo.fecha_fin.strftime('%d/%m/%Y') }}
+                    </div>
+                    {% else %}
+                    <strong>N/A</strong>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </td>
+            <td>
+                <strong>{{ m.numero_lista or 'N/A' }}</strong>
+            </td>
+            <td>
+                <div class="matricula-info">
+                    <strong>{{ m.fecha_matricula.strftime('%d/%m/%Y') if m.fecha_matricula else 'N/A' }}</strong>
+                    {% if m.fecha_matricula %}
+                    <div class="matricula-detail">{{ m.fecha_matricula.strftime('%H:%M') }}</div>
+                    {% endif %}
+                </div>
+            </td>
+            <td>
+              {% if m.activa %}
+              <span class="status-badge status-active"><i class="fas fa-check-circle"></i> Activa</span>
+              {% else %}
+              <span class="status-badge status-inactive"><i class="fas fa-times-circle"></i> Inactiva</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="{{ url_for('matricula.editar_matricula', id=m.id_matricula) }}" class="btn-edit" title="Editar matrícula">
+                  <i class="fas fa-edit"></i> Editar
+                </a>
+                {% if m.activa %}
+                <button type="button" class="btn-deactivate" onclick="deactivateMatricula({{ m.id_matricula }}, '{{ (m.estudiante_nombres if is_dict else m.estudiante.nombres) }} {{ (m.estudiante_apellidos if is_dict else m.estudiante.apellidos) }}')" title="Desactivar matrícula">
+                  <i class="fas fa-ban"></i> Desac.
+                </button>
+                {% else %}
+                <button type="button" class="btn-activate" onclick="activateMatricula({{ m.id_matricula }}, '{{ (m.estudiante_nombres if is_dict else m.estudiante.nombres) }} {{ (m.estudiante_apellidos if is_dict else m.estudiante.apellidos) }}')" title="Activar matrícula">
+                  <i class="fas fa-check"></i> Activar
+                </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="9">
+              <div class="empty-state">
+                <i class="fas fa-user-graduate"></i>
+                <h4>No hay matrículas registradas</h4>
+                <p>Comienza agregando la primera matrícula al sistema</p>
+                <a href="{{ url_for('matricula.crear_matricula') }}" class="btn-new" style="margin-top:1rem;">
+                  <i class="fas fa-plus"></i> Agregar Primera Matrícula
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <div class="pagination-container">
+    <div class="pagination-info" id="paginationInfo">
+      Mostrando 0 de 0 registros
+    </div>
+    <div class="pagination">
+      <button id="firstPage" class="pagination-btn">
+        <i class="fas fa-angle-double-left"></i>
+      </button>
+      <button id="prevPage" class="pagination-btn">
+        <i class="fas fa-angle-left"></i>
+      </button>
+      
+      <div class="page-numbers" id="pageNumbers"></div>
+      
+      <div style="display: flex; align-items: center; gap: .5rem;">
+        <span>Ir a:</span>
+        <input type="number" class="page-input" id="pageInput" min="1" value="1">
+      </div>
+      
+      <button id="nextPage" class="pagination-btn">
+        <i class="fas fa-angle-right"></i>
+      </button>
+      <button id="lastPage" class="pagination-btn">
+        <i class="fas fa-angle-double-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  // JavaScript permanece igual
+  const rowsPerPage = 10;
+  let currentPage = 1;
+  let filteredRows = [];
+  let activeFilters = {
+    ano: '',
+    grado: '',
+    seccion: '',
+    estado: '',
+    search: ''
+  };
+
+  const tableBody = document.getElementById("tableBody");
+  const rows = Array.from(document.querySelectorAll(".matricula-row"));
+  const paginationInfo = document.getElementById("paginationInfo");
+  const pageNumbers = document.getElementById("pageNumbers");
+  const pageInput = document.getElementById("pageInput");
+  
+  const firstPageBtn = document.getElementById("firstPage");
+  const prevPageBtn = document.getElementById("prevPage");
+  const nextPageBtn = document.getElementById("nextPage");
+  const lastPageBtn = document.getElementById("lastPage");
+
+  const filterAno = document.getElementById("filterAno");
+  const filterGrado = document.getElementById("filterGrado");
+  const filterSeccion = document.getElementById("filterSeccion");
+  const filterEstado = document.getElementById("filterEstado");
+  const searchInput = document.getElementById("searchInput");
+
+  filteredRows = rows;
+
+  function applyFilters() {
+    activeFilters = {
+      ano: filterAno.value,
+      grado: filterGrado.value,
+      seccion: filterSeccion.value,
+      estado: filterEstado.value,
+      search: searchInput.value.toLowerCase()
+    };
+
+    filterRows();
+  }
+
+  function clearFilters() {
+    filterAno.value = '';
+    filterGrado.value = '';
+    filterSeccion.value = '';
+    filterEstado.value = '';
+    searchInput.value = '';
+    
+    activeFilters = {
+      ano: '',
+      grado: '',
+      seccion: '',
+      estado: '',
+      search: ''
+    };
+
+    filterRows();
+  }
+
+  function filterRows() {
+    filteredRows = rows.filter(row => {
+      if (activeFilters.search) {
+        const searchText = row.getAttribute("data-search");
+        if (!searchText.includes(activeFilters.search)) {
+          return false;
+        }
+      }
+
+      if (activeFilters.ano && activeFilters.ano !== 'N/A') {
+        const rowAno = row.getAttribute("data-ano");
+        if (rowAno !== activeFilters.ano) {
+          return false;
+        }
+      }
+
+      if (activeFilters.grado && activeFilters.grado !== 'N/A') {
+        const rowGrado = row.getAttribute("data-grado");
+        if (!rowGrado.includes(activeFilters.grado.split(' - ')[0])) {
+          return false;
+        }
+      }
+
+      if (activeFilters.seccion && activeFilters.seccion !== 'N/A') {
+        const rowSeccion = row.getAttribute("data-seccion");
+        if (rowSeccion !== activeFilters.seccion) {
+          return false;
+        }
+      }
+
+      if (activeFilters.estado) {
+        const rowEstado = row.getAttribute("data-estado");
+        if (rowEstado !== activeFilters.estado) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    currentPage = 1;
+    renderTable();
+  }
+
+  function updatePaginationInfo() {
+    const totalRows = filteredRows.length;
+    const start = Math.min((currentPage - 1) * rowsPerPage + 1, totalRows);
+    const end = Math.min(currentPage * rowsPerPage, totalRows);
+    
+    paginationInfo.textContent = `Mostrando ${start} - ${end} de ${totalRows} registros`;
+    
+    pageInput.value = currentPage;
+    pageInput.max = Math.ceil(totalRows / rowsPerPage) || 1;
+  }
+
+  function renderTable() {
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    rows.forEach(row => row.style.display = "none");
+    
+    filteredRows.slice(start, end).forEach(row => {
+      row.style.display = "";
+    });
+
+    updatePaginationInfo();
+    renderPagination();
+    updateNavigationButtons();
+  }
+
+  function renderPagination() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    pageNumbers.innerHTML = "";
+
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      btn.classList.add("pagination-btn");
+      if (i === currentPage) btn.classList.add("active");
+      
+      btn.addEventListener("click", () => {
+        currentPage = i;
+        renderTable();
+      });
+      
+      pageNumbers.appendChild(btn);
+    }
+  }
+
+  function updateNavigationButtons() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    
+    firstPageBtn.disabled = currentPage === 1 || totalPages === 0;
+    prevPageBtn.disabled = currentPage === 1 || totalPages === 0;
+    nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+    lastPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+  }
+
+  // Event listeners
+  searchInput.addEventListener("keyup", function() {
+    activeFilters.search = this.value.toLowerCase();
+    filterRows();
+  });
+
+  filterAno.addEventListener("change", applyFilters);
+  filterGrado.addEventListener("change", applyFilters);
+  filterSeccion.addEventListener("change", applyFilters);
+  filterEstado.addEventListener("change", applyFilters);
+
+  firstPageBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage = 1;
+      renderTable();
+    }
+  });
+
+  prevPageBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderTable();
+    }
+  });
+
+  nextPageBtn.addEventListener("click", () => {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderTable();
+    }
+  });
+
+  lastPageBtn.addEventListener("click", () => {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    if (currentPage < totalPages) {
+      currentPage = totalPages;
+      renderTable();
+    }
+  });
+
+  pageInput.addEventListener("change", function() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    let page = parseInt(this.value);
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    currentPage = page;
+    renderTable();
+  });
+
+  pageInput.addEventListener("keypress", function(e) {
+    if (e.key === 'Enter') {
+      this.blur();
+    }
+  });
+
+  // Funciones para activar/desactivar matrícula
+  async function deactivateMatricula(matriculaId, estudianteNombre) {
+    const result = await Swal.fire({
+        title: '¿Desactivar matrícula?',
+        text: `¿Estás seguro de que deseas desactivar la matrícula de ${estudianteNombre}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, desactivar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`/matriculas/matricula/deactivate/${matriculaId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    title: '¡Desactivada!',
+                    text: data.mensaje,
+                    icon: 'success',
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.mensaje,
+                    icon: 'error',
+                    confirmButtonColor: '#0D2C63'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Error de conexión. Por favor, intente nuevamente.',
+                icon: 'error',
+                confirmButtonColor: '#0D2C63'
+            });
+        }
+    }
+  }
+
+  async function activateMatricula(matriculaId, estudianteNombre) {
+    const result = await Swal.fire({
+        title: '¿Activar matrícula?',
+        text: `¿Estás seguro de que deseas activar la matrícula de ${estudianteNombre}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, activar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`/matriculas/matricula/activate/${matriculaId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    title: '¡Activada!',
+                    text: data.mensaje,
+                    icon: 'success',
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.mensaje,
+                    icon: 'error',
+                    confirmButtonColor: '#0D2C63'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Error de conexión. Por favor, intente nuevamente.',
+                icon: 'error',
+                confirmButtonColor: '#0D2C63'
+            });
+        }
+    }
+  }
+
+  // Inicializar
+  renderTable();
+</script>
+{% endblock %}

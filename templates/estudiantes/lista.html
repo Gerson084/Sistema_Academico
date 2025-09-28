@@ -192,6 +192,27 @@
         text-decoration: none;
         transform: translateY(-1px);
     }
+    .btn-add {
+        background: var(--success-green);
+        border: none;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-add:hover {
+        background: #09b467ff;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
 
     .btn-delete {
         background: var(--danger-red);
@@ -492,6 +513,11 @@
                         <td>{{ e.fecha_ingreso.strftime('%d/%m/%Y') if e.fecha_ingreso else '-' }}</td>
                         <td>
                             <div class="action-buttons">
+                                <a href="{{ url_for('matricula.crear_matricula', id_estudiante=e.id_estudiante) }}" class="btn-add" title="Agregar matrícula">
+                                    <i class="fas fa-plus-circle"></i>
+                                    Matrícula
+                                </a>
+
                                 <a href="{{ url_for('estudiantes.editar_estudiante', id=e.id_estudiante) }}" class="btn-edit" title="Editar estudiante">
                                     <i class="fas fa-edit"></i>
                                     Editar

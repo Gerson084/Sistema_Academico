@@ -1,0 +1,602 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --secondary-blue: #0D2C63;
+        --light-blue: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #d97706;
+        --danger-red: #dc2626;
+        --neutral-gray: #6b7280;
+        --border-gray: #e5e7eb;
+        --dark-text: #000000;
+        --medium-text: #374151;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        color: #E9E2C3;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        box-shadow: 0 4px 6px rgba(0,0,0,.1);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        margin: 0;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: .9;
+        margin: .5rem 0 0;
+    }
+
+    .form-container {
+        background: #fff;
+        border-radius: .75rem;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary-blue);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--medium-text);
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+    }
+
+    .required::after {
+        content: "*";
+        color: var(--danger-red);
+        margin-left: .2rem;
+    }
+
+    .form-control {
+        padding: .75rem 1rem;
+        border: 2px solid var(--border-gray);
+        border-radius: .5rem;
+        font-size: .95rem;
+        transition: all .2s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-blue);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13,44,99,.15);
+    }
+
+    .form-control.error {
+        border-color: var(--danger-red);
+        box-shadow: 0 0 0 3px rgba(220,38,38,.15);
+    }
+
+    .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right .5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+
+    .form-text {
+        font-size: .8rem;
+        color: var(--neutral-gray);
+        margin-top: .25rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border-gray);
+    }
+
+    .btn {
+        padding: .75rem 1.5rem;
+        border: none;
+        border-radius: .5rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        cursor: pointer;
+        transition: all .2s ease;
+        text-decoration: none;
+        font-size: .95rem;
+    }
+
+    .btn-primary {
+        background: var(--success-green);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #047857;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: var(--neutral-gray);
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+        background: var(--danger-red);
+        color: white;
+    }
+
+    .btn-cancel:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+    }
+
+    .info-card {
+        background: var(--light-blue);
+        border-radius: .5rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-title {
+        font-weight: 600;
+        color: var(--primary-blue);
+        margin-bottom: .5rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .info-content {
+        color: var(--medium-text);
+        font-size: .9rem;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: .5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .alert-warning {
+        background: #fef3cd;
+        border: 1px solid #fde68a;
+        color: #92400e;
+    }
+
+    .student-info {
+        background: #f8f9fa;
+        border-radius: .5rem;
+        padding: 1rem;
+        margin-top: .5rem;
+        display: none;
+    }
+
+    .student-info.active {
+        display: block;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-user-graduate"></i>
+            {% if matricula %}Editar{% else %}Nueva{% endif %} Matrícula
+        </h1>
+        <p class="page-subtitle">
+            {% if matricula %}
+                Modificar la información de la matrícula existente
+            {% else %}
+                Registrar una nueva matrícula en el sistema
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-container">
+        <h2 class="form-title">
+            <i class="fas fa-{% if matricula %}edit{% else %}plus{% endif %}"></i>
+            Información de la Matrícula
+        </h2>
+
+        <!-- Información importante -->
+        <div class="info-card">
+            <div class="info-title">
+                <i class="fas fa-info-circle"></i>
+                Información importante
+            </div>
+            <div class="info-content">
+                <ul style="margin: 0; padding-left: 1.2rem;">
+                    <li>Los campos marcados con <span style="color: var(--danger-red);">*</span> son obligatorios</li>
+                    <li>Un estudiante no puede tener más de una matrícula activa en el mismo año lectivo</li>
+                    <li>El número de lista debe ser único dentro de la misma sección</li>
+                    <li>Verifique que el estudiante esté activo antes de realizar la matrícula</li>
+                </ul>
+            </div>
+        </div>
+
+        <form id="matriculaForm" method="POST">
+            <div class="form-grid">
+                <!-- Estudiante -->
+                <div class="form-group">
+                    <label class="form-label required" for="id_estudiante">
+                        <i class="fas fa-user"></i>
+                        Estudiante
+                    </label>
+                    <select class="form-control form-select" id="id_estudiante" name="id_estudiante" required>
+                        <option value="">Seleccionar estudiante</option>
+                        {% for estudiante in estudiantes %}
+                        <option value="{{ estudiante.id_estudiante }}"
+                            {% if (matricula and matricula.id_estudiante == estudiante.id_estudiante) 
+                                or (id_estudiante and id_estudiante == estudiante.id_estudiante) %}
+                                selected
+                            {% endif %}>
+                            {{ estudiante.nombres }} {{ estudiante.apellidos }} 
+                            {% if estudiante.nie %}- NIE: {{ estudiante.nie }}{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Seleccione el estudiante a matricular</div>
+
+                    <!-- Información del estudiante seleccionado -->
+                    <div class="student-info" id="studentInfo">
+                        <div><strong>Información del estudiante:</strong></div>
+                        <div id="studentDetails"></div>
+                    </div>
+                </div>
+
+                <!-- Sección -->
+                <div class="form-group">
+                    <label class="form-label required" for="id_seccion">
+                        <i class="fas fa-chalkboard"></i>
+                        Sección
+                    </label>
+                    <select class="form-control form-select" id="id_seccion" name="id_seccion" required>
+                        <option value="">Seleccionar sección</option>
+                        {% for seccion in secciones %}
+                        <option value="{{ seccion.id_seccion }}"
+                            data-grado="{{ seccion.grado }}"
+                            data-nivel="{{ seccion.nivel }}"
+                            data-ano="{{ seccion.ano_lectivo }}"
+                            {% if matricula and matricula.id_seccion == seccion.id_seccion %}selected{% endif %}>
+                            {{ seccion.nombre_completo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Seleccione la sección para la matrícula</div>
+                    
+                    <!-- Información de la sección seleccionada -->
+                    <div class="student-info" id="sectionInfo">
+                        <div><strong>Información de la sección:</strong></div>
+                        <div id="sectionDetails"></div>
+                    </div>
+                </div>
+
+                <!-- Número de Lista -->
+                <div class="form-group">
+                    <label class="form-label required" for="numero_lista">
+                        <i class="fas fa-list-ol"></i>
+                        Número de Lista
+                    </label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="numero_lista" 
+                           name="numero_lista" 
+                           min="1" 
+                           max="50"
+                           value="{{ matricula.numero_lista if matricula else '' }}"
+                           required>
+                    <div class="form-text">Número único dentro de la sección (1-50)</div>
+                </div>
+
+                <!-- Fecha de Matrícula -->
+                <div class="form-group">
+                    <label class="form-label" for="fecha_matricula">
+                        <i class="fas fa-calendar-alt"></i>
+                        Fecha de Matrícula
+                    </label>
+                    <input type="date" 
+                           class="form-control" 
+                           id="fecha_matricula" 
+                           name="fecha_matricula"
+                           value="{{ matricula.fecha_matricula.strftime('%Y-%m-%d') if matricula and matricula.fecha_matricula else '' }}">
+                    <div class="form-text">Si no se especifica, se usará la fecha actual</div>
+                </div>
+            </div>
+
+            <!-- Resumen de la matrícula -->
+            <div class="info-card" id="resumenCard" style="display: none;">
+                <div class="info-title">
+                    <i class="fas fa-clipboard-check"></i>
+                    Resumen de la Matrícula
+                </div>
+                <div class="info-content" id="resumenContent"></div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('matricula.lista_matriculas') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver al Listado
+                </a>
+                <button type="button" class="btn btn-cancel" onclick="clearForm()">
+                    <i class="fas fa-times"></i>
+                    Limpiar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    {% if matricula %}Actualizar{% else %}Guardar{% endif %} Matrícula
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Datos de estudiantes para mostrar información
+    const estudiantesData = {
+        {% for estudiante in estudiantes %}
+        {{ estudiante.id_estudiante }}: {
+            nombres: "{{ estudiante.nombres }}",
+            apellidos: "{{ estudiante.apellidos }}",
+            nie: "{{ estudiante.nie or 'No registrado' }}",
+            fecha_nacimiento: "{{ estudiante.fecha_nacimiento.strftime('%d/%m/%Y') if estudiante.fecha_nacimiento else 'No registrada' }}",
+            genero: "{{ 'Masculino' if estudiante.genero == 'M' else 'Femenino' if estudiante.genero == 'F' else 'No especificado' }}",
+            telefono: "{{ estudiante.telefono or 'No registrado' }}",
+            activo: {{ 'true' if estudiante.activo else 'false' }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
+
+    // Mostrar información del estudiante seleccionado
+    document.getElementById('id_estudiante').addEventListener('change', function() {
+        const studentId = this.value;
+        const studentInfo = document.getElementById('studentInfo');
+        const studentDetails = document.getElementById('studentDetails');
+        
+        if (studentId && estudiantesData[studentId]) {
+            const estudiante = estudiantesData[studentId];
+            studentDetails.innerHTML = `
+                <div><strong>Nombre:</strong> ${estudiante.nombres} ${estudiante.apellidos}</div>
+                <div><strong>NIE:</strong> ${estudiante.nie}</div>
+                <div><strong>Fecha Nacimiento:</strong> ${estudiante.fecha_nacimiento}</div>
+                <div><strong>Género:</strong> ${estudiante.genero}</div>
+                <div><strong>Teléfono:</strong> ${estudiante.telefono}</div>
+                <div><strong>Estado:</strong> <span style="color: ${estudiante.activo ? 'green' : 'red'}">${estudiante.activo ? 'Activo' : 'Inactivo'}</span></div>
+            `;
+            studentInfo.classList.add('active');
+        } else {
+            studentInfo.classList.remove('active');
+        }
+        updateResumen();
+    });
+
+    // Mostrar información de la sección seleccionada
+    document.getElementById('id_seccion').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const sectionInfo = document.getElementById('sectionInfo');
+        const sectionDetails = document.getElementById('sectionDetails');
+        
+        if (this.value) {
+            const grado = selectedOption.getAttribute('data-grado');
+            const nivel = selectedOption.getAttribute('data-nivel');
+            const ano = selectedOption.getAttribute('data-ano');
+            
+            sectionDetails.innerHTML = `
+                <div><strong>Grado:</strong> ${grado} - ${nivel}</div>
+                <div><strong>Año Lectivo:</strong> ${ano}</div>
+                <div><strong>Sección:</strong> ${selectedOption.text}</div>
+            `;
+            sectionInfo.classList.add('active');
+        } else {
+            sectionInfo.classList.remove('active');
+        }
+        updateResumen();
+    });
+
+    // Actualizar número de lista
+    document.getElementById('numero_lista').addEventListener('input', updateResumen);
+
+    // Función para actualizar el resumen
+    function updateResumen() {
+        const estudianteSelect = document.getElementById('id_estudiante');
+        const seccionSelect = document.getElementById('id_seccion');
+        const numeroLista = document.getElementById('numero_lista').value;
+        const resumenCard = document.getElementById('resumenCard');
+        const resumenContent = document.getElementById('resumenContent');
+        
+        const estudianteText = estudianteSelect.options[estudianteSelect.selectedIndex]?.text || 'No seleccionado';
+        const seccionText = seccionSelect.options[seccionSelect.selectedIndex]?.text || 'No seleccionada';
+        
+        if (estudianteSelect.value && seccionSelect.value && numeroLista) {
+            resumenContent.innerHTML = `
+                <div><strong>Estudiante:</strong> ${estudianteText}</div>
+                <div><strong>Sección:</strong> ${seccionText}</div>
+                <div><strong>Número de Lista:</strong> ${numeroLista}</div>
+            `;
+            resumenCard.style.display = 'block';
+        } else {
+            resumenCard.style.display = 'none';
+        }
+    }
+
+    // Función para limpiar el formulario
+    function clearForm() {
+        if (confirm('¿Está seguro de que desea limpiar el formulario? Se perderán todos los datos ingresados.')) {
+            document.getElementById('matriculaForm').reset();
+            document.getElementById('studentInfo').classList.remove('active');
+            document.getElementById('sectionInfo').classList.remove('active');
+            document.getElementById('resumenCard').style.display = 'none';
+        }
+    }
+
+    // Validación y envío del formulario
+    document.getElementById('matriculaForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Validaciones básicas del cliente
+        const estudiante = document.getElementById('id_estudiante').value;
+        const seccion = document.getElementById('id_seccion').value;
+        const numeroLista = document.getElementById('numero_lista').value;
+        
+        if (!estudiante || !seccion || !numeroLista) {
+            Swal.fire({
+                title: 'Campos incompletos',
+                text: 'Por favor, complete todos los campos obligatorios.',
+                icon: 'warning',
+                confirmButtonColor: '#0D2C63'
+            });
+            return;
+        }
+        
+        if (numeroLista <= 0) {
+            Swal.fire({
+                title: 'Número de lista inválido',
+                text: 'El número de lista debe ser mayor a 0.',
+                icon: 'warning',
+                confirmButtonColor: '#0D2C63'
+            });
+            return;
+        }
+
+        // Mostrar confirmación
+        const result = await Swal.fire({
+            title: '{% if matricula %}Actualizar{% else %}Crear{% endif %} Matrícula',
+            text: '¿Está seguro de que desea {% if matricula %}actualizar{% else %}crear{% endif %} esta matrícula?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#059669',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, {% if matricula %}actualizar{% else %}crear{% endif %}',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            // Enviar formulario
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('{{ request.path }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        title: '¡Éxito!',
+                        text: data.mensaje,
+                        icon: 'success',
+                        confirmButtonColor: '#0D2C63'
+                    });
+                    
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.mensaje,
+                        icon: 'error',
+                        confirmButtonColor: '#0D2C63'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error de conexión',
+                    text: 'No se pudo completar la operación. Por favor, intente nuevamente.',
+                    icon: 'error',
+                    confirmButtonColor: '#0D2C63'
+                });
+            }
+        }
+    });
+
+    // Inicializar resumen si estamos editando
+    {% if matricula %}
+    document.addEventListener('DOMContentLoaded', function() {
+        updateResumen();
+        // Disparar eventos para mostrar información inicial
+        document.getElementById('id_estudiante').dispatchEvent(new Event('change'));
+        document.getElementById('id_seccion').dispatchEvent(new Event('change'));
+    });
+    {% endif %}
+    // Mostrar info si ya viene seleccionado un estudiante (por URL o edición)
+    document.addEventListener('DOMContentLoaded', function () {
+        const estudianteSelect = document.getElementById('id_estudiante');
+        if (estudianteSelect.value) {
+            estudianteSelect.dispatchEvent(new Event('change'));
+        }
+
+        const seccionSelect = document.getElementById('id_seccion');
+        if (seccionSelect.value) {
+            seccionSelect.dispatchEvent(new Event('change'));
+        }
+    });
+
+</script>
+{% endblock %}
