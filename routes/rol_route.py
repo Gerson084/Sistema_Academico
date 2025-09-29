@@ -4,7 +4,7 @@ from db import db
 
 
 
-rol = Blueprint('rol', __name__, template_folder="templates")
+rol = Blueprint('rol', __name__)
 
 rol.route('/rol_index')
 def home():
@@ -29,26 +29,40 @@ def create():
 
 @rol.route('/edit/<int:id>', methods=['POST'])
 def edit(id):
-    rol = Rol.query.get_or_404(id)
-    if request.method == 'POST':
-        rol.nombre_rol = request.form['nombre']
-        rol.descripcion = request.form['descripcion']
-        rol.estado = request.form['estado']
+    rol = Rol.query.get_or_404(request.form['id'])
+    nombre_rol = request.form['nombre_rol']
+    descripcion = request.form['descripcion']
+    estado = request.form['estado']
+
 
     
-        rol.id_rol = id
-        rol.nombre_rol = request.form.get['nombre']
-        rol.descripcion = request.form.get['descripcion']
-        rol.estado = request.form.get['estado']
+    if not nombre_rol or not descripcion or not estado:
+        return redirect(url_for('user.user_index'))
 
-        db.session.commit()
+    if nombre_rol != rol.nombre_rol:
+        existing_rol = Rol.query.filter_by(nombre_rol=nombre_rol).first()
+        if existing_rol:
+            return jsonify({
+                "success": False,
+                "mensaje": "El nombre del rol ya existe. Por favor, elige otro nombre."
+            }), 400  
+        return redirect(url_for('user.user_index'))
 
-        return jsonify({
-            "success": True,
-            "mensaje": "Usuario actualizado correctamente.",
-            "redirect": url_for('user.user_index')
-        })
-    
-        
+    rol.nombre_rol = nombre_rol
+    rol.descripcion = descripcion
+    rol.estado = estado
+
+    db.session.commit()
+
+    return jsonify({
+                    "success": True,
+                    "mensaje": "Rol actualizado correctamente.",
+                    "redirect": url_for('user.user_index')
+                })
+             
+            
+                
+
+   
 
     return redirect(url_for('user.user_index'))

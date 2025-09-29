@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/grados.css') }}">
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="fas fa-plus"></i> Nueva Materia</h1>
+        <p class="page-subtitle">Formulario para crear una nueva materia</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-container">
+        <form method="POST" id="formMateria">
+            <div class="form-section">
+                <h3 class="section-title"><i class="fas fa-cog"></i> Información de la Materia</h3>
+
+                <div class="form-group">
+                    <label for="nombre_materia" class="form-label required-field">Nombre</label>
+                    <input type="text" name="nombre_materia" id="nombre_materia" class="form-control" required maxlength="50">
+                    <div class="invalid-feedback" id="nombreError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="codigo_materia" class="form-label required-field">Código</label>
+                    <input type="text" name="codigo_materia" id="codigo_materia" class="form-control" required maxlength="20">
+                    <div class="invalid-feedback" id="codigoError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_grado" class="form-label required-field">Grado</label>
+                    <select name="id_grado" id="id_grado" class="form-control" required>
+                        <option value="">Seleccione un grado</option>
+                        {% for grado in grados %}
+                        <option value="{{ grado.id_grado }}">{{ grado.nombre_grado }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback" id="gradoError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea name="descripcion" id="descripcion" class="form-control" maxlength="200"></textarea>
+                    <div class="char-counter" id="descCounter">0 / 200</div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Guardar</button>
+                <a href="{{ url_for('materias.lista_materias') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const form = document.getElementById('formMateria');
+    const descripcion = document.getElementById('descripcion');
+    const descCounter = document.getElementById('descCounter');
+
+    function updateCounter(){
+        const len = descripcion.value.length;
+        descCounter.textContent = len + " / 200";
+        descCounter.classList.remove('warning','danger');
+        if(len > 180) descCounter.classList.add('warning');
+        if(len > 200) descCounter.classList.add('danger');
+    }
+
+    descripcion.addEventListener('input', updateCounter);
+    updateCounter();
+
+    form.addEventListener('submit', function(e){
+        let valid = true;
+        const nombre = document.getElementById('nombre_materia');
+        const codigo = document.getElementById('codigo_materia');
+        const grado = document.getElementById('id_grado');
+
+        if(nombre.value.trim()===""){ document.getElementById('nombreError').textContent="Este campo es obligatorio"; nombre.classList.add('is-invalid'); valid=false; } else nombre.classList.remove('is-invalid');
+        if(codigo.value.trim()===""){ document.getElementById('codigoError').textContent="Este campo es obligatorio"; codigo.classList.add('is-invalid'); valid=false; } else codigo.classList.remove('is-invalid');
+        if(grado.value===""){ document.getElementById('gradoError').textContent="Seleccione un grado"; grado.classList.add('is-invalid'); valid=false; } else grado.classList.remove('is-invalid');
+
+        if(!valid) e.preventDefault();
+    });
+});
+</script>
+
+{% endblock %}
