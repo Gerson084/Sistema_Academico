@@ -1,5 +1,6 @@
-{% extends "base.html" %}
+
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 <div class="login-page">
     <div class="login-card">
 
@@ -13,12 +14,14 @@
         <!-- Formulario -->
         <form method="POST" action="{{ url_for('auth.login') }}" onsubmit="return validarFormulario()">
             <div class="form-floating">
+              <label for="usuario">Usuario</label>
                 <input type="text" name="usuario" id="usuario" class="form-control" placeholder="Usuario" required>
-                <label for="usuario">Usuario</label>
+                
             </div>
             <div class="form-floating">
+               <label for="password">Contraseña</label>
                 <input type="password" name="password" id="password" class="form-control" placeholder="Contraseña" required>
-                <label for="password">Contraseña</label>
+               
             </div>
             <button type="submit">Ingresar</button>
         </form>

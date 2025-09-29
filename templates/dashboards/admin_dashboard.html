@@ -1,8 +1,193 @@
 {% extends "base.html" %}
+
 {% block content %}
+
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="sa-page-title mb-0">Panel de Administración</h1>
+    <small class="text-muted">Sistema Académico</small>
+  </div>
+  
+  <div class="row g-4">
+    <!-- Estudiantes -->
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card h-100 shadow-sm border-0">
+        <a href="{{ url_for('estudiantes.lista_estudiantes') }}" class="text-decoration-none">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                <i class="bi bi-people fs-4 text-primary"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-1 text-dark">Estudiantes</h5>
+                <p class="card-text text-muted mb-0 small">Gestión de alumnos</p>
+              </div>
+            </div>
+            <div class="text-end">
+              <small class="text-muted">Administrar →</small>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Docentes -->
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card h-100 shadow-sm border-0">
+        <a href="#" class="text-decoration-none">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-success bg-opacity-10 rounded-3 p-3 me-3">
+                <i class="bi bi-person-badge fs-4 text-success"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-1 text-dark">Docentes</h5>
+                <p class="card-text text-muted mb-0 small">Asignaciones y personal</p>
+              </div>
+            </div>
+            <div class="text-end">
+              <small class="text-muted">Gestionar →</small>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Notas -->
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card h-100 shadow-sm border-0">
+        <a href="#" class="text-decoration-none">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-warning bg-opacity-10 rounded-3 p-3 me-3">
+                <i class="bi bi-journal-check fs-4 text-warning"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-1 text-dark">Notas</h5>
+                <p class="card-text text-muted mb-0 small">Ingreso y reportes</p>
+              </div>
+            </div>
+            <div class="text-end">
+              <small class="text-muted">Calificar →</small>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Cursos -->
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card h-100 shadow-sm border-0">
+        <a href="#" class="text-decoration-none">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-info bg-opacity-10 rounded-3 p-3 me-3">
+                <i class="bi bi-building fs-4 text-info"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-1 text-dark">Cursos</h5>
+                <p class="card-text text-muted mb-0 small">Planificación académica</p>
+              </div>
+            </div>
+            <div class="text-end">
+              <small class="text-muted">Planificar →</small>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Horarios -->
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card h-100 shadow-sm border-0">
+        <a href="#" class="text-decoration-none">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-purple bg-opacity-10 rounded-3 p-3 me-3">
+                <i class="bi bi-calendar3 fs-4 text-purple"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-1 text-dark">Horarios</h5>
+                <p class="card-text text-muted mb-0 small">Clases y exámenes</p>
+              </div>
+            </div>
+            <div class="text-end">
+              <small class="text-muted">Programar →</small>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Backup & Restore -->
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card h-100 shadow-sm border-0">
+        <a href="#" class="text-decoration-none">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-secondary bg-opacity-10 rounded-3 p-3 me-3">
+                <i class="bi bi-cloud-arrow-down fs-4 text-secondary"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-1 text-dark">Backup</h5>
+                <p class="card-text text-muted mb-0 small">Respaldo de datos</p>
+              </div>
+            </div>
+            <div class="text-end">
+              <small class="text-muted">Configurar →</small>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información adicional -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="card border-0 bg-light">
+        <div class="card-body p-4">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h6 class="mb-1">Sistema Académico</h6>
+              <p class="text-muted mb-0 small">Plataforma integral para la gestión educativa</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <small class="text-muted">Versión 2.1.0</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Colores personalizados para los iconos */
+.text-purple {
+  color: #6f42c1 !important;
+}
+.bg-purple {
+  background-color: #6f42c1 !important;
+}
+
+/* Hover efecto sutil para las cards */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+/* Asegurar que los links mantengan el color */
+.card a:hover .text-dark {
+  color: #212529 !important;
+}
+</style>
+
 <div class="container text-center mt-5">
-    <h1 style="color:#0D2C63;">Panel de Administrador</h1>
-    <p>Bienvenido {{ session['user_name'] }}</p>
     <a href="{{ url_for('change_password.cambiar_contrasena') }}" class="btn btn-warning me-2">Cambiar Contraseña</a>
     <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Cerrar Sesión</a>
 </div>
