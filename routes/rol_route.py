@@ -4,7 +4,7 @@ from db import db
 
 
 
-rol = Blueprint('rol', __name__, template_folder="templates")
+rol = Blueprint('rol', __name__)
 
 rol.route('/rol_index')
 def home():
@@ -27,28 +27,20 @@ def create():
     
     return render_template("usuarios/user_index.html")
 
-@rol.route('/edit/<int:id>', methods=['POST'])
+@rol.route('/edit/<int:id>', methods=['POST', 'GET'])
 def edit(id):
-    rol = Rol.query.get_or_404(id)
+    rol = Rol.query.get_or_404(request.form['id'])
     if request.method == 'POST':
-        rol.nombre_rol = request.form['nombre']
+        rol.nombre_rol = request.form['nombre_rol']
         rol.descripcion = request.form['descripcion']
         rol.estado = request.form['estado']
-
-    
-        rol.id_rol = id
-        rol.nombre_rol = request.form.get['nombre']
-        rol.descripcion = request.form.get['descripcion']
-        rol.estado = request.form.get['estado']
 
         db.session.commit()
 
         return jsonify({
             "success": True,
-            "mensaje": "Usuario actualizado correctamente.",
-            "redirect": url_for('user.user_index')
+            "mensaje": "Rol actualizado correctamente.",
+            
         })
-    
-        
 
     return redirect(url_for('user.user_index'))

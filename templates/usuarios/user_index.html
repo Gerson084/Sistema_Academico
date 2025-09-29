@@ -847,6 +847,9 @@
                     confirmButtonColor: '#0D2C63'
                 });
             }
+
+            
+
         } catch (error) {
             Swal.fire({
                 title: 'Error',
@@ -868,9 +871,49 @@
       document.getElementById('editNombreRol').value = button.getAttribute('data-nombre');
       document.getElementById('editDescripcionRol').value = button.getAttribute('data-descripcion');
       document.getElementById('estadoRolEdit').value = button.getAttribute('data-estado');
-      document.getElementById('formEditarRol').action = '/rol/edit/' + button.getAttribute('data-id');
+      document.getElementById('formEditarRol').action = '/edit/' + button.getAttribute('data-id');
     });
   }
+
+  // Handle form submit for edit rol
+  document.getElementById('formEditarRol').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch(this.action, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        Swal.fire({
+          title: '¡Éxito!',
+          text: data.mensaje,
+          icon: 'success',
+          confirmButtonColor: '#0D2C63'
+        }).then(() => {
+          if (data.redirect) {
+            window.location.href = data.redirect;
+          }
+        });
+      } else {
+        Swal.fire({
+          title: 'Error',
+          text: data.mensaje,
+          icon: 'error',
+          confirmButtonColor: '#0D2C63'
+        });
+      }
+    })
+    .catch(error => {
+      Swal.fire({
+        title: 'Error',
+        text: 'Error de conexión. Por favor, intente nuevamente.',
+        icon: 'error',
+        confirmButtonColor: '#0D2C63'
+      });
+    });
+  });
 });
 </script>
 
