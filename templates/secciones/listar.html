@@ -533,6 +533,22 @@
                                     <i class="fas fa-edit"></i>
                                     Editar
                                 </a>
+
+                                {% if seccion.activo %}
+                                    <form action="{{ url_for('secciones.deshabilitar_seccion', id=seccion.id_seccion) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn-delete" style="background:#6b7280;">
+                                            <i class="fas fa-toggle-on"></i> Desactivar
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form action="{{ url_for('secciones.habilitar_seccion', id=seccion.id_seccion) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn-delete" style="background:#059669;">
+                                            <i class="fas fa-toggle-off"></i> Activar
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+
                                 <form action="{{ url_for('secciones.eliminar_seccion', id=seccion.id_seccion) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete('{{ seccion.nombre_seccion }}', '{{ seccion.id_grado }}');">
                                     <button type="submit" class="btn-delete" title="Eliminar sección">
                                         <i class="fas fa-trash"></i>
@@ -540,6 +556,7 @@
                                     </button>
                                 </form>
                             </div>
+
                         </td>
                     </tr>
                 {% else %}

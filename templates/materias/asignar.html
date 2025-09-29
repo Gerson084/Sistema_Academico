@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/materias.css') }}">
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="fas fa-user"></i> Asignar Docente</h1>
+        <p class="page-subtitle">Asignar un docente a la materia {{ materia.nombre_materia }}</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-container">
+        <form method="POST">
+            <div class="form-group">
+                <label for="docente_id" class="form-label required-field">Docente</label>
+                <select name="docente_id" id="docente_id" class="form-control" required>
+                    <option value="">Seleccione un docente</option>
+                    {% for docente in docentes %}
+                    <option value="{{ docente.id_usuario }}" {% if materia.docente_id==docente.id_usuario %}selected{% endif %}>
+                        {{ docente.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Guardar</button>
+                <a href="{{ url_for('materias.lista_materias') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

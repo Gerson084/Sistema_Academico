@@ -13,6 +13,7 @@
 
 </head>
 <body>
+    
 
     {# 🔹 Solo mostrar el navbar si NO estamos en login #}
     {% if not request.endpoint == 'auth.login' %}
@@ -37,6 +38,17 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('user.user_index') }}">Usuarios</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('grados.lista_grados') }}">Grados</a>
+
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('materias.lista_materias') }}">Materias</a>
+
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('secciones.lista_secciones') }}">Secciones</a>
                             </li>
                         {% elif session.get('user_role') == 2 %}
                             <li class="nav-item">
