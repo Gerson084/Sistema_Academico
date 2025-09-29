@@ -42,7 +42,7 @@ app.register_blueprint(matriculas_bp, url_prefix="/matriculas")
 
 @app.route('/')
 def home():
-    return render_template('base.html')
+    return render_template('home.html')
 
 
 
