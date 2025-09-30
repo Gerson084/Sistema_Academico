@@ -81,7 +81,6 @@
             <th>Grado</th>
             <th>Sección</th>
             <th>Año Lectivo</th>
-            <th>N° Lista</th>
             <th>Fecha Matrícula</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -96,7 +95,7 @@
               data-grado="{{ m.nombre_grado if is_dict else (m.seccion.grado.nombre_grado if m.seccion and m.seccion.grado else 'N/A') }}"
               data-seccion="{{ m.nombre_seccion if is_dict else (m.seccion.nombre_seccion if m.seccion else 'N/A') }}"
               data-estado="{{ 'activa' if m.activa else 'inactiva' }}"
-              data-search="{{ ((m.estudiante_nombres if is_dict else m.estudiante.nombres) + ' ' + (m.estudiante_apellidos if is_dict else m.estudiante.apellidos) + ' ' + (m.nombre_seccion if is_dict else (m.seccion.nombre_seccion if m.seccion else '')) + ' ' + (m.nombre_grado if is_dict else (m.seccion.grado.nombre_grado if m.seccion and m.seccion.grado else '')) + ' ' + (m.ano_lectivo|string if is_dict else (m.seccion.ano_lectivo.ano|string if m.seccion and m.seccion.ano_lectivo else '')) + ' ' + (m.numero_lista|string if m.numero_lista else ''))|lower }}">
+              data-search="{{ ((m.estudiante_nombres if is_dict else m.estudiante.nombres) + ' ' + (m.estudiante_apellidos if is_dict else m.estudiante.apellidos) + ' ' + (m.nombre_seccion if is_dict else (m.seccion.nombre_seccion if m.seccion else '')) + ' ' + (m.nombre_grado if is_dict else (m.seccion.grado.nombre_grado if m.seccion and m.seccion.grado else '')) + ' ' + (m.ano_lectivo|string if is_dict else (m.seccion.ano_lectivo.ano|string if m.seccion and m.seccion.ano_lectivo else '')))|lower }}">
             <td>
                 <strong>#{{ m.id_matricula }}</strong>
             </td>
@@ -153,9 +152,6 @@
                 </div>
             </td>
             <td>
-                <strong>{{ m.numero_lista or 'N/A' }}</strong>
-            </td>
-            <td>
                 <div class="matricula-info">
                     <strong>{{ m.fecha_matricula.strftime('%d/%m/%Y') if m.fecha_matricula else 'N/A' }}</strong>
                     {% if m.fecha_matricula %}
@@ -189,7 +185,7 @@
           </tr>
           {% else %}
           <tr>
-            <td colspan="9">
+            <td colspan="8">
               <div class="empty-state">
                 <i class="fas fa-user-graduate"></i>
                 <h4>No hay matrículas registradas</h4>

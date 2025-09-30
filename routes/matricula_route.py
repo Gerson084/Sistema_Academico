@@ -2,25 +2,27 @@ from flask import Blueprint, render_template, request, jsonify, url_for
 from models.Estudiantes import Estudiante
 from models.Secciones import Seccion
 from models.matriculas import Matricula
-from models.Grados import Grado  # Asegúrate de importar Grado
-from models.AnosLectivos import AnoLectivo  # Asegúrate de importar AnoLectivo
-from sqlalchemy import text  # Importar text para consultas SQL
-
-
+from models.Grados import Grado
+from models.AnosLectivos import AnoLectivo
+from sqlalchemy import text
 from db import db
 from datetime import datetime
 
 # Blueprint para matrículas
 matriculas_bp = Blueprint('matricula', __name__, template_folder="templates")
 
-# LISTAR - VERSIÓN SIN MODIFICAR MODELOS
+# LISTAR MATRÍCULAS - SIN NÚMERO DE LISTA
 @matriculas_bp.route("/")
 def lista_matriculas():
     try:
-        # Consulta SQL directa con JOINs explícitos
+        # Consulta SQL sin número de lista
         query = text("""
             SELECT 
-                m.*,
+                m.id_matricula,
+                m.id_estudiante,
+                m.id_seccion,
+                m.fecha_matricula,
+                m.activa,
                 e.nombres as estudiante_nombres,
                 e.apellidos as estudiante_apellidos,
                 e.nie as estudiante_nie,
@@ -47,7 +49,6 @@ def lista_matriculas():
                 'id_matricula': row.id_matricula,
                 'id_estudiante': row.id_estudiante,
                 'id_seccion': row.id_seccion,
-                'numero_lista': row.numero_lista,
                 'fecha_matricula': row.fecha_matricula,
                 'activa': row.activa,
                 'estudiante_nombres': row.estudiante_nombres,
@@ -61,13 +62,13 @@ def lista_matriculas():
                 'fecha_fin': row.fecha_fin
             })
         
-        # Obtener datos para filtros (consultas simples)
+        # Obtener datos para filtros
         anos_lectivos = AnoLectivo.query.order_by(AnoLectivo.ano.desc()).all()
         grados = Grado.query.order_by(Grado.nombre_grado).all()
         secciones = Seccion.query.all()
         
         return render_template("matriculas/matricula_index.html", 
-                             matriculas=matriculas_data,  # Enviar los datos procesados
+                             matriculas=matriculas_data,
                              anos_lectivos=anos_lectivos,
                              grados=grados,
                              secciones=secciones)
@@ -86,7 +87,7 @@ def lista_matriculas():
                              grados=grados,
                              secciones=secciones)
 
-# CREAR MATRÍCULA - ACTUALIZADO
+# CREAR MATRÍCULA - SIN NÚMERO DE LISTA
 @matriculas_bp.route("/matricula/create", methods=['GET', 'POST'])
 @matriculas_bp.route("/matricula/create/<int:id_estudiante>", methods=['GET', 'POST'])
 def crear_matricula(id_estudiante=None):
@@ -94,28 +95,13 @@ def crear_matricula(id_estudiante=None):
         try:
             id_estudiante = request.form.get('id_estudiante')
             id_seccion = request.form.get('id_seccion')
-            numero_lista = request.form.get('numero_lista')
             fecha_matricula = request.form.get('fecha_matricula')
 
-            # Validar campos obligatorios
-            if not id_estudiante or not id_seccion or not numero_lista:
+            # Validar campos obligatorios (sin número de lista)
+            if not id_estudiante or not id_seccion:
                 return jsonify({
                     "success": False, 
                     "mensaje": "Todos los campos marcados con * son obligatorios."
-                })
-
-            # Validar que el número de lista sea un número válido
-            try:
-                numero_lista = int(numero_lista)
-                if numero_lista <= 0:
-                    return jsonify({
-                        "success": False, 
-                        "mensaje": "El número de lista debe ser mayor a 0."
-                    })
-            except ValueError:
-                return jsonify({
-                    "success": False, 
-                    "mensaje": "El número de lista debe ser un número válido."
                 })
 
             # Obtener sección seleccionada
@@ -153,28 +139,18 @@ def crear_matricula(id_estudiante=None):
                 .first()
             )
             if existente:
+                # Obtener el año lectivo para mostrar en el mensaje
+                ano_lectivo = AnoLectivo.query.get(seccion.id_ano_lectivo)
+                ano_text = ano_lectivo.ano if ano_lectivo else 'N/A'
                 return jsonify({
                     "success": False, 
-                    "mensaje": f"El estudiante ya está matriculado en una sección del año lectivo {seccion.id_ano_lectivo}."
+                    "mensaje": f"El estudiante ya está matriculado en una sección del año lectivo {ano_text}."
                 })
 
-            # Validar que el número de lista no esté ocupado en la misma sección
-            numero_existente = (
-                Matricula.query
-                .filter_by(id_seccion=id_seccion, numero_lista=numero_lista, activa=True)
-                .first()
-            )
-            if numero_existente:
-                return jsonify({
-                    "success": False, 
-                    "mensaje": f"El número de lista {numero_lista} ya está ocupado en esta sección."
-                })
-
-            # Crear nueva matrícula
+            # Crear nueva matrícula (sin número de lista)
             nueva_matricula = Matricula(
                 id_estudiante=id_estudiante,
                 id_seccion=id_seccion,
-                numero_lista=numero_lista,
                 fecha_matricula=datetime.strptime(fecha_matricula, '%Y-%m-%d') if fecha_matricula else datetime.utcnow().date(),
                 activa=True
             )
@@ -198,7 +174,7 @@ def crear_matricula(id_estudiante=None):
     # GET: Mostrar formulario
     estudiantes = Estudiante.query.filter_by(activo=True).order_by(Estudiante.nombres, Estudiante.apellidos).all()
     
-    # Obtener secciones con información de grado y año lectivo usando consulta SQL
+    # Obtener secciones con información de grado y año lectivo
     secciones_query = text("""
         SELECT s.id_seccion, s.nombre_seccion, g.nombre_grado, g.nivel, al.ano 
         FROM secciones s
@@ -225,7 +201,7 @@ def crear_matricula(id_estudiante=None):
                        secciones=secciones_data,
                        id_estudiante=id_estudiante)
 
-# EDITAR MATRÍCULA - ACTUALIZADO
+# EDITAR MATRÍCULA - SIN NÚMERO DE LISTA
 @matriculas_bp.route("/matricula/edit/<int:id>", methods=['GET', 'POST'])
 def editar_matricula(id):
     matricula = Matricula.query.get_or_404(id)
@@ -234,28 +210,13 @@ def editar_matricula(id):
         try:
             id_estudiante = request.form.get('id_estudiante')
             id_seccion = request.form.get('id_seccion')
-            numero_lista = request.form.get('numero_lista')
             fecha_matricula = request.form.get('fecha_matricula')
 
-            # Validar campos obligatorios
-            if not id_estudiante or not id_seccion or not numero_lista:
+            # Validar campos obligatorios (sin número de lista)
+            if not id_estudiante or not id_seccion:
                 return jsonify({
                     "success": False, 
                     "mensaje": "Todos los campos marcados con * son obligatorios."
-                })
-
-            # Validar que el número de lista sea un número válido
-            try:
-                numero_lista = int(numero_lista)
-                if numero_lista <= 0:
-                    return jsonify({
-                        "success": False, 
-                        "mensaje": "El número de lista debe ser mayor a 0."
-                    })
-            except ValueError:
-                return jsonify({
-                    "success": False, 
-                    "mensaje": "El número de lista debe ser un número válido."
                 })
 
             # Obtener sección seleccionada
@@ -294,32 +255,17 @@ def editar_matricula(id):
                 .first()
             )
             if existente:
+                # Obtener el año lectivo para mostrar en el mensaje
+                ano_lectivo = AnoLectivo.query.get(seccion.id_ano_lectivo)
+                ano_text = ano_lectivo.ano if ano_lectivo else 'N/A'
                 return jsonify({
                     "success": False, 
-                    "mensaje": f"El estudiante ya tiene matrícula en otra sección del año lectivo {seccion.id_ano_lectivo}."
+                    "mensaje": f"El estudiante ya tiene matrícula en otra sección del año lectivo {ano_text}."
                 })
 
-            # Validar que el número de lista no esté ocupado en la misma sección (excluyendo la actual)
-            numero_existente = (
-                Matricula.query
-                .filter(
-                    Matricula.id_seccion == id_seccion,
-                    Matricula.numero_lista == numero_lista,
-                    Matricula.activa == True,
-                    Matricula.id_matricula != id
-                )
-                .first()
-            )
-            if numero_existente:
-                return jsonify({
-                    "success": False, 
-                    "mensaje": f"El número de lista {numero_lista} ya está ocupado en esta sección."
-                })
-
-            # Actualizar matrícula
+            # Actualizar matrícula (sin número de lista)
             matricula.id_estudiante = id_estudiante
             matricula.id_seccion = id_seccion
-            matricula.numero_lista = numero_lista
             if fecha_matricula:
                 matricula.fecha_matricula = datetime.strptime(fecha_matricula, '%Y-%m-%d')
 
@@ -366,7 +312,8 @@ def editar_matricula(id):
                          matricula=matricula, 
                          estudiantes=estudiantes, 
                          secciones=secciones_data)
-# DESACTIVAR
+
+# DESACTIVAR MATRÍCULA
 @matriculas_bp.route("/matricula/deactivate/<int:id>", methods=['POST'])
 def desactivar_matricula(id):
     matricula = Matricula.query.get_or_404(id)
@@ -382,7 +329,7 @@ def desactivar_matricula(id):
         "redirect": url_for('matricula.lista_matriculas')
     })
 
-# ACTIVAR
+# ACTIVAR MATRÍCULA
 @matriculas_bp.route("/matricula/activate/<int:id>", methods=['POST'])
 def activar_matricula(id):
     matricula = Matricula.query.get_or_404(id)
@@ -403,7 +350,10 @@ def activar_matricula(id):
         .first()
     )
     if existente:
-        return jsonify({"success": False, "mensaje": "El estudiante ya tiene otra matrícula activa en este año lectivo."})
+        # Obtener el año lectivo para mostrar en el mensaje
+        ano_lectivo = AnoLectivo.query.get(seccion.id_ano_lectivo)
+        ano_text = ano_lectivo.ano if ano_lectivo else 'N/A'
+        return jsonify({"success": False, "mensaje": f"El estudiante ya tiene otra matrícula activa en el año lectivo {ano_text}."})
 
     matricula.activa = True
     db.session.commit()

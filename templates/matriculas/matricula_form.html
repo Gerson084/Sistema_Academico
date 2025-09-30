@@ -36,7 +36,6 @@
                 <ul style="margin: 0; padding-left: 1.2rem;">
                     <li>Los campos marcados con <span style="color: var(--danger-red);">*</span> son obligatorios</li>
                     <li>Un estudiante no puede tener más de una matrícula activa en el mismo año lectivo</li>
-                    <li>El número de lista debe ser único dentro de la misma sección</li>
                     <li>Verifique que el estudiante esté activo antes de realizar la matrícula</li>
                 </ul>
             </div>
@@ -97,23 +96,6 @@
                         <div><strong>Información de la sección:</strong></div>
                         <div id="sectionDetails"></div>
                     </div>
-                </div>
-
-                <!-- Número de Lista -->
-                <div class="form-group">
-                    <label class="form-label required" for="numero_lista">
-                        <i class="fas fa-list-ol"></i>
-                        Número de Lista
-                    </label>
-                    <input type="number" 
-                           class="form-control" 
-                           id="numero_lista" 
-                           name="numero_lista" 
-                           min="1" 
-                           max="50"
-                           value="{{ matricula.numero_lista if matricula else '' }}"
-                           required>
-                    <div class="form-text">Número único dentro de la sección (1-50)</div>
                 </div>
 
                 <!-- Fecha de Matrícula -->
@@ -224,25 +206,20 @@
         updateResumen();
     });
 
-    // Actualizar número de lista
-    document.getElementById('numero_lista').addEventListener('input', updateResumen);
-
     // Función para actualizar el resumen
     function updateResumen() {
         const estudianteSelect = document.getElementById('id_estudiante');
         const seccionSelect = document.getElementById('id_seccion');
-        const numeroLista = document.getElementById('numero_lista').value;
         const resumenCard = document.getElementById('resumenCard');
         const resumenContent = document.getElementById('resumenContent');
         
         const estudianteText = estudianteSelect.options[estudianteSelect.selectedIndex]?.text || 'No seleccionado';
         const seccionText = seccionSelect.options[seccionSelect.selectedIndex]?.text || 'No seleccionada';
         
-        if (estudianteSelect.value && seccionSelect.value && numeroLista) {
+        if (estudianteSelect.value && seccionSelect.value) {
             resumenContent.innerHTML = `
                 <div><strong>Estudiante:</strong> ${estudianteText}</div>
                 <div><strong>Sección:</strong> ${seccionText}</div>
-                <div><strong>Número de Lista:</strong> ${numeroLista}</div>
             `;
             resumenCard.style.display = 'block';
         } else {
@@ -267,22 +244,11 @@
         // Validaciones básicas del cliente
         const estudiante = document.getElementById('id_estudiante').value;
         const seccion = document.getElementById('id_seccion').value;
-        const numeroLista = document.getElementById('numero_lista').value;
         
-        if (!estudiante || !seccion || !numeroLista) {
+        if (!estudiante || !seccion) {
             Swal.fire({
                 title: 'Campos incompletos',
                 text: 'Por favor, complete todos los campos obligatorios.',
-                icon: 'warning',
-                confirmButtonColor: '#0D2C63'
-            });
-            return;
-        }
-        
-        if (numeroLista <= 0) {
-            Swal.fire({
-                title: 'Número de lista inválido',
-                text: 'El número de lista debe ser mayor a 0.',
                 icon: 'warning',
                 confirmButtonColor: '#0D2C63'
             });
