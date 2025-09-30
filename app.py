@@ -13,6 +13,7 @@ from routes.change_password_route import change_password_bp
 from routes.matricula_route import matriculas_bp
 from routes.appGrados import grados_bp
 from routes.appMaterias import materias_bp
+from routes.materia_seccion_route import materia_seccion_bp
 
 import os
 
@@ -39,6 +40,7 @@ app.register_blueprint(change_password_bp, url_prefix="/auth")
 app.register_blueprint(matriculas_bp, url_prefix="/matriculas")
 app.register_blueprint(grados_bp, url_prefix='/grados')
 app.register_blueprint(materias_bp, url_prefix='/materias')
+app.register_blueprint(materia_seccion_bp, url_prefix='/asignaciones')
 
 
 

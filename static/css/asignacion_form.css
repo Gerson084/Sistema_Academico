@@ -1,0 +1,295 @@
+:root {
+    --primary-blue: #0D2C63;
+    --secondary-blue: #0D2C63;
+    --light-blue: #E9E2C3;
+    --success-green: #059669;
+    --warning-orange: #d97706;
+    --danger-red: #dc2626;
+    --neutral-gray: #6b7280;
+    --border-gray: #e5e7eb;
+    --dark-text: #000000;
+    --medium-text: #374151;
+}
+
+/* Encabezado del módulo (no se superpone y queda "sticky") */
+    .page-header{
+    position: sticky;                 /* se queda visible al hacer scroll */
+    top: 8px;                         /* separación del borde superior */
+    z-index: 102;                     /* encima del contenido */
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+    color: #E9E2C3;
+    padding: 2rem 1.25rem;
+    margin: 0 0 2rem 0;               /* quita márgenes negativos */
+    width: 100%;                      /* quita 100vw */
+    border-radius: .75rem;            /* opcional, más limpio */
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,.1);
+    }
+
+    /* Asegura espacio en el área principal */
+    .sa-main .container-fluid{
+    padding-top: 12px;
+    }
+
+    /* Si algún contenedor padre tenía overflow oculto, sticky no funciona */
+    .sa-main, .container-fluid{
+    overflow: visible;
+    }
+
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.page-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0.5rem 0 0 0;
+}
+
+.form-container {
+    background: #fff;
+    border-radius: .75rem;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+    padding-bottom: .5rem;
+    border-bottom: 2px solid var(--light-blue);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: .9rem;
+    color: var(--medium-text);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.required::after {
+    content: "*";
+    color: var(--danger-red);
+    margin-left: .25rem;
+}
+
+.form-select, .form-input {
+    padding: .75rem;
+    border: 2px solid var(--border-gray);
+    border-radius: .5rem;
+    font-size: .95rem;
+    background: white;
+    transition: all .2s ease;
+}
+
+.form-select:focus, .form-input:focus {
+    border-color: var(--primary-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13,44,99,.15);
+}
+
+.form-select:disabled, .form-input:disabled {
+    background-color: #f9fafb;
+    color: var(--neutral-gray);
+    cursor: not-allowed;
+}
+
+.form-help {
+    font-size: .8rem;
+    color: var(--neutral-gray);
+    margin-top: .25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-gray);
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: .75rem 1.5rem;
+    border-radius: .5rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all .2s ease;
+    font-size: .95rem;
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0a1f4d;
+    transform: translateY(-1px);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--neutral-gray);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+    color: white;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--border-gray);
+    color: var(--medium-text);
+}
+
+.btn-outline:hover {
+    background: #f9fafb;
+    border-color: var(--neutral-gray);
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: .5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+}
+
+.alert-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: var(--danger-red);
+}
+
+.alert-warning {
+    background: #fffbeb;
+    border: 1px solid #fed7aa;
+    color: var(--warning-orange);
+}
+
+.alert-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-title {
+    font-weight: 600;
+    margin-bottom: .25rem;
+}
+
+.preview-card {
+    background: #f8fafc;
+    border: 1px solid var(--border-gray);
+    border-radius: .5rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.preview-title {
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.preview-item {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+}
+
+.preview-label {
+    font-size: .8rem;
+    color: var(--neutral-gray);
+    font-weight: 600;
+}
+
+.preview-value {
+    font-weight: 500;
+    color: var(--dark-text);
+}
+
+.loading-spinner {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: 1rem;
+    color: var(--neutral-gray);
+}
+
+.loading-spinner i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
