@@ -48,11 +48,9 @@
         border-radius: 0.75rem;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         margin-bottom: 1.5rem;
-        display: flex;
         justify-content: space-between;
         align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
+
     }
 
     .btn-new-student {
@@ -448,17 +446,77 @@
     </div>
 
     <!-- Barra de acciones -->
-    <div class="action-bar">
-        <a href="{{ url_for('estudiantes.nuevo_estudiante') }}" class="btn-new-student">
-            <i class="fas fa-plus"></i>
-            Nuevo Estudiante
-        </a>
-        
-        <div class="search-box">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" id="searchInput" placeholder="Buscar estudiante por nombre, NIE o email...">
-        </div>
+   <!-- Barra de acciones -->
+<div class="action-bar">
+  <div class="d-flex">
+    
+
+    <!-- Buscador -->
+    <div class="input-group ">
+      <span class="input-group-text">
+        <i class="fas fa-search"></i>
+      </span>
+      <input
+        type="text"
+        class="form-control"
+        name="search"
+        id="searchInput"
+        value="{{ search_term or '' }}"
+        placeholder="Buscar estudiante por nombre, NIE o email...">
     </div>
+
+    <a href="{{ url_for('estudiantes.nuevo_estudiante') }}" class="btn-new-student">
+      <i class="fas fa-plus"></i>
+      Nuevo Estudiante
+    </a>
+  </div>
+
+  <!-- Formulario de búsqueda -->
+  <form
+    id="formBusquedaEstudiantes"
+    class="d-flex align-items-center gap-2 mt-4"
+    action="{{ url_for('estudiantes.filtro_estudiantes') }}"
+    method="GET"
+    >
+
+    <!-- Secciones -->
+    <select class="form-select form-select-lg" name="Seccion_id" id="filtroSeccion">
+      <option value="" {% if not seccion_seleccionada %}selected{% endif %}>Sección: todas</option>
+      {% for seccion in secciones %}
+        <option
+          value="{{ seccion.id_seccion }}"
+          {% if seccion_seleccionada is not none and seccion.id_seccion == seccion_seleccionada %}selected{% endif %}>
+          {{ seccion.nombre_seccion }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <!-- Grados -->
+    <select class="form-select form-select-lg" name="Grado_id" id="filtroGrado">
+      <option value="" {% if not grado_seleccionado %}selected{% endif %}>Grados: todos</option>
+      {% for grado in grados %}
+        <option
+          value="{{ grado.id_grado }}"
+          {% if grado_seleccionado is not none and grado.id_grado == grado_seleccionado %}selected{% endif %}>
+          {{ grado.nombre_grado }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <!-- Estado -->
+    <select class="form-select form-select-lg" name="estado" id="filtroEstado">
+      <option value="" {% if not estado_seleccionado %}selected{% endif %}>Estado: todos</option>
+      <option value="activos" {% if estado_seleccionado == 'activos' %}selected{% endif %}>Activos</option>
+      <option value="inactivos" {% if estado_seleccionado == 'inactivos' %}selected{% endif %}>Inactivos</option>
+    </select>
+
+    <button id="bnt_buscar" type="submit" class="btn btn-outline-primary btn-lg">
+      Buscar
+    </button>
+  </form>
+</div>
+
+
 
     <!-- Tabla de estudiantes -->
     <div class="table-container">
@@ -588,6 +646,7 @@
 
 <!-- Font Awesome para los iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 
 <script>
 // Variables globales para paginación
@@ -823,5 +882,113 @@ document.addEventListener('DOMContentLoaded', function() {
         }, index * 50);
     });
 });
+
+// Handle form submit for search
+document.getElementById('formBusquedaEstudiantes').addEventListener('submit', function(e) {
+    // e.preventDefault(); // allow normal navigation so server renders filtered list
+    const formData = new FormData(this);
+    const params = new URLSearchParams(formData);
+    fetch(this.action + '?' + params.toString(), {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(data => {
+        updateTable(data.estudiantes);
+        updateStats(data.estudiantes);
+        Swal.fire({
+            title: '¡Éxito!',
+            text: data.mensaje,
+            icon: 'success',
+            confirmButtonColor: '#0D2C63'
+        });
+    })
+    
+});
+
+function updateTable(estudiantes) {
+    const tbody = document.querySelector('#studentsTable tbody');
+    // Clear existing rows
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(row => row.remove());
+
+    if (estudiantes.length === 0) {
+        // Add empty state
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+            <td colspan="10">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h4>No hay estudiantes registrados</h4>
+                    <p>Comienza agregando el primer estudiante al sistema</p>
+                    <a href="/estudiantes/nuevo" class="btn-new-student" style="margin-top: 1rem;">
+                        <i class="fas fa-plus"></i>
+                        Agregar Primer Estudiante
+                    </a>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(emptyRow);
+    } else {
+        estudiantes.forEach(e => {
+            const row = document.createElement('tr');
+            row.className = 'student-row';
+            row.setAttribute('data-search', `${e.nombres} ${e.apellidos} ${e.nie} ${e.email || ''}`.toLowerCase());
+            const fechaNac = e.fecha_nacimiento ? new Date(e.fecha_nacimiento).toLocaleDateString('es-ES') : '-';
+            const fechaIng = e.fecha_ingreso ? new Date(e.fecha_ingreso).toLocaleDateString('es-ES') : '-';
+            const generoHtml = e.genero === 'M' ? '<i class="fas fa-male text-primary"></i> M' : e.genero === 'F' ? '<i class="fas fa-female text-danger"></i> F' : e.genero;
+            const statusHtml = e.activo ? '<span class="status-badge status-active"><i class="fas fa-check-circle"></i> Activo</span>' : '<span class="status-badge status-inactive"><i class="fas fa-times-circle"></i> Inactivo</span>';
+            row.innerHTML = `
+                <td><strong>${e.nie}</strong></td>
+                <td>
+                    <div style="font-weight: 600;">${e.nombres}</div>
+                    <div style="font-size: 0.85em; color: var(--neutral-gray);">${e.apellidos}</div>
+                </td>
+                <td>${fechaNac}</td>
+                <td>${generoHtml}</td>
+                <td>${e.telefono || '-'}</td>
+                <td>${e.email || '-'}</td>
+                <td>${e.telefono_emergencia || '-'}</td>
+                <td>${statusHtml}</td>
+                <td>${fechaIng}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="/matricula/crear/${e.id_estudiante}" class="btn-add" title="Agregar matrícula">
+                            <i class="fas fa-plus-circle"></i>
+                            Matrícula
+                        </a>
+                        <a href="/estudiantes/editar/${e.id_estudiante}" class="btn-edit" title="Editar estudiante">
+                            <i class="fas fa-edit"></i>
+                            Editar
+                        </a>
+                        <form action="/estudiantes/eliminar/${e.id_estudiante}" method="POST" style="display:inline;" onsubmit="return confirmDelete('${e.nombres} ${e.apellidos}');">
+                            <button type="submit" class="btn-delete" title="Eliminar estudiante">
+                                <i class="fas fa-trash"></i>
+                                Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+    // Reinitialize pagination
+    initializePagination();
+}
+
+function updateStats(estudiantes) {
+    const total = estudiantes.length;
+    const activos = estudiantes.filter(e => e.activo).length;
+    const inactivos = total - activos;
+    const stats = document.querySelectorAll('.stat-number');
+    if (stats.length >= 3) {
+        stats[0].textContent = total;
+        stats[1].textContent = activos;
+        stats[2].textContent = inactivos;
+    }
+}
+
 </script>
 {% endblock %}
