@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/asignacion_index.css') }}">
+
+
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title"><i class="bi bi-book"></i> Gestión de Asignaciones</h1>
+    <p class="page-subtitle">Administra las asignaciones de materias a secciones</p>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Barra de acciones -->
+  <div class="action-bar">
+    <a href="{{ url_for('materia_seccion.crear_asignacion') }}" class="btn-new"><i class="bi bi-plus"></i> Nueva Asignación</a>
+    <div class="search-box">
+      <i class="bi bi-search search-icon"></i>
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar por materia, docente o sección...">
+    </div>
+  </div>
+
+  <!-- Filtros Avanzados -->
+  <div class="filters-container">
+    <div class="filters-title">
+      <i class="bi bi-funnel"></i> Filtros Avanzados
+    </div>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label class="filter-label">Año Lectivo</label>
+        <select class="filter-select" id="filterAno">
+          <option value="">Todos los años</option>
+          {% for ano in anos_lectivos %}
+          <option value="{{ ano.ano }}">{{ ano.ano }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Grado</label>
+        <select class="filter-select" id="filterGrado">
+          <option value="">Todos los grados</option>
+          {% for grado in grados %}
+          <option value="{{ grado.nombre_grado }}">{{ grado.nombre_grado }} - {{ grado.nivel }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Materia</label>
+        <select class="filter-select" id="filterMateria">
+          <option value="">Todas las materias</option>
+          {% for materia in materias %}
+          <option value="{{ materia.nombre_materia }}">{{ materia.nombre_materia }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-clear" onclick="clearFilters()">
+        <i class="bi bi-x"></i> Limpiar Filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table custom-table" id="asignacionesTable">
+        <thead>
+          <tr>
+            <th>ID Asignación</th>
+            <th>Materia</th>
+            <th>Grado y Sección</th>
+            <th>Año Lectivo</th>
+            <th>Docente</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          {% for a in asignaciones %}
+          <tr class="asignacion-row" 
+              data-ano="{{ a.ano_lectivo }}"
+              data-grado="{{ a.nombre_grado }}"
+              data-materia="{{ a.nombre_materia }}"
+              data-search="{{ (a.nombre_materia + ' ' + a.codigo_materia + ' ' + a.nombre_grado + ' ' + a.nombre_seccion + ' ' + a.maestro_nombres + ' ' + a.maestro_apellidos + ' ' + a.maestro_usuario)|lower }}">
+            <td>
+                <strong>#{{ a.id_asignacion }}</strong>
+            </td>
+            <td>
+                <div class="asignacion-info">
+                    <strong>{{ a.nombre_materia }}</strong>
+                    <div class="asignacion-detail">Código: {{ a.codigo_materia }}</div>
+                </div>
+            </td>
+            <td>
+                <div class="asignacion-info">
+                    <strong>{{ a.nombre_grado }} {{ a.nivel }}</strong>
+                    <div class="asignacion-detail">Sección: {{ a.nombre_seccion }}</div>
+                </div>
+            </td>
+            <td>
+                <div class="asignacion-info">
+                    <strong>{{ a.ano_lectivo }}</strong>
+                </div>
+            </td>
+            <td>
+                <div class="asignacion-info">
+                    <strong>{{ a.maestro_nombres }} {{ a.maestro_apellidos }}</strong>
+                    <div class="asignacion-detail">Usuario: {{ a.maestro_usuario }}</div>
+                </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="{{ url_for('materia_seccion.editar_asignacion', id=a.id_asignacion) }}" class="btn-edit" title="Editar asignación">
+                  <i class="bi bi-pencil"></i> Editar
+                </a>
+                <button type="button" class="btn-delete" onclick="eliminarAsignacion({{ a.id_asignacion }}, '{{ a.nombre_materia }} - {{ a.nombre_grado }} {{ a.nivel }} - {{ a.nombre_seccion }}')" title="Eliminar asignación">
+                  <i class="bi bi-trash"></i> Eliminar
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="bi bi-book"></i>
+                <h4>No hay asignaciones registradas</h4>
+                <p>Comienza agregando la primera asignación al sistema</p>
+                <a href="{{ url_for('materia_seccion.crear_asignacion') }}" class="btn-new" style="margin-top:1rem;">
+                  <i class="bi bi-plus"></i> Agregar Primera Asignación
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <div class="pagination-container">
+    <div class="pagination-info" id="paginationInfo">
+      Mostrando 0 de 0 registros
+    </div>
+    <div class="pagination">
+      <button id="firstPage" class="pagination-btn">
+        <i class="bi bi-chevron-double-left"></i>
+      </button>
+      <button id="prevPage" class="pagination-btn">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      
+      <div class="page-numbers" id="pageNumbers"></div>
+      
+      <div style="display: flex; align-items: center; gap: .5rem;">
+        <span>Ir a:</span>
+        <input type="number" class="page-input" id="pageInput" min="1" value="1">
+      </div>
+      
+      <button id="nextPage" class="pagination-btn">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+      <button id="lastPage" class="pagination-btn">
+        <i class="bi bi-chevron-double-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  const rowsPerPage = 10;
+  let currentPage = 1;
+  let filteredRows = [];
+  let activeFilters = {
+    ano: '',
+    grado: '',
+    materia: '',
+    search: ''
+  };
+
+  const tableBody = document.getElementById("tableBody");
+  const rows = Array.from(document.querySelectorAll(".asignacion-row"));
+  const paginationInfo = document.getElementById("paginationInfo");
+  const pageNumbers = document.getElementById("pageNumbers");
+  const pageInput = document.getElementById("pageInput");
+  
+  const firstPageBtn = document.getElementById("firstPage");
+  const prevPageBtn = document.getElementById("prevPage");
+  const nextPageBtn = document.getElementById("nextPage");
+  const lastPageBtn = document.getElementById("lastPage");
+
+  const filterAno = document.getElementById("filterAno");
+  const filterGrado = document.getElementById("filterGrado");
+  const filterMateria = document.getElementById("filterMateria");
+  const searchInput = document.getElementById("searchInput");
+
+  filteredRows = rows;
+
+  function applyFilters() {
+    activeFilters = {
+      ano: filterAno.value,
+      grado: filterGrado.value,
+      materia: filterMateria.value,
+      search: searchInput.value.toLowerCase()
+    };
+
+    filterRows();
+  }
+
+  function clearFilters() {
+    filterAno.value = '';
+    filterGrado.value = '';
+    filterMateria.value = '';
+    searchInput.value = '';
+    
+    activeFilters = {
+      ano: '',
+      grado: '',
+      materia: '',
+      search: ''
+    };
+
+    filterRows();
+  }
+
+  function filterRows() {
+    filteredRows = rows.filter(row => {
+      if (activeFilters.search) {
+        const searchText = row.getAttribute("data-search");
+        if (!searchText.includes(activeFilters.search)) {
+          return false;
+        }
+      }
+
+      if (activeFilters.ano) {
+        const rowAno = row.getAttribute("data-ano");
+        if (rowAno !== activeFilters.ano) {
+          return false;
+        }
+      }
+
+      if (activeFilters.grado) {
+        const rowGrado = row.getAttribute("data-grado");
+        if (!rowGrado.includes(activeFilters.grado.split(' - ')[0])) {
+          return false;
+        }
+      }
+
+      if (activeFilters.materia) {
+        const rowMateria = row.getAttribute("data-materia");
+        if (rowMateria !== activeFilters.materia) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    currentPage = 1;
+    renderTable();
+  }
+
+  function updatePaginationInfo() {
+    const totalRows = filteredRows.length;
+    const start = Math.min((currentPage - 1) * rowsPerPage + 1, totalRows);
+    const end = Math.min(currentPage * rowsPerPage, totalRows);
+    
+    paginationInfo.textContent = `Mostrando ${start} - ${end} de ${totalRows} registros`;
+    
+    pageInput.value = currentPage;
+    pageInput.max = Math.ceil(totalRows / rowsPerPage) || 1;
+  }
+
+  function renderTable() {
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    rows.forEach(row => row.style.display = "none");
+    
+    filteredRows.slice(start, end).forEach(row => {
+      row.style.display = "";
+    });
+
+    updatePaginationInfo();
+    renderPagination();
+    updateNavigationButtons();
+  }
+
+  function renderPagination() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    pageNumbers.innerHTML = "";
+
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      btn.classList.add("pagination-btn");
+      if (i === currentPage) btn.classList.add("active");
+      
+      btn.addEventListener("click", () => {
+        currentPage = i;
+        renderTable();
+      });
+      
+      pageNumbers.appendChild(btn);
+    }
+  }
+
+  function updateNavigationButtons() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    
+    firstPageBtn.disabled = currentPage === 1 || totalPages === 0;
+    prevPageBtn.disabled = currentPage === 1 || totalPages === 0;
+    nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+    lastPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+  }
+
+  // Event listeners
+  searchInput.addEventListener("keyup", function() {
+    activeFilters.search = this.value.toLowerCase();
+    filterRows();
+  });
+
+  filterAno.addEventListener("change", applyFilters);
+  filterGrado.addEventListener("change", applyFilters);
+  filterMateria.addEventListener("change", applyFilters);
+
+  firstPageBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage = 1;
+      renderTable();
+    }
+  });
+
+  prevPageBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderTable();
+    }
+  });
+
+  nextPageBtn.addEventListener("click", () => {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderTable();
+    }
+  });
+
+  lastPageBtn.addEventListener("click", () => {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    if (currentPage < totalPages) {
+      currentPage = totalPages;
+      renderTable();
+    }
+  });
+
+  pageInput.addEventListener("change", function() {
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    let page = parseInt(this.value);
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    currentPage = page;
+    renderTable();
+  });
+
+  pageInput.addEventListener("keypress", function(e) {
+    if (e.key === 'Enter') {
+      this.blur();
+    }
+  });
+
+  // Función para eliminar asignación
+  async function eliminarAsignacion(asignacionId, asignacionNombre) {
+    const result = await Swal.fire({
+        title: '¿Eliminar asignación?',
+        html: `¿Estás seguro de que deseas eliminar la asignación:<br><strong>${asignacionNombre}</strong>?<br><br><span style="color: var(--danger-red); font-size: 0.9rem;">Esta acción no se puede deshacer.</span>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`/asignaciones/asignacion/delete/${asignacionId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    title: '¡Eliminada!',
+                    text: data.mensaje,
+                    icon: 'success',
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.mensaje,
+                    icon: 'error',
+                    confirmButtonColor: '#0D2C63'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Error de conexión',
+                text: 'No se pudo completar la operación. Por favor, intente nuevamente.',
+                icon: 'error',
+                confirmButtonColor: '#0D2C63'
+            });
+        }
+    }
+  }
+
+  // Inicializar
+  renderTable();
+</script>
+{% endblock %}

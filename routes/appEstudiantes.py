@@ -1,5 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from models.Estudiantes import Estudiante
+from models.Secciones import Seccion
+from models.matriculas import Matricula
+from models.Grados import Grado
+from sqlalchemy import or_
 from db import db
 from datetime import datetime
 
@@ -10,7 +14,18 @@ estudiantes_bp = Blueprint('estudiantes', __name__, template_folder="templates")
 @estudiantes_bp.route('/')
 def lista_estudiantes():
     estudiantes = Estudiante.query.all()
-    return render_template("estudiantes/lista.html", estudiantes=estudiantes)
+    secciones = Seccion.query.all()
+    grados = Grado.query.all()
+    return render_template(
+        "estudiantes/lista.html",
+        estudiantes=estudiantes,
+        secciones=secciones,
+        grados=grados,
+        seccion_seleccionada=None,
+        grado_seleccionado=None,
+        estado_seleccionado=None,
+        search_term="",
+    )
 
 # Crear estudiante (formulario y guardado)
 @estudiantes_bp.route('/nuevo', methods=['GET', 'POST'])
@@ -67,3 +82,49 @@ def eliminar_estudiante(id):
     db.session.delete(estudiante)
     db.session.commit()
     return redirect(url_for('estudiantes.lista_estudiantes'))
+
+
+
+@estudiantes_bp.route('/busqueda', methods=['GET'])
+def filtro_estudiantes():
+    seccion_id = request.args.get('Seccion_id', type=int)
+    grado_id = request.args.get('Grado_id', type=int)
+    estado = request.args.get('estado', default=None, type=str)
+    search_term = request.args.get('search', default="", type=str)
+    secciones = Seccion.query.all()
+    grados = Grado.query.all()
+    query = Estudiante.query
+
+    if seccion_id or grado_id:
+        query = query.join(Matricula, Matricula.id_estudiante == Estudiante.id_estudiante)
+        if grado_id:
+            query = query.join(Seccion, Seccion.id_seccion == Matricula.id_seccion).filter(Seccion.id_grado == grado_id)
+        if seccion_id:
+            query = query.filter(Matricula.id_seccion == seccion_id)
+    # Filtro por estado (activos / inactivos)
+    if estado == 'activos':
+        query = query.filter(Estudiante.activo == True)
+    elif estado == 'inactivos':
+        query = query.filter(Estudiante.activo == False)
+    # Optional text search
+    if search_term:
+        like = f"%{search_term}%"
+        query = query.filter(
+            or_(
+                Estudiante.nombres.ilike(like),
+                Estudiante.apellidos.ilike(like),
+                Estudiante.nie.ilike(like),
+                Estudiante.email.ilike(like),
+            )
+        )
+    estudiantes = query.distinct().all()
+    return render_template(
+        "estudiantes/lista.html",
+        estudiantes=estudiantes,
+        secciones=secciones,
+        grados=grados,
+        seccion_seleccionada=seccion_id,
+        grado_seleccionado=grado_id,
+        estado_seleccionado=estado,
+        search_term=search_term,
+    )

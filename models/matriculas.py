@@ -11,7 +11,6 @@ class Matricula(db.Model):
     id_matricula = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_estudiante = db.Column(db.Integer, db.ForeignKey('estudiantes.id_estudiante'), nullable=False)
     id_seccion = db.Column(db.Integer, db.ForeignKey('secciones.id_seccion'), nullable=False)
-    numero_lista = db.Column(db.Integer, nullable=True)
     fecha_matricula = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     activa = db.Column(db.Boolean, default=True, nullable=False)
 
@@ -28,7 +27,6 @@ class Matricula(db.Model):
             'id_matricula': self.id_matricula,
             'id_estudiante': self.id_estudiante,
             'id_seccion': self.id_seccion,
-            'numero_lista': self.numero_lista,
             'fecha_matricula': self.fecha_matricula.isoformat() if self.fecha_matricula else None,
             'activa': self.activa
         }

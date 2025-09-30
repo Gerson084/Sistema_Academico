@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from models.Materias import Materia
 from models.Grados import Grado
 from models.usuarios import Usuario  # Para los docentes
@@ -52,9 +52,13 @@ def nueva_materia():
 
     return render_template("materias/nuevo.html", grados=grados)
 
-# Editar materia
+
+# Editar materia solo admin
 @materias_bp.route("/materias/editar/<int:id>", methods=["GET", "POST"])
 def editar_materia(id):
+    if not session.get('user_id') or session.get('user_role') != 1:
+        flash('Acceso restringido solo para administradores.', 'danger')
+        return redirect(url_for('auth.login'))
     materia = Materia.query.get_or_404(id)
     grados = Grado.query.all()
 

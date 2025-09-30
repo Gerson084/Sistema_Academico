@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/asignacion_form.css') }}">
+
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title">
+      <i class="bi bi-book"></i>
+      {% if asignacion %}Editar{% else %}Crear{% endif %} Asignación
+    </h1>
+    <p class="page-subtitle">
+      {% if asignacion %}
+        Modifica la asignación de materia a sección
+      {% else %}
+        Asigna una materia a una sección con su docente correspondiente
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="form-container">
+    <form id="asignacionForm" method="POST">
+      <!-- Sección de Información Básica -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="bi bi-info-circle"></i>
+          Información de la Asignación
+        </h3>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label required" for="id_materia">
+              <i class="bi bi-journal-text"></i>
+              Materia
+            </label>
+            <select class="form-select" id="id_materia" name="id_materia" required>
+              <option value="">Seleccione una materia</option>
+              {% for materia in materias %}
+                <option value="{{ materia.id_materia }}" 
+                  {% if asignacion and asignacion.id_materia == materia.id_materia %}selected{% endif %}>
+                  {{ materia.nombre_materia }} ({{ materia.codigo_materia }})
+                </option>
+              {% endfor %}
+            </select>
+            <div class="form-help">Seleccione la materia a asignar</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="id_seccion">
+              <i class="bi bi-layout-text-sidebar"></i>
+              Sección
+            </label>
+            <select class="form-select" id="id_seccion" name="id_seccion" required>
+              <option value="">Seleccione una sección</option>
+              {% for seccion in secciones %}
+                <option value="{{ seccion.id_seccion }}" 
+                  data-grado="{{ seccion.grado }}"
+                  data-nivel="{{ seccion.nivel }}"
+                  data-ano="{{ seccion.ano_lectivo }}"
+                  {% if asignacion and asignacion.id_seccion == seccion.id_seccion %}selected{% endif %}>
+                  {{ seccion.nombre_completo }}
+                </option>
+              {% endfor %}
+            </select>
+            <div class="form-help">Grado - Sección - Año lectivo</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Docente -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="bi bi-person-check"></i>
+          Docente Asignado
+        </h3>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label required" for="id_maestro">
+              <i class="bi bi-person-badge"></i>
+              Docente
+            </label>
+            <select class="form-select" id="id_maestro" name="id_maestro" required>
+              <option value="">Seleccione un docente</option>
+              {% for docente in docentes %}
+                <option value="{{ docente.id_usuario }}" 
+                  {% if asignacion and asignacion.id_maestro == docente.id_usuario %}selected{% endif %}>
+                  {{ docente.nombres }} {{ docente.apellidos }} ({{ docente.usuario }})
+                </option>
+              {% endfor %}
+            </select>
+            <div class="form-help">Docente responsable de la materia</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista Previa -->
+      <div class="form-section" id="previewSection" style="display: none;">
+        <h3 class="section-title">
+          <i class="bi bi-eye"></i>
+          Vista Previa de la Asignación
+        </h3>
+        
+        <div class="preview-card">
+          <h4 class="preview-title">
+            <i class="bi bi-check-circle"></i>
+            Resumen de la Asignación
+          </h4>
+          <div class="preview-grid">
+            <div class="preview-item">
+              <span class="preview-label">Materia:</span>
+              <span class="preview-value" id="previewMateria">-</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">Sección:</span>
+              <span class="preview-value" id="previewSeccion">-</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-label">Docente:</span>
+              <span class="preview-value" id="previewDocente">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensajes de Validación -->
+      <div id="validationMessages"></div>
+
+      <!-- Spinner de Carga -->
+      <div class="loading-spinner" id="loadingSpinner">
+        <i class="bi bi-arrow-repeat"></i>
+        <span>Procesando...</span>
+      </div>
+
+      <!-- Acciones del Formulario -->
+      <div class="form-actions">
+        <a href="{{ url_for('materia_seccion.lista_asignaciones') }}" class="btn btn-outline">
+          <i class="bi bi-arrow-left"></i>
+          Volver al Listado
+        </a>
+        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+          <i class="bi bi-arrow-clockwise"></i>
+          Limpiar
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg"></i>
+          {% if asignacion %}Actualizar{% else %}Crear{% endif %} Asignación
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Elementos del DOM
+  const form = document.getElementById('asignacionForm');
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  const validationMessages = document.getElementById('validationMessages');
+  const previewSection = document.getElementById('previewSection');
+
+  // Elementos de preview
+  const previewMateria = document.getElementById('previewMateria');
+  const previewSeccion = document.getElementById('previewSeccion');
+  const previewDocente = document.getElementById('previewDocente');
+
+  // Actualizar vista previa
+  function updatePreview() {
+    const materiaSelect = document.getElementById('id_materia');
+    const seccionSelect = document.getElementById('id_seccion');
+    const docenteSelect = document.getElementById('id_maestro');
+
+    const materiaText = materiaSelect.options[materiaSelect.selectedIndex]?.text || '-';
+    const seccionText = seccionSelect.options[seccionSelect.selectedIndex]?.text || '-';
+    const docenteText = docenteSelect.options[docenteSelect.selectedIndex]?.text || '-';
+
+    previewMateria.textContent = materiaText;
+    previewSeccion.textContent = seccionText;
+    previewDocente.textContent = docenteText;
+
+    // Mostrar/ocultar sección de preview
+    const hasSelection = materiaSelect.value && seccionSelect.value && docenteSelect.value;
+    previewSection.style.display = hasSelection ? 'block' : 'none';
+  }
+
+  // Validar formulario
+  function validateForm() {
+    const errors = [];
+    validationMessages.innerHTML = '';
+
+    const materia = document.getElementById('id_materia').value;
+    const seccion = document.getElementById('id_seccion').value;
+    const docente = document.getElementById('id_maestro').value;
+
+    if (!materia) errors.push('La materia es obligatoria');
+    if (!seccion) errors.push('La sección es obligatoria');
+    if (!docente) errors.push('El docente es obligatorio');
+
+    if (errors.length > 0) {
+      showValidationErrors(errors);
+      return false;
+    }
+
+    return true;
+  }
+
+  // Mostrar errores de validación
+  function showValidationErrors(errors) {
+    let html = '<div class="alert alert-error">';
+    html += '<i class="bi bi-exclamation-triangle alert-icon"></i>';
+    html += '<div class="alert-content">';
+    html += '<div class="alert-title">Por favor, corrija los siguientes errores:</div>';
+    html += '<ul style="margin: 0; padding-left: 1rem;">';
+    errors.forEach(error => {
+      html += `<li>${error}</li>`;
+    });
+    html += '</ul></div></div>';
+
+    validationMessages.innerHTML = html;
+    
+    // Scroll to errors
+    validationMessages.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Mostrar mensaje de éxito
+  function showSuccessMessage(message) {
+    validationMessages.innerHTML = `
+      <div class="alert alert-warning">
+        <i class="bi bi-check-circle alert-icon"></i>
+        <div class="alert-content">
+          <div class="alert-title">¡Éxito!</div>
+          <div>${message}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Resetear formulario
+  function resetForm() {
+    if (confirm('¿Está seguro de que desea limpiar todos los campos?')) {
+      form.reset();
+      previewSection.style.display = 'none';
+      validationMessages.innerHTML = '';
+    }
+  }
+
+  // Enviar formulario
+  async function submitForm(event) {
+    event.preventDefault();
+    
+    if (!validateForm()) return;
+
+    loadingSpinner.style.display = 'flex';
+    
+    try {
+      const formData = new FormData(form);
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showSuccessMessage(data.mensaje);
+        
+        // Redirigir después de 2 segundos
+        setTimeout(() => {
+          window.location.href = data.redirect;
+        }, 2000);
+      } else {
+        showValidationErrors([data.mensaje]);
+      }
+    } catch (error) {
+      showValidationErrors(['Error de conexión. Por favor, intente nuevamente.']);
+    } finally {
+      loadingSpinner.style.display = 'none';
+    }
+  }
+
+  // Event Listeners
+  document.addEventListener('DOMContentLoaded', function() {
+    // Actualizar vista previa cuando cambien los selects
+    document.querySelectorAll('select').forEach(select => {
+      select.addEventListener('change', updatePreview);
+    });
+
+    // Enviar formulario
+    form.addEventListener('submit', submitForm);
+
+    // Inicializar vista previa si hay datos existentes
+    {% if asignacion %}
+    updatePreview();
+    {% endif %}
+  });
+
+  // Validación en tiempo real
+  document.querySelectorAll('select').forEach(select => {
+    select.addEventListener('change', function() {
+      if (this.value) {
+        this.classList.remove('error');
+      }
+    });
+  });
+</script>
+{% endblock %}
