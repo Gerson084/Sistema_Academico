@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from models.Secciones import Seccion
 from models.Grados import Grado
 from models.AnosLectivos import AnoLectivo
@@ -75,11 +75,20 @@ def habilitar_seccion(id):
                               action='enabled'))
 
 # Deshabilitar sección
+
+# Deshabilitar sección solo admin y si no tiene alumnos inscritos
 @secciones_bp.route('/deshabilitar/<int:id>', methods=['POST'])
 def deshabilitar_seccion(id):
+    if not session.get('user_id') or session.get('user_role') != 1:
+        flash('Acceso restringido solo para administradores.', 'danger')
+        return redirect(url_for('auth.login'))
     seccion = Seccion.query.get_or_404(id)
+    from models.matriculas import Matricula
+    inscritos = Matricula.query.filter_by(id_seccion=id).count()
+    if inscritos > 0:
+        flash('No se puede deshabilitar la sección porque tiene alumnos inscritos.', 'danger')
+        return redirect(url_for('secciones.lista_secciones'))
     seccion.activo = 0
     db.session.commit()
-    return redirect(url_for('secciones.lista_secciones', 
-                              success='true', 
-                              action='disabled'))
+    flash('Sección deshabilitada correctamente.', 'success')
+    return redirect(url_for('secciones.lista_secciones'))

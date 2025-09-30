@@ -10,17 +10,31 @@ from dotenv import load_dotenv
 from routes.auth_route import auth_bp
 from routes.rol_route import rol
 from routes.change_password_route import change_password_bp
+from routes.recover_route import recover_bp
 from routes.matricula_route import matriculas_bp
 from routes.appGrados import grados_bp
 from routes.appMaterias import materias_bp
 from routes.materia_seccion_route import materia_seccion_bp
 
 import os
+from flask_mail import Mail
 
 # Cargar variables de entorno desde .env
 load_dotenv()
 
+
 app = Flask(__name__)
+
+# Configuración de Flask-Mail
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True') == 'True'
+app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False') == 'True'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+
+mail = Mail(app)
 
 # Configurar secret key para sesiones y flash
 app.secret_key = os.getenv("SECRET_KEY")  # <--- esto es crucial
@@ -37,6 +51,7 @@ app.register_blueprint(secciones_bp, url_prefix="/secciones")
 
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(change_password_bp, url_prefix="/auth")
+app.register_blueprint(recover_bp, url_prefix="/auth")
 app.register_blueprint(matriculas_bp, url_prefix="/matriculas")
 app.register_blueprint(grados_bp, url_prefix='/grados')
 app.register_blueprint(materias_bp, url_prefix='/materias')
