@@ -108,8 +108,12 @@
                     <div class="col-md-6 mb-3">
                         <label for="id_rol" class="form-label required-field">Rol</label>
                         <select class="form-select" name="id_rol" id="id_rol" required>
-                            <option value="1" {% if user and user.id_rol == 1 %}selected{% endif %}>Administrador</option>
-                            <option value="2" {% if user and user.id_rol == 2 %}selected{% endif %}>Docente</option>
+                            {% for rol in roles %}
+                                <option value="{{ rol.id_rol }}"
+                                    {% if user and user.id_rol == rol.id_rol %}selected{% endif %}>
+                                    {{ rol.nombre_rol }}
+                                </option>
+                            {% endfor %}
                         </select>
                         <div class="invalid-feedback">Seleccione un rol.</div>
                     </div>

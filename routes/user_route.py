@@ -20,6 +20,7 @@ def user_index():
 # CREAR
 @users.route("/user/create", methods=['GET', 'POST'])
 def create_user():
+    roles = Rol.query.all()  # Obtener todos los roles para el formulario
     if request.method == 'POST':
         identificador = request.form.get('identificador')
         usuario_val = request.form.get('usuario')
@@ -69,7 +70,7 @@ def create_user():
             "redirect": url_for('user.user_index')
         })
 
-    return render_template("usuarios/user_form.html", user=None)
+    return render_template("usuarios/user_form.html", user=None, roles=roles)
 
 # EDITAR
 @users.route("/user/edit/<int:id>", methods=['GET', 'POST'])
