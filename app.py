@@ -46,7 +46,7 @@ app.register_blueprint(materias_bp, url_prefix='/materias')
 
 @app.route('/')
 def home():
-    return render_template('base.html')
+    return render_template('home.html')
 
 
 

@@ -1,7 +1,6 @@
 {% extends "base.html" %}
-
+{% block title %}Inicio • Sistema Académico{% endblock %}
 {% block content %}
-
 <div class="container-fluid">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="sa-page-title mb-0">Panel de Administración</h1>
@@ -186,9 +185,4 @@
   color: #212529 !important;
 }
 </style>
-
-<div class="container text-center mt-5">
-    <a href="{{ url_for('change_password.cambiar_contrasena') }}" class="btn btn-warning me-2">Cambiar Contraseña</a>
-    <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Cerrar Sesión</a>
-</div>
 {% endblock %}

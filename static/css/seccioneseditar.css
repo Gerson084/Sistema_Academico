@@ -24,18 +24,35 @@
         padding-top: 0 !important;
     }
 
-    .page-header {
+    /* Sobrescribir el mt-4 del contenedor base */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+        /* Encabezado del módulo (no se superpone y queda “sticky”) */
+        .page-header{
+        position: sticky;                 /* se queda visible al hacer scroll */
+        top: 8px;                         /* separación del borde superior */
+        z-index: 102;                     /* encima del contenido */
         background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
         color: #E9E2C3;
-        padding: 2rem 0;
-        margin: 0 0 2rem 0 !important;
-        border-radius: 0 0 1rem 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        width: 100vw;
-        margin-left: calc(-50vw + 50%) !important;
-        position: relative;
-        top: 0;
-    }
+        padding: 2rem 1.25rem;
+        margin: 0 0 2rem 0;               /* quita márgenes negativos */
+        width: 100%;                      /* quita 100vw */
+        border-radius: .75rem;            /* opcional, más limpio */
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,.1);
+        }
+
+        /* Asegura espacio en el área principal */
+        .sa-main .container-fluid{
+        padding-top: 12px;
+        }
+
+        /* Si algún contenedor padre tenía overflow oculto, sticky no funciona */
+        .sa-main, .container-fluid{
+        overflow: visible;
+        }
+
 
     .page-title {
         font-size: 2rem;
