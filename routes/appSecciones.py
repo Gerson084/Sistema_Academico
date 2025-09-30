@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from models.Secciones import Seccion
 from models.Grados import Grado
+from models.usuarios import Usuario
 from models.AnosLectivos import AnoLectivo
 from db import db
 from datetime import datetime
@@ -9,9 +10,19 @@ from datetime import datetime
 secciones_bp = Blueprint('secciones', __name__, template_folder="templates")
 
 # Listar secciones (vista HTML)
+
+
 @secciones_bp.route('/')
 def lista_secciones():
-    secciones = Seccion.query.all()
+    # Usar joinedload para cargar las relaciones de una vez (más eficiente)
+    from sqlalchemy.orm import joinedload
+    
+    secciones = Seccion.query.options(
+        joinedload(Seccion.coordinador),
+        joinedload(Seccion.grado),
+        joinedload(Seccion.ano_lectivo)
+    ).all()
+    
     return render_template("secciones/listar.html", secciones=secciones)
 
 @secciones_bp.route('/nuevo', methods=['GET', 'POST'])
@@ -19,38 +30,43 @@ def nueva_seccion():
     if request.method == 'POST':
         nueva = Seccion(
             id_grado=request.form.get('id_grado'),
+            id_coordinador=request.form.get('id_coordinador'),  # Corregido
             nombre_seccion=request.form.get('nombre_seccion'),
             id_ano_lectivo=request.form.get('id_ano_lectivo'),
             activo=1
         )
         db.session.add(nueva)
         db.session.commit()
-        return redirect(url_for('secciones.lista_secciones', 
-                                  success='true', 
-                                  action='created'))
-
+        return redirect(url_for('secciones.lista_secciones', success='true', action='created'))
+    
     grados = Grado.query.all()
+    usuarios = Usuario.query.all()  # Agregado
     anos_lectivos = AnoLectivo.query.filter_by(activo=1).all()
-    return render_template("secciones/nuevo.html", grados=grados, anos_lectivos=anos_lectivos)
+    
+    return render_template("secciones/nuevo.html", 
+                         grados=grados, 
+                         usuarios=usuarios,  # Agregado
+                         anos_lectivos=anos_lectivos)
 
 @secciones_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 def editar_seccion(id):
     seccion = Seccion.query.get_or_404(id)
     grados = Grado.query.all()
+    usuarios = Usuario.query.all()
     anos_lectivos = AnoLectivo.query.all()
-
+    
     if request.method == 'POST':
         seccion.id_grado = request.form.get('id_grado')
+        seccion.id_coordinador = request.form.get('id_coordinador')  # Corregido
         seccion.nombre_seccion = request.form.get('nombre_seccion')
         seccion.id_ano_lectivo = request.form.get('id_ano_lectivo')
         db.session.commit()
-        return redirect(url_for('secciones.lista_secciones', 
-                                  success='true', 
-                                  action='updated'))
-
+        return redirect(url_for('secciones.lista_secciones', success='true', action='updated'))
+    
     return render_template(
         "secciones/editar.html",
         seccion=seccion,
+        usuarios=usuarios,
         grados=grados,
         anos_lectivos=anos_lectivos
     )
@@ -60,9 +76,7 @@ def eliminar_seccion(id):
     seccion = Seccion.query.get_or_404(id)
     db.session.delete(seccion)
     db.session.commit()
-    return redirect(url_for('secciones.lista_secciones', 
-                              success='true', 
-                              action='deleted'))
+    return redirect(url_for('secciones.lista_secciones', success='true', action='deleted'))
 
 # Habilitar sección
 @secciones_bp.route('/habilitar/<int:id>', methods=['POST'])
@@ -70,9 +84,7 @@ def habilitar_seccion(id):
     seccion = Seccion.query.get_or_404(id)
     seccion.activo = 1
     db.session.commit()
-    return redirect(url_for('secciones.lista_secciones', 
-                              success='true', 
-                              action='enabled'))
+    return redirect(url_for('secciones.lista_secciones', success='true', action='enabled'))
 
 # Deshabilitar sección
 @secciones_bp.route('/deshabilitar/<int:id>', methods=['POST'])
@@ -80,6 +92,4 @@ def deshabilitar_seccion(id):
     seccion = Seccion.query.get_or_404(id)
     seccion.activo = 0
     db.session.commit()
-    return redirect(url_for('secciones.lista_secciones', 
-                              success='true', 
-                              action='disabled'))
+    return redirect(url_for('secciones.lista_secciones', success='true', action='disabled'))

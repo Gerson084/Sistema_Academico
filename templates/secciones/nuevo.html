@@ -25,6 +25,13 @@
             </div>
             <div class="progress-step">
                 <div class="step-circle">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="step-label">Coordinador</div>
+                <div class="progress-line"></div>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle">
                     <i class="fas fa-tag"></i>
                 </div>
                 <div class="step-label">Nombre de Sección</div>
@@ -35,13 +42,6 @@
                     <i class="fas fa-calendar-alt"></i>
                 </div>
                 <div class="step-label">Año Lectivo</div>
-                <div class="progress-line"></div>
-            </div>
-            <div class="progress-step">
-                <div class="step-circle">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div class="step-label">Confirmación</div>
             </div>
         </div>
     </div>
@@ -91,6 +91,27 @@
                     <div class="form-help">Selecciona el grado académico al que pertenecerá esta sección</div>
                     <div class="invalid-feedback" id="gradeError"></div>
                     <div class="valid-feedback" id="gradeSuccess"></div>
+                </div>
+
+                <!-- Campo Coordinador -->
+                <div class="form-group">
+                    <label for="id_coordinador" class="form-label required-field">Coordinador de Sección</label>
+                    <div class="input-icon">
+                        <i class="fas fa-user-tie"></i>
+                        <select name="id_coordinador" id="id_coordinador" class="form-select" required>
+                            <option value="">-- Selecciona un coordinador --</option>
+                            {% for usuario in usuarios %}
+                            <option value="{{ usuario.id_usuario }}" 
+                                    data-nombre="{{ usuario.nombre }}" 
+                                    data-apellido="{{ usuario.apellido }}">
+                                {{ usuario.nombres }} {{ usuario.apellidos}}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-help">Selecciona el coordinador responsable de esta sección</div>
+                    <div class="invalid-feedback" id="coordinadorError"></div>
+                    <div class="valid-feedback" id="coordinadorSuccess"></div>
                 </div>
 
                 <div class="form-group">
@@ -150,7 +171,6 @@
     </div>
 </div>
 
-<!-- Font Awesome para los iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <script>
@@ -160,6 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Elementos del formulario
     const gradeSelect = document.getElementById('id_grado');
+    const coordinadorSelect = document.getElementById('id_coordinador');
     const yearSelect = document.getElementById('id_ano_lectivo');
     const nameInput = document.getElementById('nombre_seccion');
     const charCount = document.getElementById('charCount');
@@ -178,7 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
         let errorMsg = '';
         let successMsg = '';
         
-        // Limpiar estados previos
         field.classList.remove('is-invalid', 'is-valid');
         
         switch(fieldId) {
@@ -188,6 +208,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     errorMsg = 'Debe seleccionar un grado académico';
                 } else {
                     successMsg = 'Grado seleccionado correctamente';
+                }
+                break;
+            
+            case 'id_coordinador':
+                if (!value) {
+                    isValid = false;
+                    errorMsg = 'Debe seleccionar un coordinador';
+                } else {
+                    successMsg = 'Coordinador seleccionado correctamente';
                 }
                 break;
                 
@@ -219,43 +248,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
         
-        // Aplicar estilos y mensajes
         if (isValid && value) {
             field.classList.add('is-valid');
-            const successElement = document.getElementById(fieldId.replace('id_', '') + 'Success') || 
-                                 document.getElementById('nameSuccess');
+            const successElement = document.getElementById(fieldId.replace('id_', '') + 'Success');
             if (successElement) {
                 successElement.textContent = successMsg;
             }
         } else if (!isValid) {
             field.classList.add('is-invalid');
-            const errorElement = document.getElementById(fieldId.replace('id_', '') + 'Error') || 
-                               document.getElementById('nameError');
+            const errorElement = document.getElementById(fieldId.replace('id_', '') + 'Error');
             if (errorElement) {
                 errorElement.textContent = errorMsg;
             }
         }
         
-        return isValid || !value; // Allow empty for non-submitted form
+        return isValid || !value;
     }
     
     // Función para actualizar la vista previa
     function updatePreview() {
         const gradeValue = gradeSelect.value;
+        const coordinadorValue = coordinadorSelect.value;
         const yearValue = yearSelect.value;
         const nameValue = nameInput.value.trim();
         
-        if (gradeValue && yearValue && nameValue) {
+        if (gradeValue && coordinadorValue && yearValue && nameValue) {
             const gradeOption = gradeSelect.options[gradeSelect.selectedIndex];
+            const coordinadorOption = coordinadorSelect.options[coordinadorSelect.selectedIndex];
             const yearOption = yearSelect.options[yearSelect.selectedIndex];
             
             const gradeName = gradeOption.getAttribute('data-name');
             const gradeLevel = gradeOption.getAttribute('data-level');
+            const coordinadorNombre = coordinadorOption.getAttribute('data-nombre');
+            const coordinadorApellido = coordinadorOption.getAttribute('data-apellido');
             const yearText = yearOption.getAttribute('data-year');
             
             previewDetails.innerHTML = `
                 <div><strong>Sección:</strong> ${nameValue}</div>
                 <div><strong>Grado:</strong> ${gradeName} (${gradeLevel})</div>
+                <div><strong>Coordinador:</strong> ${coordinadorNombre} ${coordinadorApellido}</div>
                 <div><strong>Año Lectivo:</strong> ${yearText}</div>
             `;
             
@@ -283,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Event listeners para validación en tiempo real
-    [gradeSelect, yearSelect, nameInput].forEach(field => {
+    [gradeSelect, coordinadorSelect, yearSelect, nameInput].forEach(field => {
         field.addEventListener('input', function() {
             validateField(this);
             updatePreview();
@@ -305,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validación completa del formulario
     function validateForm() {
         let isFormValid = true;
-        const requiredFields = [gradeSelect, yearSelect, nameInput];
+        const requiredFields = [gradeSelect, coordinadorSelect, yearSelect, nameInput];
         
         requiredFields.forEach(field => {
             if (!field.value.trim()) {
@@ -324,57 +355,50 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         if (!validateForm()) {
-            // Scroll al primer campo inválido
             const firstInvalid = form.querySelector('.is-invalid');
             if (firstInvalid) {
                 firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 firstInvalid.focus();
             }
             
-            // Mostrar mensaje de error
             alert('Por favor, complete todos los campos requeridos correctamente.');
             return;
         }
         
-        // Obtener valores para confirmación
         const gradeOption = gradeSelect.options[gradeSelect.selectedIndex];
+        const coordinadorOption = coordinadorSelect.options[coordinadorSelect.selectedIndex];
         const yearOption = yearSelect.options[yearSelect.selectedIndex];
         const gradeName = gradeOption.getAttribute('data-name');
         const gradeLevel = gradeOption.getAttribute('data-level');
+        const coordinadorNombre = coordinadorOption.getAttribute('data-nombre');
+        const coordinadorApellido = coordinadorOption.getAttribute('data-apellido');
         const yearText = yearOption.getAttribute('data-year');
         const sectionName = nameInput.value.trim();
         
-        // Confirmar creación
         const confirmMsg = `¿Confirma la creación de esta sección?
         
 Sección: ${sectionName}
 Grado: ${gradeName} (${gradeLevel})
+Coordinador: ${coordinadorNombre} ${coordinadorApellido}
 Año Lectivo: ${yearText}`;
         
         if (confirm(confirmMsg)) {
-            // Deshabilitar botón para evitar doble envío
             createBtn.disabled = true;
             createBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
-            
-            // Enviar formulario
             this.submit();
         }
     });
     
-    // Sugerir nombres de sección basados en el grado
     gradeSelect.addEventListener('change', function() {
         if (this.value && !nameInput.value) {
-            // Sugerir nombre basado en convenciones comunes
             const suggestions = ['A', 'B', 'C', '1A', '1B', '2A'];
-            const randomSuggestion = suggestions[Math.floor(Math.random() * 3)]; // Solo A, B, C
+            const randomSuggestion = suggestions[Math.floor(Math.random() * 3)];
             nameInput.placeholder = `Sugerencia: ${randomSuggestion}`;
         }
     });
     
-    // Inicialización
     updateCharCounter();
     
-    // Animación de entrada
     const sections = document.querySelectorAll('.form-section');
     sections.forEach((section, index) => {
         section.style.opacity = '0';
@@ -386,7 +410,6 @@ Año Lectivo: ${yearText}`;
         }, index * 100);
     });
     
-    // Enfocar primer campo
     setTimeout(() => {
         gradeSelect.focus();
     }, 500);

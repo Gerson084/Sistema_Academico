@@ -14,6 +14,7 @@ from routes.matricula_route import matriculas_bp
 from routes.appGrados import grados_bp
 from routes.appMaterias import materias_bp
 
+
 import os
 
 # Cargar variables de entorno desde .env
@@ -39,6 +40,8 @@ app.register_blueprint(change_password_bp, url_prefix="/auth")
 app.register_blueprint(matriculas_bp, url_prefix="/matriculas")
 app.register_blueprint(grados_bp, url_prefix='/grados')
 app.register_blueprint(materias_bp, url_prefix='/materias')
+
+
 
 
 
