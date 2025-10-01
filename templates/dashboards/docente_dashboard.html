@@ -1,9 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container text-center mt-5">
-    <h1 style="color:#0D2C63;">Panel de Docente</h1>
-    <p>Bienvenido {{ session['user_name'] }}</p>
-    <a href="{{ url_for('change_password.cambiar_contrasena') }}" class="btn btn-warning me-2">Cambiar Contraseña</a>
-    <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Cerrar Sesión</a>
+<div class="container mt-5">
+    <h1 style="color:#0D2C63;" class="text-center">Panel de Docente</h1>
+    <p class="text-center">Bienvenido {{ session['user_name'] }}</p>
+    <div class="d-flex justify-content-center mb-4">
+        <a href="{{ url_for('change_password.cambiar_contrasena') }}" class="btn btn-warning me-2">Cambiar Contraseña</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Cerrar Sesión</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">Materias</div>
+                <div class="card-body">
+                    <a href="{{ url_for('notas.ingresar_notas_ejemplo') }}" class="btn btn-outline-success w-100">Ingresar Notas de Ejemplo</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

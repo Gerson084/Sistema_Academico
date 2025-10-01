@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h3 class="text-center mb-3">Ingreso de Notas</h3>
+    <form method="POST" action="#">
+        <div class="row mb-3">
+            <div class="col-md-3 mb-2">
+                <label class="form-label fw-bold">Grado:</label>
+                <input type="text" class="form-control" value="PRIMERO" readonly>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label fw-bold">Sección:</label>
+                <input type="text" class="form-control" value="A" readonly>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label fw-bold">Materia:</label>
+                <input type="text" class="form-control" value="" placeholder="Nombre de la materia">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label fw-bold">Período:</label>
+                <input type="text" class="form-control" value="" placeholder="Ej: 1er Trimestre">
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center">
+                <thead>
+                    <tr>
+                        <th rowspan="2">N°</th>
+                        <th rowspan="2">Alumno</th>
+                        <th colspan="3">Actividades</th>
+                        <th rowspan="2">Promedio</th>
+                        <th rowspan="2">30%</th>
+                        <th rowspan="2">Nota RC</th>
+                        <th rowspan="2">RC 5%</th>
+                        <th colspan="3" style="background:#e6e6fa;">Integradora</th>
+                        <th rowspan="2" style="background:#e6e6fa;">Total B.I 70%</th>
+                        <th rowspan="2">P.O 30%</th>
+                        <th rowspan="2" style="background:#d1c4e9;">Total</th>
+                        <th rowspan="2">Actitud</th>
+                    </tr>
+                    <tr>
+                        <th>Act 1</th>
+                        <th>Act 2</th>
+                        <th>Act 3</th>
+                        <th style="background:#e6e6fa;">25%</th>
+                        <th style="background:#e6e6fa;">25%</th>
+                        <th style="background:#e6e6fa;">5%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(1, 21) %}
+                    <tr>
+                        <td>{{ i }}</td>
+                        <td>Nombre Alumno {{ i }}</td>
+                        <td><input type="number" step="0.01" name="act1_{{i}}" class="form-control form-control-sm" /></td>
+                        <td><input type="number" step="0.01" name="act2_{{i}}" class="form-control form-control-sm" /></td>
+                        <td><input type="number" step="0.01" name="act3_{{i}}" class="form-control form-control-sm" /></td>
+                        <td><input type="number" step="0.01" name="promedio_{{i}}" class="form-control form-control-sm" readonly /></td>
+                        <td><input type="number" step="0.01" name="porc30_{{i}}" class="form-control form-control-sm" readonly /></td>
+                        <td><input type="number" step="0.01" name="nota_rc_{{i}}" class="form-control form-control-sm" /></td>
+                        <td><input type="number" step="0.01" name="rc5_{{i}}" class="form-control form-control-sm" readonly /></td>
+                        <td style="background:#e6e6fa;"><input type="number" step="0.01" name="int1_{{i}}" class="form-control form-control-sm" /></td>
+                        <td style="background:#e6e6fa;"><input type="number" step="0.01" name="int2_{{i}}" class="form-control form-control-sm" /></td>
+                        <td style="background:#e6e6fa;"><input type="number" step="0.01" name="int3_{{i}}" class="form-control form-control-sm" /></td>
+                        <td style="background:#e6e6fa;"><input type="number" step="0.01" name="total_bi_{{i}}" class="form-control form-control-sm" readonly /></td>
+                        <td><input type="number" step="0.01" name="po30_{{i}}" class="form-control form-control-sm" readonly /></td>
+                        <td style="background:#d1c4e9;"><input type="number" step="0.01" name="total_{{i}}" class="form-control form-control-sm" readonly /></td>
+                        <td><input type="text" name="actitud_{{i}}" class="form-control form-control-sm" /></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-success me-2">Guardar Notas</button>
+            <a href="#" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

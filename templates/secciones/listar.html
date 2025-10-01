@@ -576,7 +576,7 @@
                                 </a>
                                 {% if seccion.activo %}
                                 <form action="{{ url_for('secciones.deshabilitar_seccion', id=seccion.id_seccion) }}" 
-                                      method="POST" style="display:inline;">
+                                      method="POST" style="display:inline;" onsubmit="return confirm('¿Está seguro que desea deshabilitar esta sección? Esta acción no se puede deshacer.')">
                                     <button type="submit" class="btn-delete" style="background:#6b7280;">
                                         <i class="fas fa-toggle-on"></i> Desactivar
                                     </button>
