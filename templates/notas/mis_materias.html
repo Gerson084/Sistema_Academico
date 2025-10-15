@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">
+                <i class="fas fa-chalkboard-teacher"></i> Mis Materias Asignadas
+            </h2>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('docente_notas.mis_materias') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label for="ano_lectivo" class="form-label">Año Lectivo</label>
+                    <select name="ano_lectivo" id="ano_lectivo" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todos los años</option>
+                        {% for ano in anos_lectivos %}
+                        <option value="{{ ano.id_ano_lectivo }}" 
+                                {% if ano_seleccionado == ano.id_ano_lectivo %}selected{% endif %}>
+                            {{ ano.ano }} {% if ano.activo %}(Actual){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="buscar" class="form-label">Buscar</label>
+                    <input type="text" id="buscar" class="form-control" 
+                           placeholder="Buscar por materia, grado o sección...">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <a href="{{ url_for('docente_notas.mis_materias') }}" class="btn btn-secondary w-100">
+                        <i class="fas fa-times"></i> Limpiar Filtros
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cards de Materias -->
+    {% if asignaciones %}
+    <div class="row" id="contenedor-cards">
+        {% for asig in asignaciones %}
+        <div class="col-lg-4 col-md-6 mb-4 card-materia" 
+             data-materia="{{ asig.nombre_materia|lower }}" 
+             data-grado="{{ asig.nombre_grado|lower }}" 
+             data-seccion="{{ asig.nombre_seccion|lower }}">
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book"></i> {{ asig.nombre_materia }}
+                    </h5>
+                    <small>{{ asig.codigo_materia }}</small>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-graduation-cap"></i> Información
+                        </h6>
+                        <p class="mb-1">
+                            <strong>Grado:</strong> {{ asig.nombre_grado }} - {{ asig.nivel }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Sección:</strong> {{ asig.nombre_seccion }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Año Lectivo:</strong> 
+                            <span class="badge bg-info">{{ asig.ano_lectivo }}</span>
+                            {% if asig.ano_activo %}
+                            <span class="badge bg-success">Actual</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-users"></i> 
+                        <strong>{{ asig.total_estudiantes }}</strong> estudiantes matriculados
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a href="{{ url_for('docente_notas.ingresar_notas', id_asignacion=asig.id_asignacion) }}" 
+                       class="btn btn-success w-100">
+                        <i class="fas fa-edit"></i> Ingresar Notas
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center">
+        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+        <h4>No tienes materias asignadas</h4>
+        <p>No se encontraron materias asignadas para los filtros seleccionados.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-header {
+    border-bottom: 3px solid rgba(255,255,255,0.2);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscador = document.getElementById('buscar');
+    const cards = document.querySelectorAll('.card-materia');
+    
+    buscador.addEventListener('input', function() {
+        const termino = this.value.toLowerCase();
+        
+        cards.forEach(card => {
+            const materia = card.dataset.materia;
+            const grado = card.dataset.grado;
+            const seccion = card.dataset.seccion;
+            
+            const coincide = materia.includes(termino) || 
+                           grado.includes(termino) || 
+                           seccion.includes(termino);
+            
+            card.style.display = coincide ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

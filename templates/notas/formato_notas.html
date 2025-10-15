@@ -1,80 +1,237 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="container mt-4">
-    <h3 class="text-center mb-3">Ingreso de Notas</h3>
-    <form method="POST" action="#">
-        <div class="row mb-3">
-            <div class="col-md-3 mb-2">
-                <label class="form-label fw-bold">Grado:</label>
-                <input type="text" class="form-control" value="PRIMERO" readonly>
-            </div>
-            <div class="col-md-3 mb-2">
-                <label class="form-label fw-bold">Sección:</label>
-                <input type="text" class="form-control" value="A" readonly>
-            </div>
-            <div class="col-md-3 mb-2">
-                <label class="form-label fw-bold">Materia:</label>
-                <input type="text" class="form-control" value="" placeholder="Nombre de la materia">
-            </div>
-            <div class="col-md-3 mb-2">
-                <label class="form-label fw-bold">Período:</label>
-                <input type="text" class="form-control" value="" placeholder="Ej: 1er Trimestre">
+<div class="container-fluid mt-4">
+    <!-- Encabezado con información -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+                <i class="fas fa-clipboard-list"></i> Ingreso de Notas
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <p class="mb-1"><strong>Materia:</strong></p>
+                    <p>{{ info_asignacion.nombre_materia }}</p>
+                </div>
+                <div class="col-md-2">
+                    <p class="mb-1"><strong>Código:</strong></p>
+                    <p>{{ info_asignacion.codigo_materia }}</p>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-1"><strong>Grado y Sección:</strong></p>
+                    <p>{{ info_asignacion.grado }} - Sección {{ info_asignacion.seccion }}</p>
+                </div>
+                <div class="col-md-2">
+                    <p class="mb-1"><strong>Año Lectivo:</strong></p>
+                    <p><span class="badge bg-info">{{ info_asignacion.ano_lectivo }}</span></p>
+                </div>
+                <div class="col-md-2">
+                    <label for="select_periodo" class="form-label"><strong>Período:</strong></label>
+                    <select id="select_periodo" class="form-select" onchange="cambiarPeriodo()">
+                        {% for periodo in periodos %}
+                        <option value="{{ periodo.id_periodo }}" 
+                                {% if periodo.id_periodo == id_periodo %}selected{% endif %}>
+                            {{ periodo.nombre_periodo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
+    </div>
+
+    <!-- Tabla de notas -->
+    <form id="formNotas">
         <div class="table-responsive">
-            <table class="table table-bordered align-middle text-center">
-                <thead>
+            <table class="table table-bordered table-hover align-middle text-center">
+                <thead class="table-dark">
                     <tr>
                         <th rowspan="2">N°</th>
+                        <th rowspan="2">NIE</th>
                         <th rowspan="2">Alumno</th>
-                        <th colspan="3">Actividades</th>
-                        <th rowspan="2">Promedio</th>
+                        <th colspan="3" class="bg-info">Actividades (30%)</th>
+                        <th rowspan="2">Prom</th>
                         <th rowspan="2">30%</th>
-                        <th rowspan="2">Nota RC</th>
-                        <th rowspan="2">RC 5%</th>
-                        <th colspan="3" style="background:#e6e6fa;">Integradora</th>
-                        <th rowspan="2" style="background:#e6e6fa;">Total B.I 70%</th>
+                        <th rowspan="2">RC</th>
+                        <th rowspan="2">5%</th>
+                        <th colspan="3" class="bg-warning">Integradora (55%)</th>
+                        <th rowspan="2" class="bg-success text-white">Total B.I 70%</th>
                         <th rowspan="2">P.O 30%</th>
-                        <th rowspan="2" style="background:#d1c4e9;">Total</th>
+                        <th rowspan="2" class="bg-primary text-white">Total</th>
                         <th rowspan="2">Actitud</th>
                     </tr>
                     <tr>
-                        <th>Act 1</th>
-                        <th>Act 2</th>
-                        <th>Act 3</th>
-                        <th style="background:#e6e6fa;">25%</th>
-                        <th style="background:#e6e6fa;">25%</th>
-                        <th style="background:#e6e6fa;">5%</th>
+                        <th class="bg-info">Act 1</th>
+                        <th class="bg-info">Act 2</th>
+                        <th class="bg-info">Act 3</th>
+                        <th class="bg-warning">25%</th>
+                        <th class="bg-warning">25%</th>
+                        <th class="bg-warning">5%</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for i in range(1, 21) %}
-                    <tr>
-                        <td>{{ i }}</td>
-                        <td>Nombre Alumno {{ i }}</td>
-                        <td><input type="number" step="0.01" name="act1_{{i}}" class="form-control form-control-sm" /></td>
-                        <td><input type="number" step="0.01" name="act2_{{i}}" class="form-control form-control-sm" /></td>
-                        <td><input type="number" step="0.01" name="act3_{{i}}" class="form-control form-control-sm" /></td>
-                        <td><input type="number" step="0.01" name="promedio_{{i}}" class="form-control form-control-sm" readonly /></td>
-                        <td><input type="number" step="0.01" name="porc30_{{i}}" class="form-control form-control-sm" readonly /></td>
-                        <td><input type="number" step="0.01" name="nota_rc_{{i}}" class="form-control form-control-sm" /></td>
-                        <td><input type="number" step="0.01" name="rc5_{{i}}" class="form-control form-control-sm" readonly /></td>
-                        <td style="background:#e6e6fa;"><input type="number" step="0.01" name="int1_{{i}}" class="form-control form-control-sm" /></td>
-                        <td style="background:#e6e6fa;"><input type="number" step="0.01" name="int2_{{i}}" class="form-control form-control-sm" /></td>
-                        <td style="background:#e6e6fa;"><input type="number" step="0.01" name="int3_{{i}}" class="form-control form-control-sm" /></td>
-                        <td style="background:#e6e6fa;"><input type="number" step="0.01" name="total_bi_{{i}}" class="form-control form-control-sm" readonly /></td>
-                        <td><input type="number" step="0.01" name="po30_{{i}}" class="form-control form-control-sm" readonly /></td>
-                        <td style="background:#d1c4e9;"><input type="number" step="0.01" name="total_{{i}}" class="form-control form-control-sm" readonly /></td>
-                        <td><input type="text" name="actitud_{{i}}" class="form-control form-control-sm" /></td>
+                    {% for estudiante in estudiantes %}
+                    <tr data-estudiante="{{ estudiante.id_estudiante }}">
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ estudiante.nie }}</strong></td>
+                        <td class="text-start">{{ estudiante.nombre_completo }}</td>
+                        
+                        <!-- Actividades -->
+                        <td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input act1" /></td>
+                        <td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input act2" /></td>
+                        <td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input act3" /></td>
+                        
+                        <!-- Promedio actividades -->
+                        <td><input type="number" step="0.01" class="form-control form-control-sm promedio-act" readonly /></td>
+                        <td><input type="number" step="0.01" class="form-control form-control-sm porc30" readonly /></td>
+                        
+                        <!-- RC -->
+                        <td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input nota-rc" /></td>
+                        <td><input type="number" step="0.01" class="form-control form-control-sm rc5" readonly /></td>
+                        
+                        <!-- Integradoras -->
+                        <td class="bg-warning bg-opacity-25">
+                            <input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input int1" />
+                        </td>
+                        <td class="bg-warning bg-opacity-25">
+                            <input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input int2" />
+                        </td>
+                        <td class="bg-warning bg-opacity-25">
+                            <input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input int3" />
+                        </td>
+                        
+                        <!-- Total BI -->
+                        <td class="bg-success bg-opacity-25">
+                            <input type="number" step="0.01" class="form-control form-control-sm total-bi" readonly />
+                        </td>
+                        
+                        <!-- Prueba Objetiva -->
+                        <td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input prueba-obj" /></td>
+                        
+                        <!-- Total Final -->
+                        <td class="bg-primary bg-opacity-25">
+                            <input type="number" step="0.01" class="form-control form-control-sm total-final" readonly />
+                        </td>
+                        
+                        <!-- Actitud -->
+                        <td>
+                            <select class="form-select form-select-sm actitud">
+                                <option value="">-</option>
+                                <option value="Excelente">Excelente</option>
+                                <option value="Muy Buena">Muy Buena</option>
+                                <option value="Buena">Buena</option>
+                                <option value="Regular">Regular</option>
+                                <option value="Deficiente">Deficiente</option>
+                            </select>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        <div class="d-flex justify-content-end mt-3">
-            <button type="submit" class="btn btn-success me-2">Guardar Notas</button>
-            <a href="#" class="btn btn-secondary">Cancelar</a>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ url_for('docente_notas.mis_materias') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <button type="button" onclick="guardarNotas()" class="btn btn-success btn-lg">
+                <i class="fas fa-save"></i> Guardar Notas
+            </button>
         </div>
     </form>
 </div>
+
+<script>
+// Calcular promedios en tiempo real
+document.querySelectorAll('.nota-input').forEach(input => {
+    input.addEventListener('input', function() {
+        const fila = this.closest('tr');
+        calcularFila(fila);
+    });
+});
+
+function calcularFila(fila) {
+    // Actividades
+    const act1 = parseFloat(fila.querySelector('.act1').value) || 0;
+    const act2 = parseFloat(fila.querySelector('.act2').value) || 0;
+    const act3 = parseFloat(fila.querySelector('.act3').value) || 0;
+    const promedioAct = (act1 + act2 + act3) / 3;
+    fila.querySelector('.promedio-act').value = promedioAct.toFixed(2);
+    fila.querySelector('.porc30').value = (promedioAct * 0.3).toFixed(2);
+    
+    // RC
+    const notaRC = parseFloat(fila.querySelector('.nota-rc').value) || 0;
+    fila.querySelector('.rc5').value = (notaRC * 0.05).toFixed(2);
+    
+    // Integradoras
+    const int1 = parseFloat(fila.querySelector('.int1').value) || 0;
+    const int2 = parseFloat(fila.querySelector('.int2').value) || 0;
+    const int3 = parseFloat(fila.querySelector('.int3').value) || 0;
+    const totalInt = (int1 * 0.25) + (int2 * 0.25) + (int3 * 0.05);
+    
+    // Total BI (70%)
+    const totalBI = (promedioAct * 0.3) + (notaRC * 0.05) + totalInt;
+    fila.querySelector('.total-bi').value = totalBI.toFixed(2);
+    
+    // Prueba Objetiva (30%)
+    const pruebaObj = parseFloat(fila.querySelector('.prueba-obj').value) || 0;
+    const totalPO = pruebaObj * 0.3;
+    
+    // Total Final
+    const totalFinal = totalBI + totalPO;
+    fila.querySelector('.total-final').value = totalFinal.toFixed(2);
+}
+
+function cambiarPeriodo() {
+    const periodo = document.getElementById('select_periodo').value;
+    window.location.href = `{{ url_for('docente_notas.ingresar_notas', id_asignacion=id_asignacion) }}?periodo=${periodo}`;
+}
+
+function guardarNotas() {
+    const idPeriodo = document.getElementById('select_periodo').value;
+    const notas = [];
+    
+    document.querySelectorAll('tbody tr').forEach(fila => {
+        const idEstudiante = fila.dataset.estudiante;
+        
+        notas.push({
+            id_estudiante: idEstudiante,
+            act1: fila.querySelector('.act1').value,
+            act2: fila.querySelector('.act2').value,
+            act3: fila.querySelector('.act3').value,
+            nota_rc: fila.querySelector('.nota-rc').value,
+            int1: fila.querySelector('.int1').value,
+            int2: fila.querySelector('.int2').value,
+            int3: fila.querySelector('.int3').value,
+            prueba_obj: fila.querySelector('.prueba-obj').value,
+            actitud: fila.querySelector('.actitud').value
+        });
+    });
+    
+    fetch(`{{ url_for('docente_notas.guardar_notas', id_asignacion=id_asignacion) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id_periodo: idPeriodo,
+            notas: notas
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Notas guardadas correctamente');
+        } else {
+            alert('Error: ' + data.mensaje);
+        }
+    })
+    .catch(error => {
+        alert('Error al guardar las notas');
+        console.error(error);
+    });
+}
+</script>
 {% endblock %}
