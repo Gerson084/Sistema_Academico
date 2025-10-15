@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash
 from models.Estudiantes import Estudiante
 from models.Secciones import Seccion
 from models.matriculas import Matricula
@@ -31,8 +31,22 @@ def lista_estudiantes():
 @estudiantes_bp.route('/nuevo', methods=['GET', 'POST'])
 def nuevo_estudiante():
     if request.method == 'POST':
+        nie = (request.form.get('nie') or '').strip()
+
+        # Server-side uniqueness check: avoid creating duplicate NIE
+        existing_nies = [
+            { 'id_estudiante': s.id_estudiante, 'nie': s.nie }
+            for s in Estudiante.query.all()
+        ]
+
+        if nie:
+            existing = Estudiante.query.filter_by(nie=nie).first()
+            if existing:
+                flash(f"Ya existe un estudiante con NIE {nie}.", 'danger')
+                return render_template("estudiantes/nuevo.html", existing_nies=existing_nies)
+
         nuevo = Estudiante(
-            nie=request.form.get('nie'),
+            nie=nie,
             nombres=request.form.get('nombres'),
             apellidos=request.form.get('apellidos'),
             fecha_nacimiento=request.form.get('fecha_nacimiento'),
@@ -48,16 +62,61 @@ def nuevo_estudiante():
             fecha_creacion=datetime.utcnow()
         )
         db.session.add(nuevo)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash('No se pudo crear el estudiante: el NIE ya existe o hay un conflicto.', 'danger')
+            existing_nies = [
+                { 'id_estudiante': s.id_estudiante, 'nie': s.nie }
+                for s in Estudiante.query.all()
+            ]
+            return render_template("estudiantes/nuevo.html", existing_nies=existing_nies)
         return redirect(url_for('estudiantes.lista_estudiantes'))
-    return render_template("estudiantes/nuevo.html")
+
+    existing_nies = [
+        { 'id_estudiante': s.id_estudiante, 'nie': s.nie }
+        for s in Estudiante.query.all()
+    ]
+    return render_template("estudiantes/nuevo.html", existing_nies=existing_nies)
 
 # Editar estudiante
 @estudiantes_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 def editar_estudiante(id):
     estudiante = Estudiante.query.get_or_404(id)
     if request.method == 'POST':
-        estudiante.nie = request.form.get('nie')
+        nie = (request.form.get('nie') or '').strip()
+
+        # Provide list to templates for client-side checks
+        existing_nies = [
+            { 'id_estudiante': s.id_estudiante, 'nie': s.nie }
+            for s in Estudiante.query.all()
+        ]
+
+        # Check for duplicate NIE excluding current student
+        duplicate = None
+        if nie:
+            duplicate = Estudiante.query.filter(Estudiante.nie == nie, Estudiante.id_estudiante != estudiante.id_estudiante).first()
+
+        if duplicate:
+            flash(f"No puede actualizar: ya existe un estudiante con NIE {nie}.", 'danger')
+            # Repopulate estudiante with submitted values so template shows attempted changes
+            estudiante.nie = nie
+            estudiante.nombres = request.form.get('nombres')
+            estudiante.apellidos = request.form.get('apellidos')
+            estudiante.fecha_nacimiento = request.form.get('fecha_nacimiento')
+            estudiante.genero = request.form.get('genero')
+            estudiante.direccion = request.form.get('direccion')
+            estudiante.telefono = request.form.get('telefono')
+            estudiante.email = request.form.get('email')
+            estudiante.nombre_padre = request.form.get('nombre_padre')
+            estudiante.nombre_madre = request.form.get('nombre_madre')
+            estudiante.telefono_emergencia = request.form.get('telefono_emergencia')
+            estudiante.fecha_ingreso = request.form.get('fecha_ingreso')
+            estudiante.activo = request.form.get('activo') == '1'
+            return render_template("estudiantes/editar.html", estudiante=estudiante, existing_nies=existing_nies)
+
+        estudiante.nie = nie
         estudiante.nombres = request.form.get('nombres')
         estudiante.apellidos = request.form.get('apellidos')
         estudiante.fecha_nacimiento = request.form.get('fecha_nacimiento')
@@ -71,9 +130,23 @@ def editar_estudiante(id):
         estudiante.fecha_ingreso = request.form.get('fecha_ingreso')
         estudiante.activo = request.form.get('activo') == '1'
         estudiante.fecha_actualizacion = datetime.utcnow()
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash('No se pudo actualizar el estudiante: conflicto con NIE u otro error.', 'danger')
+            existing_nies = [
+                { 'id_estudiante': s.id_estudiante, 'nie': s.nie }
+                for s in Estudiante.query.all()
+            ]
+            return render_template("estudiantes/editar.html", estudiante=estudiante, existing_nies=existing_nies)
         return redirect(url_for('estudiantes.lista_estudiantes'))
-    return render_template("estudiantes/editar.html", estudiante=estudiante)
+
+    existing_nies = [
+        { 'id_estudiante': s.id_estudiante, 'nie': s.nie }
+        for s in Estudiante.query.all()
+    ]
+    return render_template("estudiantes/editar.html", estudiante=estudiante, existing_nies=existing_nies)
 
 # Eliminar estudiante
 @estudiantes_bp.route('/eliminar/<int:id>', methods=['POST'])

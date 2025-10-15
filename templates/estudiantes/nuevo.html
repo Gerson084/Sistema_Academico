@@ -610,9 +610,18 @@
 <!-- Font Awesome para los iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+{% if existing_nies is defined %}
+<script id="existingNiesData" type="application/json">{{ existing_nies|tojson }}</script>
+{% else %}
+<script id="existingNiesData" type="application/json">[]</script>
+{% endif %}
+
 <script>
 // Validación en tiempo real
 document.addEventListener('DOMContentLoaded', function() {
+    // Existing NIEs injected by server for client-side duplicate checks
+    const existingNiesData = document.getElementById('existingNiesData');
+    const existingNies = existingNiesData ? JSON.parse(existingNiesData.textContent || '[]') : [];
     const form = document.getElementById('studentForm');
     const nieInput = document.getElementById('nie');
     const emailInput = document.getElementById('email');
@@ -888,6 +897,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 alert('⚠️ Validación final:\n\n' + finalValidation.message);
                 return;
+            }
+
+            // Client-side NIE uniqueness check
+            const submittedNIE = (form.nie.value || '').trim();
+            if (submittedNIE) {
+                const dup = existingNies.find(s => String(s.nie) === String(submittedNIE));
+                if (dup) {
+                    e.preventDefault();
+                    alert('⚠️ Ya existe un estudiante con ese NIE. Verifique y vuelva a intentarlo.');
+                    document.getElementById('nie').classList.add('is-invalid');
+                    return;
+                }
             }
             
             // Mostrar confirmación antes de enviar
