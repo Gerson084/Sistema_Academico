@@ -203,6 +203,17 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const existingSections = {{ existing_sections|tojson | safe }} || [];
+
+    function isDuplicateSection(gradeId, yearId, sectionName, excludeId) {
+        const name = (sectionName || '').trim().toUpperCase();
+        return existingSections.some(s => (
+            String(s.id_grado) === String(gradeId) &&
+            String(s.id_ano_lectivo) === String(yearId) &&
+            String((s.nombre_seccion || '').toUpperCase()) === name &&
+            String(s.id_seccion || '') !== String(excludeId || '')
+        ));
+    }
     const form = document.getElementById('editSectionForm');
     const updateBtn = document.getElementById('updateBtn');
     
