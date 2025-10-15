@@ -76,6 +76,7 @@ def create_user():
 @users.route("/user/edit/<int:id>", methods=['GET', 'POST'])
 def edit_user(id):
     user = Usuario.query.get_or_404(id)
+    roles = Rol.query.all()
     if request.method == 'POST':
         identificador = request.form.get('identificador')
         usuario_val = request.form.get('usuario')
@@ -116,7 +117,7 @@ def edit_user(id):
             "redirect": url_for('user.user_index')
         })
 
-    return render_template("usuarios/user_form.html", user=user)
+    return render_template("usuarios/user_form.html", user=user, roles=roles)
 
 # DESACTIVAR (en vez de eliminar)
 @users.route("/user/deactivate/<int:id>", methods=['POST'])

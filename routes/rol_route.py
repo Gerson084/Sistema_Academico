@@ -30,35 +30,25 @@ def create():
 @rol.route('/edit/<int:id>', methods=['POST'])
 def edit(id):
     rol = Rol.query.get_or_404(request.form['id'])
-    nombre_rol = request.form['nombre_rol']
-    descripcion = request.form['descripcion']
-    estado = request.form['estado']
+    # Do NOT allow changing the role name from this endpoint. Ignore any submitted nombre_rol.
+    descripcion = request.form.get('descripcion')
+    estado = request.form.get('estado')
 
+    # Basic validation
+    if not descripcion or not estado:
+        return jsonify({"success": False, "mensaje": "Descripción y estado son obligatorios."}), 400
 
-    
-    if not nombre_rol or not descripcion or not estado:
-        return redirect(url_for('user.user_index'))
-
-    if nombre_rol != rol.nombre_rol:
-        existing_rol = Rol.query.filter_by(nombre_rol=nombre_rol).first()
-        if existing_rol:
-            return jsonify({
-                "success": False,
-                "mensaje": "El nombre del rol ya existe. Por favor, elige otro nombre."
-            }), 400  
-        return redirect(url_for('user.user_index'))
-
-    rol.nombre_rol = nombre_rol
+    # Only update mutable fields
     rol.descripcion = descripcion
     rol.estado = estado
 
     db.session.commit()
 
     return jsonify({
-                    "success": True,
-                    "mensaje": "Rol actualizado correctamente.",
-                    "redirect": url_for('user.user_index')
-                })
+        "success": True,
+        "mensaje": "Rol actualizado correctamente.",
+        "redirect": url_for('user.user_index')
+    })
              
             
                 

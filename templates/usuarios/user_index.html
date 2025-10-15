@@ -229,7 +229,8 @@
           <input type="hidden" name="id" id="editRolId">
           <div class="mb-3">
             <label for="editNombreRol" class="form-label">Nombre</label>
-            <input type="text" class="form-control" id="editNombreRol" name="nombre_rol" required>
+            <!-- El nombre del rol no puede editarse desde aquí; es solo lectura -->
+            <input type="text" class="form-control" id="editNombreRol" name="nombre_rol" required readonly title="El nombre del rol no puede ser cambiado">
           </div>
           <div class="mb-3">
             <label for="editDescripcionRol" class="form-label">Descripción</label>
