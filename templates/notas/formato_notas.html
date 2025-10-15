@@ -1,142 +1,395 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    /* Estilos para la tabla de notas */
+    .table-notas {
+        font-size: 0.85rem;
+    }
+    
+    .table-notas thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+        color: white !important;
+        font-weight: 600;
+        padding: 0.75rem 0.5rem;
+        vertical-align: middle;
+        border-color: #1e3c72 !important;
+    }
+    
+    .table-notas tbody tr:hover {
+        background-color: #f0f4ff;
+        box-shadow: 0 3px 8px rgba(30, 60, 114, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .table-notas tbody tr.nota-guardada {
+        background-color: #d4e9ff;
+        border-left: 4px solid #2a5298;
+    }
+    
+    .nota-input {
+        width: 70px;
+        text-align: center;
+        padding: 0.35rem;
+        font-size: 0.85rem;
+        border: 2px solid #d1d9e6;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+    
+    .nota-input:focus {
+        border-color: #2a5298;
+        box-shadow: 0 0 0 0.25rem rgba(42, 82, 152, 0.25);
+        outline: none;
+    }
+    
+    .nota-calculada {
+        background-color: #e8eef7 !important;
+        font-weight: 600;
+        cursor: not-allowed;
+        color: #1e3c72;
+    }
+    
+    .header-actividades {
+        background: linear-gradient(135deg, #4a69bd 0%, #6a89cc 100%) !important;
+    }
+    
+    .header-integradoras {
+        background: linear-gradient(135deg, #5f27cd 0%, #786fa6 100%) !important;
+        color: white !important;
+    }
+    
+    .header-bi {
+        background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%) !important;
+    }
+    
+    .header-total {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    }
+    
+    .celda-actividades {
+        background-color: #e8f2ff;
+    }
+    
+    .celda-integradoras {
+        background-color: #f0ebff;
+    }
+    
+    .celda-bi {
+        background-color: #dff3ff;
+    }
+    
+    .celda-total {
+        background-color: #e3ecf9;
+    }
+    
+    .total-final.aprobado {
+        background: #d4edda !important;
+        color: #155724 !important;
+        font-weight: bold;
+    }
+    
+    .total-final.recuperacion {
+        background: #fff3cd !important;
+        color: #856404 !important;
+        font-weight: bold;
+    }
+    
+    .total-final.reprobado {
+        background: #f8d7da !important;
+        color: #721c24 !important;
+        font-weight: bold;
+    }
+    
+    .btn-guardar-notas {
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-guardar-notas:hover {
+        background: linear-gradient(135deg, #2a5298 0%, #3d5fb0 100%);
+        box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .card {
+        border: 1px solid #d1d9e6;
+        border-radius: 12px;
+    }
+    
+    .card-body {
+        background: linear-gradient(to bottom, #ffffff 0%, #f8faff 100%);
+    }
+    
+    /* Estilos para el header de información */
+    .info-header {
+        position: sticky;
+        top: 8px;
+        z-index: 101;
+        background: linear-gradient(135deg, #0D2C63 0%, #1a4080 100%);
+        color: #E9E2C3;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .info-header h3 {
+        margin: 0 0 1.5rem 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(233, 226, 195, 0.3);
+        color: #E9E2C3;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+    }
+    
+    .info-item-header {
+        background: rgba(233, 226, 195, 0.15);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(233, 226, 195, 0.25);
+        transition: all 0.3s ease;
+    }
+    
+    .info-item-header:hover {
+        background: rgba(233, 226, 195, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(233, 226, 195, 0.1);
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+        color: #E9E2C3;
+        opacity: 0.95;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .info-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        color: #E9E2C3;
+    }
+    
+    .periodo-select {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 2px solid rgba(233, 226, 195, 0.4);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background: #E9E2C3;
+        color: #0D2C63;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .periodo-select:focus {
+        outline: none;
+        border-color: #E9E2C3;
+        box-shadow: 0 0 0 3px rgba(233, 226, 195, 0.3);
+    }
+    
+    .periodo-select:hover {
+        background: #f5f0d9;
+        border-color: #E9E2C3;
+    }
+    
+    .badge-year {
+        background: #E9E2C3;
+        color: #0D2C63;
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        display: inline-block;
+    }
+</style>
+
 <div class="container-fluid mt-4">
     <!-- Encabezado con información -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h3 class="mb-0">
-                <i class="fas fa-clipboard-list"></i> Ingreso de Notas
-            </h3>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-3">
-                    <p class="mb-1"><strong>Materia:</strong></p>
-                    <p>{{ info_asignacion.nombre_materia }}</p>
+    <div class="info-header">
+        <h3>
+            <i class="fas fa-clipboard-list"></i> Ingreso de Notas
+        </h3>
+        <div class="info-grid">
+            <div class="info-item-header">
+                <div class="info-label">
+                    <i class="fas fa-book"></i> Materia
                 </div>
-                <div class="col-md-2">
-                    <p class="mb-1"><strong>Código:</strong></p>
-                    <p>{{ info_asignacion.codigo_materia }}</p>
+                <p class="info-value">{{ info_asignacion.nombre_materia }}</p>
+            </div>
+            
+            <div class="info-item-header">
+                <div class="info-label">
+                    <i class="fas fa-barcode"></i> Código
                 </div>
-                <div class="col-md-3">
-                    <p class="mb-1"><strong>Grado y Sección:</strong></p>
-                    <p>{{ info_asignacion.grado }} - Sección {{ info_asignacion.seccion }}</p>
+                <p class="info-value">{{ info_asignacion.codigo_materia }}</p>
+            </div>
+            
+            <div class="info-item-header">
+                <div class="info-label">
+                    <i class="fas fa-graduation-cap"></i> Grado y Sección
                 </div>
-                <div class="col-md-2">
-                    <p class="mb-1"><strong>Año Lectivo:</strong></p>
-                    <p><span class="badge bg-info">{{ info_asignacion.ano_lectivo }}</span></p>
+                <p class="info-value">{{ info_asignacion.grado }} - Sección {{ info_asignacion.seccion }}</p>
+            </div>
+            
+            <div class="info-item-header">
+                <div class="info-label">
+                    <i class="fas fa-calendar-alt"></i> Año Lectivo
                 </div>
-                <div class="col-md-2">
-                    <label for="select_periodo" class="form-label"><strong>Período:</strong></label>
-                    <select id="select_periodo" class="form-select" onchange="cambiarPeriodo()">
-                        {% for periodo in periodos %}
-                        <option value="{{ periodo.id_periodo }}" 
-                                {% if periodo.id_periodo == id_periodo %}selected{% endif %}>
-                            {{ periodo.nombre_periodo }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                <p class="info-value">
+                    <span class="badge-year">{{ info_asignacion.ano_lectivo }}</span>
+                </p>
+            </div>
+            
+            <div class="info-item-header">
+                <div class="info-label">
+                    <i class="fas fa-clock"></i> Período
                 </div>
+                <select id="select_periodo" class="periodo-select" onchange="cambiarPeriodo()">
+                    {% for periodo in periodos %}
+                    <option value="{{ periodo.id_periodo }}" 
+                            {% if periodo.id_periodo == id_periodo %}selected{% endif %}>
+                        {{ periodo.nombre_periodo }}
+                    </option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
     </div>
 
     <!-- Tabla de notas -->
     <form id="formNotas">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle text-center">
-                <thead class="table-dark">
-                    <tr>
-                        <th rowspan="2">N°</th>
-                        <th rowspan="2">NIE</th>
-                        <th rowspan="2">Alumno</th>
-                        <th colspan="3" class="bg-info">Actividades (30%)</th>
-                        <th rowspan="2">Prom</th>
-                        <th rowspan="2">30%</th>
-                        <th rowspan="2">RC</th>
-                        <th rowspan="2">5%</th>
-                        <th colspan="3" class="bg-warning">Integradora (55%)</th>
-                        <th rowspan="2" class="bg-success text-white">Total B.I 70%</th>
-                        <th rowspan="2">P.O 30%</th>
-                        <th rowspan="2" class="bg-primary text-white">Total</th>
-                        <th rowspan="2">Actitud</th>
-                    </tr>
-                    <tr>
-                        <th class="bg-info">Act 1</th>
-                        <th class="bg-info">Act 2</th>
-                        <th class="bg-info">Act 3</th>
-                        <th class="bg-warning">25%</th>
-                        <th class="bg-warning">25%</th>
-                        <th class="bg-warning">5%</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for estudiante in estudiantes %}
-                    <tr data-estudiante="{{ estudiante.id_estudiante }}">
-                        <td>{{ loop.index }}</td>
-                        <td><strong>{{ estudiante.nie }}</strong></td>
-                        <td class="text-start">{{ estudiante.nombre_completo }}</td>
-                        
-                        <!-- Actividades -->
-                        <td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input act1" /></td>
-                        <td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input act2" /></td>
-                        <td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input act3" /></td>
-                        
-                        <!-- Promedio actividades -->
-                        <td><input type="number" step="0.01" class="form-control form-control-sm promedio-act" readonly /></td>
-                        <td><input type="number" step="0.01" class="form-control form-control-sm porc30" readonly /></td>
-                        
-                        <!-- RC -->
-                        <td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input nota-rc" /></td>
-                        <td><input type="number" step="0.01" class="form-control form-control-sm rc5" readonly /></td>
-                        
-                        <!-- Integradoras -->
-                        <td class="bg-warning bg-opacity-25">
-                            <input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input int1" />
-                        </td>
-                        <td class="bg-warning bg-opacity-25">
-                            <input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input int2" />
-                        </td>
-                        <td class="bg-warning bg-opacity-25">
-                            <input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input int3" />
-                        </td>
-                        
-                        <!-- Total BI -->
-                        <td class="bg-success bg-opacity-25">
-                            <input type="number" step="0.01" class="form-control form-control-sm total-bi" readonly />
-                        </td>
-                        
-                        <!-- Prueba Objetiva -->
-                        <td><input type="number" step="0.01" min="0" max="10" class="form-control form-control-sm nota-input prueba-obj" /></td>
-                        
-                        <!-- Total Final -->
-                        <td class="bg-primary bg-opacity-25">
-                            <input type="number" step="0.01" class="form-control form-control-sm total-final" readonly />
-                        </td>
-                        
-                        <!-- Actitud -->
-                        <td>
-                            <select class="form-select form-select-sm actitud">
-                                <option value="">-</option>
-                                <option value="Excelente">Excelente</option>
-                                <option value="Muy Buena">Muy Buena</option>
-                                <option value="Buena">Buena</option>
-                                <option value="Regular">Regular</option>
-                                <option value="Deficiente">Deficiente</option>
-                            </select>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center table-notas mb-0">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="min-width: 50px;">N°</th>
+                                <th rowspan="2" style="min-width: 100px;">NIE</th>
+                                <th rowspan="2" style="min-width: 200px;">Alumno</th>
+                                <th colspan="6" class="header-actividades"><i class="fas fa-tasks"></i> Actividades (30%)</th>
+                                <th rowspan="2">Prom</th>
+                                <th rowspan="2">30%</th>
+                                <th rowspan="2">RC</th>
+                                <th rowspan="2">5%</th>
+                                <th colspan="3" class="header-integradoras"><i class="fas fa-puzzle-piece"></i> Integradoras (35%)</th>
+                                <th rowspan="2" class="header-bi"><i class="fas fa-chart-line"></i> BI 70%</th>
+                                <th rowspan="2">P.O 30%</th>
+                                <th rowspan="2" class="header-total"><i class="fas fa-award"></i> Total</th>
+                                <th rowspan="2"><i class="fas fa-smile"></i> Actitud</th>
+                            </tr>
+                            <tr>
+                                <th class="header-actividades">Act 1</th>
+                                <th class="header-actividades">Act 2</th>
+                                <th class="header-actividades">Act 3</th>
+                                <th class="header-actividades">Act 4</th>
+                                <th class="header-actividades">Act 5</th>
+                                <th class="header-actividades">Act 6</th>
+                                <th class="header-integradoras">25%</th>
+                                <th class="header-integradoras">5%</th>
+                                <th class="header-integradoras">5%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for estudiante in estudiantes %}
+                            <tr data-estudiante="{{ estudiante.id_estudiante }}" {% if estudiante.notas_existentes %}class="nota-guardada"{% endif %}>
+                                <td style="background-color: #f8f9fa; font-weight: 600;">{{ loop.index }}</td>
+                                <td style="background-color: #f8f9fa;">
+                                    <strong>{{ estudiante.nie }}</strong>
+                                    {% if estudiante.notas_existentes %}
+                                    <br><i class="fas fa-check-circle text-success" style="font-size: 0.75rem;" title="Notas guardadas"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="text-start" style="background-color: #f8f9fa; font-weight: 500; padding-left: 1rem;">{{ estudiante.nombre_completo }}</td>
+                                
+                                <!-- Actividades (máx 6) -->
+                                <td class="celda-actividades"><input type="number" step="0.01" min="0" max="10" class="nota-input actividad" data-tipo="act1" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.actividades.act1 %}{{ estudiante.notas_existentes.actividades.act1 }}{% endif %}" /></td>
+                                <td class="celda-actividades"><input type="number" step="0.01" min="0" max="10" class="nota-input actividad" data-tipo="act2" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.actividades.act2 %}{{ estudiante.notas_existentes.actividades.act2 }}{% endif %}" /></td>
+                                <td class="celda-actividades"><input type="number" step="0.01" min="0" max="10" class="nota-input actividad" data-tipo="act3" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.actividades.act3 %}{{ estudiante.notas_existentes.actividades.act3 }}{% endif %}" /></td>
+                                <td class="celda-actividades"><input type="number" step="0.01" min="0" max="10" class="nota-input actividad" data-tipo="act4" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.actividades.act4 %}{{ estudiante.notas_existentes.actividades.act4 }}{% endif %}" /></td>
+                                <td class="celda-actividades"><input type="number" step="0.01" min="0" max="10" class="nota-input actividad" data-tipo="act5" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.actividades.act5 %}{{ estudiante.notas_existentes.actividades.act5 }}{% endif %}" /></td>
+                                <td class="celda-actividades"><input type="number" step="0.01" min="0" max="10" class="nota-input actividad" data-tipo="act6" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.actividades.act6 %}{{ estudiante.notas_existentes.actividades.act6 }}{% endif %}" /></td>
+                                
+                                <!-- Promedio actividades -->
+                                <td class="celda-actividades"><input type="number" step="0.01" class="nota-input nota-calculada promedio-act" readonly /></td>
+                                <td class="celda-actividades"><input type="number" step="0.01" class="nota-input nota-calculada porc30" readonly /></td>
+                                
+                                <!-- RC -->
+                                <td><input type="number" step="0.01" min="0" max="10" class="nota-input nota-rc" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.nota_rc %}{{ estudiante.notas_existentes.nota_rc }}{% endif %}" /></td>
+                                <td><input type="number" step="0.01" class="nota-input nota-calculada rc5" readonly /></td>
+                                
+                                <!-- Integradoras -->
+                                <td class="celda-integradoras">
+                                    <input type="number" step="0.01" min="0" max="10" class="nota-input integradora" data-tipo="int1" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.integradora_1 %}{{ estudiante.notas_existentes.integradora_1 }}{% endif %}" />
+                                </td>
+                                <td class="celda-integradoras">
+                                    <input type="number" step="0.01" min="0" max="10" class="nota-input integradora" data-tipo="int2" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.integradora_2 %}{{ estudiante.notas_existentes.integradora_2 }}{% endif %}" />
+                                </td>
+                                <td class="celda-integradoras">
+                                    <input type="number" step="0.01" min="0" max="10" class="nota-input integradora" data-tipo="int3" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.integradora_3 %}{{ estudiante.notas_existentes.integradora_3 }}{% endif %}" />
+                                </td>
+                                
+                                <!-- Total BI -->
+                                <td class="celda-bi">
+                                    <input type="number" step="0.01" class="nota-input nota-calculada total-bi" readonly />
+                                </td>
+                                
+                                <!-- Prueba Objetiva -->
+                                <td><input type="number" step="0.01" min="0" max="10" class="nota-input prueba-obj" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.prueba_objetiva %}{{ estudiante.notas_existentes.prueba_objetiva }}{% endif %}" /></td>
+                                
+                                <!-- Total Final -->
+                                <td class="celda-total">
+                                    <input type="number" step="0.01" class="nota-input nota-calculada total-final" readonly />
+                                </td>
+                                
+                                <!-- Actitud -->
+                                <td>
+                                    <select class="nota-input actitud" style="width: 110px;">
+                                        <option value="">-</option>
+                                        <option value="Excelente" {% if estudiante.notas_existentes and estudiante.notas_existentes.actitud == 'Excelente' %}selected{% endif %}>Excelente</option>
+                                        <option value="Muy Buena" {% if estudiante.notas_existentes and estudiante.notas_existentes.actitud == 'Muy Buena' %}selected{% endif %}>Muy Buena</option>
+                                        <option value="Buena" {% if estudiante.notas_existentes and estudiante.notas_existentes.actitud == 'Buena' %}selected{% endif %}>Buena</option>
+                                        <option value="Regular" {% if estudiante.notas_existentes and estudiante.notas_existentes.actitud == 'Regular' %}selected{% endif %}>Regular</option>
+                                        <option value="Deficiente" {% if estudiante.notas_existentes and estudiante.notas_existentes.actitud == 'Deficiente' %}selected{% endif %}>Deficiente</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <div class="d-flex justify-content-between mt-4">
-            <a href="{{ url_for('docente_notas.mis_materias') }}" class="btn btn-secondary">
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <a href="{{ url_for('docente_notas.mis_materias') }}" class="btn btn-secondary btn-lg">
                 <i class="fas fa-arrow-left"></i> Volver
             </a>
-            <button type="button" onclick="guardarNotas()" class="btn btn-success btn-lg">
+            <button type="button" onclick="guardarNotas(event)" class="btn btn-success btn-guardar-notas">
                 <i class="fas fa-save"></i> Guardar Notas
             </button>
         </div>
@@ -145,6 +398,13 @@
 
 <script>
 // Calcular promedios en tiempo real
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcular todas las filas al cargar (para notas existentes)
+    document.querySelectorAll('tbody tr').forEach(fila => {
+        calcularFila(fila);
+    });
+});
+
 document.querySelectorAll('.nota-input').forEach(input => {
     input.addEventListener('input', function() {
         const fila = this.closest('tr');
@@ -153,35 +413,59 @@ document.querySelectorAll('.nota-input').forEach(input => {
 });
 
 function calcularFila(fila) {
-    // Actividades
-    const act1 = parseFloat(fila.querySelector('.act1').value) || 0;
-    const act2 = parseFloat(fila.querySelector('.act2').value) || 0;
-    const act3 = parseFloat(fila.querySelector('.act3').value) || 0;
-    const promedioAct = (act1 + act2 + act3) / 3;
+    // ACTIVIDADES (hasta 3) - 30%
+    const actividades = fila.querySelectorAll('.actividad');
+    let sumaActividades = 0;
+    let countActividades = 0;
+    
+    actividades.forEach(input => {
+        const valor = parseFloat(input.value);
+        if (!isNaN(valor) && valor > 0) {
+            sumaActividades += valor;
+            countActividades++;
+        }
+    });
+    
+    const promedioAct = countActividades > 0 ? sumaActividades / countActividades : 0;
     fila.querySelector('.promedio-act').value = promedioAct.toFixed(2);
     fila.querySelector('.porc30').value = (promedioAct * 0.3).toFixed(2);
     
-    // RC
+    // NOTA R.C - 5%
     const notaRC = parseFloat(fila.querySelector('.nota-rc').value) || 0;
     fila.querySelector('.rc5').value = (notaRC * 0.05).toFixed(2);
     
-    // Integradoras
-    const int1 = parseFloat(fila.querySelector('.int1').value) || 0;
-    const int2 = parseFloat(fila.querySelector('.int2').value) || 0;
-    const int3 = parseFloat(fila.querySelector('.int3').value) || 0;
-    const totalInt = (int1 * 0.25) + (int2 * 0.25) + (int3 * 0.05);
+    // INTEGRADORAS - 35% total (25% + 5% + 5%)
+    const integradoras = fila.querySelectorAll('.integradora');
+    const int1 = parseFloat(integradoras[0].value) || 0;
+    const int2 = parseFloat(integradoras[1].value) || 0;
+    const int3 = parseFloat(integradoras[2].value) || 0;
     
-    // Total BI (70%)
-    const totalBI = (promedioAct * 0.3) + (notaRC * 0.05) + totalInt;
+    // Calcular con los porcentajes correctos: 25%, 5%, 5%
+    const totalIntegradoras = (int1 * 0.25) + (int2 * 0.05) + (int3 * 0.05);
+    
+    // TOTAL B.I (Base Integradora) - 70%
+    const totalBI = (promedioAct * 0.3) + (notaRC * 0.05) + totalIntegradoras;
     fila.querySelector('.total-bi').value = totalBI.toFixed(2);
     
-    // Prueba Objetiva (30%)
+    // PRUEBA OBJETIVA - 30%
     const pruebaObj = parseFloat(fila.querySelector('.prueba-obj').value) || 0;
     const totalPO = pruebaObj * 0.3;
     
-    // Total Final
+    // TOTAL FINAL (100%)
     const totalFinal = totalBI + totalPO;
-    fila.querySelector('.total-final').value = totalFinal.toFixed(2);
+    const totalFinalInput = fila.querySelector('.total-final');
+    totalFinalInput.value = totalFinal.toFixed(2);
+    
+    // Aplicar clases según la nota final
+    totalFinalInput.classList.remove('aprobado', 'recuperacion', 'reprobado');
+    
+    if (totalFinal >= 7.0) {
+        totalFinalInput.classList.add('aprobado');
+    } else if (totalFinal >= 5.0 && totalFinal < 7.0) {
+        totalFinalInput.classList.add('recuperacion');
+    } else if (totalFinal > 0) {
+        totalFinalInput.classList.add('reprobado');
+    }
 }
 
 function cambiarPeriodo() {
@@ -191,46 +475,142 @@ function cambiarPeriodo() {
 
 function guardarNotas() {
     const idPeriodo = document.getElementById('select_periodo').value;
+    
+    if (!idPeriodo) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Período requerido',
+            text: 'Por favor seleccione un período'
+        });
+        return;
+    }
+    
     const notas = [];
     
     document.querySelectorAll('tbody tr').forEach(fila => {
         const idEstudiante = fila.dataset.estudiante;
         
+        // Recopilar actividades
+        const actividades = [];
+        fila.querySelectorAll('.actividad').forEach((input, index) => {
+            const valor = input.value ? parseFloat(input.value) : null;
+            if (valor !== null) {
+                actividades.push({
+                    numero: index + 1,
+                    nota: valor
+                });
+            }
+        });
+        
+        // Recopilar integradoras
+        const integradoras = [];
+        const porcentajesInt = [25, 5, 5];
+        fila.querySelectorAll('.integradora').forEach((input, index) => {
+            const valor = input.value ? parseFloat(input.value) : null;
+            if (valor !== null) {
+                integradoras.push({
+                    numero: index + 1,
+                    nota: valor,
+                    porcentaje: porcentajesInt[index]
+                });
+            }
+        });
+        
+        // Recopilar otros datos
+        const notaRC = fila.querySelector('.nota-rc').value ? parseFloat(fila.querySelector('.nota-rc').value) : null;
+        const pruebaObj = fila.querySelector('.prueba-obj').value ? parseFloat(fila.querySelector('.prueba-obj').value) : null;
+        const actitud = fila.querySelector('.actitud').value || null;
+        
+        // Obtener totales calculados
+        const promedioActividades = parseFloat(fila.querySelector('.promedio-act').value) || 0;
+        const porcentajeActividades = parseFloat(fila.querySelector('.porc30').value) || 0;
+        const porcentajeRC = parseFloat(fila.querySelector('.rc5').value) || 0;
+        const totalBI = parseFloat(fila.querySelector('.total-bi').value) || 0;
+        const totalFinal = parseFloat(fila.querySelector('.total-final').value) || 0;
+        
         notas.push({
             id_estudiante: idEstudiante,
-            act1: fila.querySelector('.act1').value,
-            act2: fila.querySelector('.act2').value,
-            act3: fila.querySelector('.act3').value,
-            nota_rc: fila.querySelector('.nota-rc').value,
-            int1: fila.querySelector('.int1').value,
-            int2: fila.querySelector('.int2').value,
-            int3: fila.querySelector('.int3').value,
-            prueba_obj: fila.querySelector('.prueba-obj').value,
-            actitud: fila.querySelector('.actitud').value
+            actividades: actividades,
+            nota_rc: notaRC,
+            integradoras: integradoras,
+            prueba_objetiva: pruebaObj,
+            actitud: actitud,
+            // Resumen para notas_resumen_periodo
+            promedio_actividades: promedioActividades,
+            porcentaje_actividades: porcentajeActividades,
+            porcentaje_rc: porcentajeRC,
+            promedio_integradoras: 0, // Se calculará en el backend
+            porcentaje_integradoras: integradoras.reduce((sum, int) => sum + (int.nota * int.porcentaje / 10), 0),
+            total_bi: totalBI,
+            total_final: totalFinal
         });
     });
     
-    fetch(`{{ url_for('docente_notas.guardar_notas', id_asignacion=id_asignacion) }}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            id_periodo: idPeriodo,
-            notas: notas
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Notas guardadas correctamente');
-        } else {
-            alert('Error: ' + data.mensaje);
+    // Mostrar confirmación antes de guardar
+    Swal.fire({
+        title: '¿Guardar notas?',
+        text: `Se guardarán las notas de ${notas.length} estudiantes para este período`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fas fa-save me-2"></i>Guardar',
+        cancelButtonText: '<i class="fas fa-times me-2"></i>Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Guardando...',
+                text: 'Por favor espere',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            fetch(`{{ url_for('docente_notas.guardar_notas', id_asignacion=id_asignacion) }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id_periodo: idPeriodo,
+                    notas: notas
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: 'Las notas se han guardado correctamente',
+                        confirmButtonColor: '#28a745'
+                    }).then(() => {
+                        // Marcar todas las filas como guardadas
+                        document.querySelectorAll('tbody tr').forEach(fila => {
+                            fila.classList.add('nota-guardada');
+                        });
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.mensaje || 'No se pudieron guardar las notas',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servidor',
+                    confirmButtonColor: '#dc3545'
+                });
+            });
         }
-    })
-    .catch(error => {
-        alert('Error al guardar las notas');
-        console.error(error);
     });
 }
 </script>
