@@ -2,7 +2,16 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from models.usuarios import Usuario
 from db import db
 import random, string, datetime
-from flask_mail import Message
+try:
+    from flask_mail import Message
+except Exception:
+    # Si flask_mail no está disponible, definimos un stub para no romper la ejecución.
+    class Message:
+        def __init__(self, *args, **kwargs):
+            self.recipients = kwargs.get('recipients', [])
+            self.body = ''
+        def __setattr__(self, name, value):
+            object.__setattr__(self, name, value)
 from flask import current_app
 
 recover_bp = Blueprint('recover', __name__)

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, redirect, url_for
 from db import DatabaseConfig, test_connection
 from appEstudiantes import estudiantes_bp
 
@@ -19,27 +19,31 @@ from routes.materia_seccion_route import materia_seccion_bp
 from routes.notas_route import notas_bp
 from routes.docente_notas_route import docente_notas_bp
 
+from routes.reportesC_bp import reportesC_bp
+
 
 
 import os
-from flask_mail import Mail
-
 # Cargar variables de entorno desde .env
 load_dotenv()
 
 
 app = Flask(__name__)
 
-# Configuración de Flask-Mail
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
-app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True') == 'True'
-app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False') == 'True'
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
-
-mail = Mail(app)
+# Configuración de Flask-Mail (opcional)
+try:
+    from flask_mail import Mail
+    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True') == 'True'
+    app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False') == 'True'
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+    mail = Mail(app)
+except Exception:
+    # flask_mail no está instalado o hay error en la configuración; continuar sin Mail
+    mail = None
 
 # Configurar secret key para sesiones y flash
 app.secret_key = os.getenv("SECRET_KEY")  # <--- esto es crucial
@@ -64,6 +68,19 @@ app.register_blueprint(materias_bp, url_prefix='/materias')
 app.register_blueprint(materia_seccion_bp, url_prefix='/asignaciones')
 app.register_blueprint(notas_bp)
 app.register_blueprint(docente_notas_bp, url_prefix='/docente')
+
+app.register_blueprint(reportesC_bp, url_prefix='/reportesC')
+
+
+# Rutas de compatibilidad: redirigen a los endpoints del blueprint con prefijo
+@app.route('/reporte_conducta_estudiante')
+def redirect_reporte_conducta_estudiante():
+    return redirect(url_for('reportes.reporte_conducta_estudiante'))
+
+
+@app.route('/reporte_conducta_periodo')
+def redirect_reporte_conducta_periodo():
+    return redirect(url_for('reportes.reporte_conducta_periodo'))
 
 
 

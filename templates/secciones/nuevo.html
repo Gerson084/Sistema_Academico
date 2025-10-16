@@ -102,9 +102,9 @@
                             <option value="">-- Selecciona un coordinador --</option>
                             {% for usuario in usuarios %}
                             <option value="{{ usuario.id_usuario }}" 
-                                    data-nombre="{{ usuario.nombre }}" 
-                                    data-apellido="{{ usuario.apellido }}">
-                                {{ usuario.nombres }} {{ usuario.apellidos}}
+                                    data-nombre="{{ usuario.nombres }}" 
+                                    data-apellido="{{ usuario.apellidos }}">
+                                {{ usuario.nombres }} {{ usuario.apellidos }}
                             </option>
                             {% endfor %}
                         </select>
@@ -175,8 +175,16 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Existing sections passed from backend for client-side validation
-    const existingSections = {{ existing_sections|tojson | safe }} || [];
+    // Ensure existingSections is safe even if backend didn't provide it
+   
+
+    // ✅ Usamos JSON.parse para evitar errores si la variable no está definida
+        let existingSections = JSON.parse('{{ existing_sections | tojson | default("[]") | safe }}');
+
+        if (!Array.isArray(existingSections)) {
+            existingSections = [];
+            console.warn('existing_sections no es un array, usando array vacío por defecto');
+        }
 
     // Helper: check duplicate (grade, year, name) in existingSections
     function isDuplicateSection(gradeId, yearId, sectionName) {

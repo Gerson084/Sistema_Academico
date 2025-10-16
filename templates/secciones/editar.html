@@ -203,7 +203,14 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const existingSections = {{ existing_sections|tojson | safe }} || [];
+    // Ensure existingSections is always a safe array even if backend didn't provide it
+    // ✅ Usamos JSON.parse para evitar errores si la variable no está definida
+        let existingSections = JSON.parse('{{ existing_sections | tojson | default("[]") | safe }}');
+
+        if (!Array.isArray(existingSections)) {
+            existingSections = [];
+            console.warn('existing_sections no es un array, usando array vacío por defecto');
+        }
 
     function isDuplicateSection(gradeId, yearId, sectionName, excludeId) {
         const name = (sectionName || '').trim().toUpperCase();
@@ -377,12 +384,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const gradeOption = gradeSelect.options[gradeSelect.selectedIndex];
             const coordinadorOption = coordinadorSelect.options[coordinadorSelect.selectedIndex];
             const yearOption = yearSelect.options[yearSelect.selectedIndex];
-            
-            const gradeName = gradeOption.getAttribute('data-name');
-            const gradeLevel = gradeOption.getAttribute('data-level');
-            const coordinadorNombre = coordinadorOption.getAttribute('data-nombre');
-            const coordinadorApellido = coordinadorOption.getAttribute('data-apellido');
-            const yearText = yearOption.getAttribute('data-year');
+
+            const gradeName = gradeOption ? gradeOption.getAttribute('data-name') || '' : '';
+            const gradeLevel = gradeOption ? gradeOption.getAttribute('data-level') || '' : '';
+            const coordinadorNombre = coordinadorOption ? (coordinadorOption.getAttribute('data-nombre') || '') : '';
+            const coordinadorApellido = coordinadorOption ? (coordinadorOption.getAttribute('data-apellido') || '') : '';
+            const yearText = yearOption ? yearOption.getAttribute('data-year') || '' : '';
             
             previewDetails.innerHTML = `
                 <div><strong>Sección:</strong> ${nameValue}</div>
@@ -475,14 +482,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const gradeOption = gradeSelect.options[gradeSelect.selectedIndex];
-        const coordinadorOption = coordinadorSelect.options[coordinadorSelect.selectedIndex];
-        const yearOption = yearSelect.options[yearSelect.selectedIndex];
-        const gradeName = gradeOption.getAttribute('data-name');
-        const gradeLevel = gradeOption.getAttribute('data-level');
-        const coordinadorNombre = coordinadorOption.getAttribute('data-nombre');
-        const coordinadorApellido = coordinadorOption.getAttribute('data-apellido');
-        const yearText = yearOption.getAttribute('data-year');
+    const gradeOption = gradeSelect.options[gradeSelect.selectedIndex];
+    const coordinadorOption = coordinadorSelect.options[coordinadorSelect.selectedIndex];
+    const yearOption = yearSelect.options[yearSelect.selectedIndex];
+    const gradeName = gradeOption ? gradeOption.getAttribute('data-name') || '' : '';
+    const gradeLevel = gradeOption ? gradeOption.getAttribute('data-level') || '' : '';
+    const coordinadorNombre = coordinadorOption ? (coordinadorOption.getAttribute('data-nombre') || '') : '';
+    const coordinadorApellido = coordinadorOption ? (coordinadorOption.getAttribute('data-apellido') || '') : '';
+    const yearText = yearOption ? yearOption.getAttribute('data-year') || '' : '';
         const sectionName = nameInput.value.trim();
         
         const confirmMsg = `¿Confirma los cambios en esta sección?

@@ -47,7 +47,8 @@
 
       <!-- Navegación -->
       <div class="collapse navbar-collapse flex-column sidebar-nav" id="sidebarMenu">
-        {% if not session.get('user_id') %}
+  {% set current_role = override_role if override_role is defined else session.get('user_role') %}
+  {% if not session.get('user_id') %}
           <!-- No logueado -->
           <div class="nav-section">
             <ul class="navbar-nav flex-column w-100">
@@ -61,7 +62,7 @@
           </div>
         {% else %}
           <!-- Menú según roles -->
-          {% if session.get('user_role') == 1 %}
+          {% if current_role == 1 %}
           <div class="nav-section">
             <h6 class="nav-section-title">Gestión Académica</h6>
             <ul class="navbar-nav flex-column w-100">
@@ -101,7 +102,7 @@
                 </a>
             </ul>
           </div>
-          {% elif session.get('user_role') == 2 %}
+          {% elif current_role == 2 %}
           <div class="nav-section">
             <h6 class="nav-section-title">Docente</h6>
             <ul class="navbar-nav flex-column w-100">
