@@ -10,7 +10,7 @@ pymysql.install_as_MySQLdb()
 db = SQLAlchemy()
 
 class DatabaseConfig:
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:KdavjHoyqdUFDRgtjZcYkoPcHrTazCgI@tramway.proxy.rlwy.net:35552/sistema_academicoo"
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:CdrTCbYUUVATqZYVyCWgWEidiaCssEwu@crossover.proxy.rlwy.net:26214/sistema_academico"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     @staticmethod
