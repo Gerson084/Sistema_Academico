@@ -424,34 +424,44 @@ def guardar_conducta(id_estudiante):
         if not verificacion:
             return jsonify({"success": False, "mensaje": "No tiene permisos para modificar esta conducta"})
         
-        # Obtener el id_promedio_periodo del estudiante
-        # Primero obtenemos cualquier promedio_periodo del estudiante del año actual
-        query_promedio_periodo = text("""
-            SELECT pp.id_promedio_periodo
-            FROM promedios_periodo pp
-            INNER JOIN calificaciones c ON pp.id_calificacion = c.id_calificacion
-            WHERE c.id_estudiante = :id_estudiante
+        # Obtener el año lectivo y período actual de la matrícula
+        query_periodo_actual = text("""
+            SELECT p.id_periodo, s.id_ano_lectivo
+            FROM matriculas m
+            INNER JOIN secciones s ON m.id_seccion = s.id_seccion
+            INNER JOIN periodos p ON s.id_ano_lectivo = p.id_ano_lectivo
+            WHERE m.id_matricula = :id_matricula
+            AND p.activo = 1
+            ORDER BY p.numero_periodo DESC
             LIMIT 1
         """)
         
-        promedio_periodo_result = db.session.execute(query_promedio_periodo, {
-            'id_estudiante': id_estudiante
+        periodo_result = db.session.execute(query_periodo_actual, {
+            'id_matricula': id_matricula
         }).first()
         
-        if not promedio_periodo_result:
-            return jsonify({"success": False, "mensaje": "No se encontraron calificaciones para este estudiante"})
+        if not periodo_result:
+            return jsonify({"success": False, "mensaje": "No se encontró un período activo para esta matrícula"})
         
-        id_promedio_periodo = promedio_periodo_result[0]
+        id_periodo = periodo_result[0]
         
-        # Verificar si ya existe un registro en promedios_anuales para este estudiante
+        # Verificar si ya existe un registro de conducta para este estudiante/matrícula
         query_existe = text("""
-            SELECT id_promedio_anual 
-            FROM promedios_anuales 
-            WHERE id_promedio_periodo = :id_promedio_periodo
+            SELECT pa.id_promedio_anual 
+            FROM promedios_anuales pa
+            WHERE pa.id_periodo = :id_periodo
+            AND EXISTS (
+                SELECT 1 FROM promedios_periodo pp
+                INNER JOIN calificaciones c ON pp.id_calificacion = c.id_calificacion
+                WHERE pp.id_promedio_periodo = pa.id_promedio_periodo
+                AND c.id_estudiante = :id_estudiante
+            )
+            LIMIT 1
         """)
         
         registro_existente = db.session.execute(query_existe, {
-            'id_promedio_periodo': id_promedio_periodo
+            'id_periodo': id_periodo,
+            'id_estudiante': id_estudiante
         }).first()
         
         if registro_existente:
@@ -459,31 +469,51 @@ def guardar_conducta(id_estudiante):
             update_conducta = text("""
                 UPDATE promedios_anuales
                 SET conducta_final = :conducta
-                WHERE id_promedio_periodo = :id_promedio_periodo
+                WHERE id_promedio_anual = :id_promedio_anual
             """)
             
             db.session.execute(update_conducta, {
                 'conducta': conducta,
-                'id_promedio_periodo': id_promedio_periodo
+                'id_promedio_anual': registro_existente[0]
             })
         else:
-            # Crear nuevo registro en promedios_anuales
-            # Necesitamos obtener el id_periodo actual
-            query_periodo = text("""
-                SELECT p.id_periodo
-                FROM periodos p
-                INNER JOIN secciones s ON p.id_ano_lectivo = s.id_ano_lectivo
-                INNER JOIN matriculas m ON s.id_seccion = m.id_seccion
-                WHERE m.id_matricula = :id_matricula
-                ORDER BY p.numero_periodo DESC
+            # Si no existe, necesitamos crear la estructura completa
+            # Primero crear un promedio_periodo si no existe
+            query_crear_promedio = text("""
+                INSERT INTO promedios_periodo (id_calificacion)
+                SELECT MIN(c.id_calificacion)
+                FROM calificaciones c
+                WHERE c.id_estudiante = :id_estudiante
+                AND NOT EXISTS (
+                    SELECT 1 FROM promedios_periodo pp 
+                    WHERE pp.id_calificacion = c.id_calificacion
+                )
                 LIMIT 1
             """)
             
-            periodo_result = db.session.execute(query_periodo, {
-                'id_matricula': id_matricula
+            try:
+                db.session.execute(query_crear_promedio, {
+                    'id_estudiante': id_estudiante
+                })
+                db.session.flush()
+            except:
+                pass  # Si falla, intentamos obtener uno existente
+            
+            # Obtener o crear un promedio_periodo
+            query_get_promedio = text("""
+                SELECT pp.id_promedio_periodo
+                FROM promedios_periodo pp
+                INNER JOIN calificaciones c ON pp.id_calificacion = c.id_calificacion
+                WHERE c.id_estudiante = :id_estudiante
+                LIMIT 1
+            """)
+            
+            promedio_result = db.session.execute(query_get_promedio, {
+                'id_estudiante': id_estudiante
             }).first()
             
-            if periodo_result:
+            if promedio_result:
+                # Crear el registro en promedios_anuales
                 insert_conducta = text("""
                     INSERT INTO promedios_anuales 
                     (id_promedio_periodo, id_periodo, conducta_final, estado_final)
@@ -491,10 +521,12 @@ def guardar_conducta(id_estudiante):
                 """)
                 
                 db.session.execute(insert_conducta, {
-                    'id_promedio_periodo': id_promedio_periodo,
-                    'id_periodo': periodo_result[0],
+                    'id_promedio_periodo': promedio_result[0],
+                    'id_periodo': id_periodo,
                     'conducta': conducta
                 })
+            else:
+                return jsonify({"success": False, "mensaje": "No se pueden guardar conductas sin calificaciones previas. Por favor, ingrese al menos una nota primero."})
         
         db.session.commit()
         
