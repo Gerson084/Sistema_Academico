@@ -1,9 +1,9 @@
-# routes/reportesC_bp.py
 from flask import Blueprint, render_template, request, session, Response, url_for, redirect
 from models.Promedios_periodo import PromedioPeriodo
 from models.Promedios_anuales import PromedioAnual
 from models.Estudiantes import Estudiante
 from models.Grados import Grado
+from models.Materias import Materia
 from models.Secciones import Seccion
 from models.Calificaciones import Calificacion
 from models.matriculas import Matricula
@@ -15,6 +15,76 @@ import io, csv
 
 # Crear Blueprint
 reportesC_bp = Blueprint('reportes', __name__, template_folder="templates")
+
+# === REPORTE DE NOTAS POR DOCENTE ===
+@reportesC_bp.route('/reporte_notas_docente', methods=['GET'])
+def reporte_notas_docente():
+    id_docente = session.get('user_id')
+    user_role = session.get('user_role')
+    if not id_docente or user_role != 2:
+        return redirect(url_for('auth.login'))
+
+    # Obtener materias y grados asignados al docente
+    asignaciones = MateriaSeccion.query.filter_by(id_maestro=id_docente).all()
+    materia_ids = list({a.id_materia for a in asignaciones})
+    seccion_ids = list({a.id_seccion for a in asignaciones})
+    materias = Materia.query.filter(Materia.id_materia.in_(materia_ids)).all() if materia_ids else []
+    grados = Grado.query.join(Grado.secciones).filter(Seccion.id_seccion.in_(seccion_ids)).distinct().all() if seccion_ids else []
+
+    materia_id = request.args.get('materia_id', type=int)
+    grado_id = request.args.get('grado_id', type=int)
+    estudiantes = None
+
+    if materia_id and grado_id:
+        # Buscar secciones del docente que coincidan con materia y grado
+        secciones = Seccion.query.filter(
+            Seccion.id_grado == grado_id,
+            Seccion.id_seccion.in_(seccion_ids)
+        ).all()
+        seccion_ids_filtradas = [s.id_seccion for s in secciones]
+        # Buscar asignaciones válidas
+        asigns = MateriaSeccion.query.filter(
+            MateriaSeccion.id_maestro == id_docente,
+            MateriaSeccion.id_materia == materia_id,
+            MateriaSeccion.id_seccion.in_(seccion_ids_filtradas)
+        ).all()
+        asign_ids = [a.id_asignacion for a in asigns]
+        # Buscar estudiantes matriculados en esas secciones
+        mats = Matricula.query.filter(
+            Matricula.id_seccion.in_(seccion_ids_filtradas),
+            Matricula.activa == True
+        ).all()
+        estudiantes = []
+        for m in mats:
+            est = m.estudiante
+            if not est or not est.activo:
+                continue
+            # Buscar nota final del último periodo/resumen
+            nota_final = None
+            resumen = db.session.execute(
+                """
+                SELECT nota_final_periodo FROM notas_resumen_periodo
+                WHERE id_estudiante = :id_est AND id_asignacion IN :asign_ids
+                ORDER BY id_periodo DESC LIMIT 1
+                """,
+                {'id_est': est.id_estudiante, 'asign_ids': tuple(asign_ids) if asign_ids else (0,)}
+            ).first()
+            if resumen:
+                nota_final = resumen.nota_final_periodo
+            estudiantes.append({
+                'nie': est.nie,
+                'nombre_completo': f"{est.apellidos}, {est.nombres}",
+                'nota_final': nota_final if nota_final is not None else '-'
+            })
+
+    return render_template(
+        'reportesC/reporte_notas_docente.html',
+        materias=materias,
+        grados=grados,
+        materia_id=materia_id,
+        grado_id=grado_id,
+        estudiantes=estudiantes
+    )
 
 # ==============================
 # REPORTE DE PROMEDIO POR PERIODO

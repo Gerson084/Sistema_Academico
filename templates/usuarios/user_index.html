@@ -54,18 +54,12 @@
                 </div>
             </td>
             <td>
-                
-                  {% for rol in list_rol %}
-                    {% if d.id_rol == rol.id_rol %}
-                      {% if rol.nombre_rol == "Administrador" or rol.nombre_rol == "Administrativa"  %}
-                        <span class="text-danger"><i class="fa fa-shield"></i> {{rol.nombre_rol}}</span>
-                      {% else %}
-                        <span class="text-primary"><i class="fas fa-user"></i> {{rol.nombre_rol}}</span>
-                      {% endif %}
+                <span class="role-badge {% if d.id_rol == 1 %}role-admin{% else %}role-teacher{% endif %}">
+                    {% if d.id_rol == 1 %}
+                    <i class="fas fa-shield-alt"></i> Admin
+                    {% else %}
+                    <i class="fas fa-chalkboard-teacher"></i> Docente
                     {% endif %}
-
-                  {% endfor %}
-
                 </span>
             </td>
             <td>
@@ -196,13 +190,13 @@
             <div class="d-flex justify-content-between align-items-center">
               
               <!-- Botón Editar en cada card de rol -->
-              <button type="button" class="btn btn-edit btn-warning btn-sm btn-edit-rol"
+              <button type="button" class="btn btn-warning btn-sm btn-edit-rol"
                       data-bs-toggle="modal" data-bs-target="#modalEditarRol"
                       data-id="{{ rol.id_rol }}"
                       data-nombre="{{ rol.nombre_rol|escape }}"
                       data-descripcion="{{ rol.descripcion|escape }}"
                       data-estado="{{ rol.estado }}">
-                  <i class=" fas fa-edit"></i> Editar
+                  <i class="fas fa-edit"></i> Editar
               </button>
 
             </div>
@@ -229,8 +223,7 @@
           <input type="hidden" name="id" id="editRolId">
           <div class="mb-3">
             <label for="editNombreRol" class="form-label">Nombre</label>
-            <!-- El nombre del rol no puede editarse desde aquí; es solo lectura -->
-            <input type="text" class="form-control" id="editNombreRol" name="nombre_rol" required readonly title="El nombre del rol no puede ser cambiado">
+            <input type="text" class="form-control" id="editNombreRol" name="nombre_rol" required>
           </div>
           <div class="mb-3">
             <label for="editDescripcionRol" class="form-label">Descripción</label>
@@ -257,7 +250,7 @@
 <div class="modal fade" id="modalCrearRol" tabindex="-1" aria-labelledby="modalCrearRolLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form method="POST" action="{{ url_for('rol.create') }}">
+      <form method="POST" action="{{ url_for('rol.create') }}" id="formCrear">
         <div class="modal-header">
           <h5 class="modal-title" id="modalCrearRolLabel">Crear Rol</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -567,8 +560,8 @@
     });
   }
 
-  // Handle form submit for edit rol
-  document.getElementById('formEditarRol').addEventListener('submit', function(e) {
+
+   document.getElementById('formEditarRol').addEventListener('submit', function(e) {
     e.preventDefault();
     const formData = new FormData(this);
     fetch(this.action, {
@@ -593,6 +586,46 @@
           title: 'Error',
           text: data.mensaje,
           icon: 'error',
+          confirmButtonColor: '#0D2C63'
+        });
+      }
+    })
+    .catch(error => {
+      Swal.fire({
+        title: 'Error',
+        text: 'Error de conexión. Por favor, intente nuevamente.',
+        icon: 'error',
+        confirmButtonColor: '#0D2C63'
+      });
+    });
+  });
+
+
+  document.getElementById('formCrear').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const Data = new FormData(this);
+    fetch(this.action, {
+      method: 'POST',
+      body: Data
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        Swal.fire({
+          title: '¡Éxito!',
+          text: data.mensaje,
+          icon: 'success',
+          confirmButtonColor: '#0D2C63'
+        }).then(() => {
+          if (data.redirect) {
+            window.location.href = data.redirect;
+          }
+        });
+      } else {
+        Swal.fire({
+          title: 'Advetencia',
+          text: data.mensaje,
+          icon: 'warning',
           confirmButtonColor: '#0D2C63'
         });
       }

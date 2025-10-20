@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --secondary-blue: #0D2C63;
+        --light-blue: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #d97706;
+        --danger-red: #dc2626;
+        --dark-text: #000000;
+        --medium-text: #374151;
+        --neutral-gray: #6b7280;
+        --border-gray: #e5e7eb;
+    }
+
+    /* Encabezado del módulo sticky */
+    .page-header {
+        position: sticky;
+        top: 8px;
+        z-index: 102;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: #E9E2C3;
+        padding: 2rem 1.25rem;
+        margin: 0 0 2rem 0;
+        width: 100%;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .info-bar {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .btn-volver {
+        background: var(--primary-blue);
+        border: none;
+        color: #E9E2C3;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-volver:hover {
+        background: #1a4080;
+        color: #E9E2C3;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 44, 99, 0.3);
+    }
+
+    .filter-bar {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .search-box {
+        position: relative;
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid var(--border-gray);
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--neutral-gray);
+        pointer-events: none;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .table-estudiantes {
+        margin: 0;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+
+    .table-estudiantes thead th {
+        background: var(--primary-blue);
+        color: #E9E2C3;
+        font-weight: 700;
+        text-align: center;
+        padding: 1rem 0.75rem;
+        border: none;
+        white-space: nowrap;
+    }
+
+    .table-estudiantes tbody td {
+        vertical-align: middle;
+        padding: 0.85rem 0.75rem;
+        border-bottom: 1px solid var(--border-gray);
+        text-align: center;
+    }
+
+    .table-estudiantes tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .tabla-nie {
+        font-weight: 600;
+        color: var(--primary-blue);
+    }
+
+    .tabla-nombre {
+        text-align: left !important;
+        font-weight: 500;
+        color: var(--dark-text);
+    }
+
+    .badge-conducta {
+        padding: 0.4rem 0.85rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    .badge-excelente {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-muy-buena {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-buena {
+        background: #d9f99d;
+        color: #3f6212;
+    }
+
+    .badge-regular {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-necesita-mejorar {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .btn-ver-notas {
+        background: linear-gradient(135deg, var(--primary-blue), #1a4080);
+        border: none;
+        color: #E9E2C3;
+        padding: 0.6rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        font-size: 0.85rem;
+    }
+
+    .btn-ver-notas:hover {
+        background: linear-gradient(135deg, #1a4080, #0D2C63);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 44, 99, 0.4);
+        color: #E9E2C3;
+        text-decoration: none;
+    }
+
+    .row-hidden {
+        display: none !important;
+    }
+
+    .materias-section {
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+    }
+
+    .materias-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .materia-item {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 2px solid #bfdbfe;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .materia-info {
+        flex: 1;
+    }
+
+    .materia-nombre {
+        font-weight: 700;
+        color: var(--primary-blue);
+        font-size: 1rem;
+    }
+
+    .materia-docente {
+        font-size: 0.85rem;
+        color: var(--neutral-gray);
+        margin-top: 0.25rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .table-estudiantes {
+            font-size: 0.8rem;
+        }
+
+        .table-estudiantes thead th,
+        .table-estudiantes tbody td {
+            padding: 0.6rem 0.4rem;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title">
+                <i class="fas fa-users"></i> Estudiantes de la Sección
+            </h1>
+            <p class="page-subtitle">{{ info_seccion.grado }} - Sección {{ info_seccion.nombre_seccion }} ({{ info_seccion.ano_lectivo }})</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Barra de información -->
+        <div class="info-bar">
+            <div>
+                <h5 class="mb-1"><i class="fas fa-info-circle text-primary"></i> Total de Estudiantes: <strong>{{ estudiantes|length }}</strong></h5>
+            </div>
+            <div>
+                <a href="{{ url_for('coordinador.dashboard') }}" class="btn-volver">
+                    <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Búsqueda -->
+        <div class="filter-bar">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="buscarEstudiante" class="search-input" 
+                       placeholder="Buscar por NIE o nombre del estudiante...">
+            </div>
+        </div>
+
+        <!-- Tabla de Estudiantes -->
+        {% if estudiantes %}
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table table-estudiantes">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">N°</th>
+                            <th style="width: 100px;">NIE</th>
+                            <th style="min-width: 250px;">Estudiante</th>
+                            <th style="min-width: 150px;">Conducta Final</th>
+                            <th style="min-width: 150px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body">
+                        {% for est in estudiantes %}
+                        <tr class="fila-estudiante" 
+                            data-nie="{{ est.nie }}" 
+                            data-nombre="{{ est.nombre_completo|lower }}">
+                            <td>{{ loop.index }}</td>
+                            <td class="tabla-nie">{{ est.nie }}</td>
+                            <td class="tabla-nombre">{{ est.nombre_completo }}</td>
+                            <td>
+                                {% if est.conducta_final %}
+                                    {% if est.conducta_final == 'Excelente' %}
+                                        <span class="badge-conducta badge-excelente">{{ est.conducta_final }}</span>
+                                    {% elif est.conducta_final == 'Muy Buena' %}
+                                        <span class="badge-conducta badge-muy-buena">{{ est.conducta_final }}</span>
+                                    {% elif est.conducta_final == 'Buena' %}
+                                        <span class="badge-conducta badge-buena">{{ est.conducta_final }}</span>
+                                    {% elif est.conducta_final == 'Regular' %}
+                                        <span class="badge-conducta badge-regular">{{ est.conducta_final }}</span>
+                                    {% else %}
+                                        <span class="badge-conducta badge-necesita-mejorar">{{ est.conducta_final }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Sin evaluar</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('coordinador.ver_notas_estudiante', id_estudiante=est.id_estudiante) }}" 
+                                   class="btn-ver-notas">
+                                    <i class="fas fa-clipboard-list"></i> Ver Notas
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Sección de Materias -->
+        {% if materias %}
+        <div class="materias-section">
+            <div class="materias-title">
+                <i class="fas fa-book-open"></i> Materias de la Sección
+            </div>
+            <div class="row">
+                {% for mat in materias %}
+                <div class="col-md-6 mb-3">
+                    <div class="materia-item">
+                        <div class="materia-info">
+                            <div class="materia-nombre">
+                                <i class="fas fa-book"></i> {{ mat.nombre_materia }}
+                            </div>
+                            <div class="materia-docente">
+                                <i class="fas fa-user"></i> {{ mat.docente }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscarInput = document.getElementById('buscarEstudiante');
+    const filas = document.querySelectorAll('.fila-estudiante');
+    
+    // Búsqueda en tiempo real
+    buscarInput.addEventListener('input', function() {
+        const termino = this.value.toLowerCase().trim();
+        let contador = 0;
+        
+        filas.forEach(fila => {
+            const nie = fila.dataset.nie.toLowerCase();
+            const nombre = fila.dataset.nombre;
+            
+            const coincide = nie.includes(termino) || nombre.includes(termino);
+            
+            if (coincide) {
+                fila.classList.remove('row-hidden');
+                contador++;
+                fila.querySelector('td:first-child').textContent = contador;
+            } else {
+                fila.classList.add('row-hidden');
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

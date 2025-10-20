@@ -18,6 +18,7 @@ from routes.appMaterias import materias_bp
 from routes.materia_seccion_route import materia_seccion_bp
 from routes.notas_route import notas_bp
 from routes.docente_notas_route import docente_notas_bp
+from routes.coordinador_route import coordinador_bp
 
 from routes.reportesC_bp import reportesC_bp
 
@@ -68,6 +69,7 @@ app.register_blueprint(materias_bp, url_prefix='/materias')
 app.register_blueprint(materia_seccion_bp, url_prefix='/asignaciones')
 app.register_blueprint(notas_bp)
 app.register_blueprint(docente_notas_bp, url_prefix='/docente')
+app.register_blueprint(coordinador_bp, url_prefix='/coordinador')
 
 app.register_blueprint(reportesC_bp, url_prefix='/reportesC')
 

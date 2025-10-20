@@ -24,8 +24,8 @@ def login():
 
             if user.id_rol == 1:  # administrador
                 return redirect(url_for('auth.dashboard_admin'))
-            elif user.id_rol == 2:  # docente
-                return redirect(url_for('auth.dashboard_docente'))
+            elif user.id_rol == 2:  # docente (puede ser también coordinador)
+                return redirect(url_for('coordinador.dashboard'))
         else:
             flash("❌ Usuario o contraseña incorrectos", "danger")
             return redirect(url_for('auth.login'))
@@ -49,6 +49,8 @@ def dashboard_admin():
 
 @auth_bp.route('/dashboard/docente')
 def dashboard_docente():
+    """Redirige al dashboard unificado de coordinador/docente"""
     if session.get('user_role') != 2:
         return redirect(url_for('auth.login'))
-    return render_template('dashboards/docente_dashboard.html')
+    # Redirigir al dashboard unificado
+    return redirect(url_for('coordinador.dashboard'))
