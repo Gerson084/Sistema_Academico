@@ -2,12 +2,16 @@ from flask import Blueprint, render_template, request, session, Response, url_fo
 from models.Promedios_periodo import PromedioPeriodo
 from models.Promedios_anuales import PromedioAnual
 from models.Estudiantes import Estudiante
-from models.MateriaSeccion import MateriaSeccion
-from models.Materias import Materia
 from models.Grados import Grado
-from models.matriculas import Matricula
+from models.Materias import Materia
 from models.Secciones import Seccion
+from models.Calificaciones import Calificacion
+from models.matriculas import Matricula
+from models.MateriaSeccion import MateriaSeccion
 from db import db
+from datetime import datetime
+import io, csv
+
 
 # Crear Blueprint
 reportesC_bp = Blueprint('reportes', __name__, template_folder="templates")
@@ -81,23 +85,6 @@ def reporte_notas_docente():
         grado_id=grado_id,
         estudiantes=estudiantes
     )
-# routes/reportesC_bp.py
-from flask import Blueprint, render_template, request, session, Response, url_for, redirect
-from models.Promedios_periodo import PromedioPeriodo
-from models.Promedios_anuales import PromedioAnual
-from models.Estudiantes import Estudiante
-from models.Grados import Grado
-from models.Secciones import Seccion
-from models.Calificaciones import Calificacion
-from models.matriculas import Matricula
-from models.MateriaSeccion import MateriaSeccion
-from db import db
-from datetime import datetime
-import io, csv
-
-
-# Crear Blueprint
-reportesC_bp = Blueprint('reportes', __name__, template_folder="templates")
 
 # ==============================
 # REPORTE DE PROMEDIO POR PERIODO
