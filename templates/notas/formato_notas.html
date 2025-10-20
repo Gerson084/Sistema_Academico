@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block content %}
 <style>
@@ -128,7 +128,7 @@
         background: linear-gradient(to bottom, #ffffff 0%, #f8faff 100%);
     }
     
-    /* Estilos para el header de información */
+    /* Estilos para el header de informaciÃ³n */
     .info-header {
         position: sticky;
         top: 8px;
@@ -228,7 +228,7 @@
 </style>
 
 <div class="container-fluid mt-4">
-    <!-- Encabezado con información -->
+    <!-- Encabezado con informaciÃ³n -->
     <div class="info-header">
         <h3>
             <i class="fas fa-clipboard-list"></i> Ingreso de Notas
@@ -243,21 +243,21 @@
             
             <div class="info-item-header">
                 <div class="info-label">
-                    <i class="fas fa-barcode"></i> Código
+                    <i class="fas fa-barcode"></i> CÃ³digo
                 </div>
                 <p class="info-value">{{ info_asignacion.codigo_materia }}</p>
             </div>
             
             <div class="info-item-header">
                 <div class="info-label">
-                    <i class="fas fa-graduation-cap"></i> Grado y Sección
+                    <i class="fas fa-graduation-cap"></i> Grado y SecciÃ³n
                 </div>
-                <p class="info-value">{{ info_asignacion.grado }} - Sección {{ info_asignacion.seccion }}</p>
+                <p class="info-value">{{ info_asignacion.grado }} - SecciÃ³n {{ info_asignacion.seccion }}</p>
             </div>
             
             <div class="info-item-header">
                 <div class="info-label">
-                    <i class="fas fa-calendar-alt"></i> Año Lectivo
+                    <i class="fas fa-calendar-alt"></i> AÃ±o Lectivo
                 </div>
                 <p class="info-value">
                     <span class="badge-year">{{ info_asignacion.ano_lectivo }}</span>
@@ -266,7 +266,7 @@
             
             <div class="info-item-header">
                 <div class="info-label">
-                    <i class="fas fa-clock"></i> Período
+                    <i class="fas fa-clock"></i> PerÃ­odo
                 </div>
                 <select id="select_periodo" class="periodo-select" onchange="cambiarPeriodo()">
                     {% for periodo in periodos %}
@@ -288,7 +288,7 @@
                     <table class="table table-bordered table-hover align-middle text-center table-notas mb-0">
                         <thead>
                             <tr>
-                                <th rowspan="2" style="min-width: 50px;">N°</th>
+                                <th rowspan="2" style="min-width: 50px;">NÂ°</th>
                                 <th rowspan="2" style="min-width: 100px;">NIE</th>
                                 <th rowspan="2" style="min-width: 200px;">Alumno</th>
                                 <th colspan="6" class="header-actividades"><i class="fas fa-tasks"></i> Actividades (30%)</th>
@@ -326,7 +326,7 @@
                                 </td>
                                 <td class="text-start" style="background-color: #f8f9fa; font-weight: 500; padding-left: 1rem;">{{ estudiante.nombre_completo }}</td>
                                 
-                                <!-- Actividades (máx 6) -->
+                                <!-- Actividades (mÃ¡x 6) -->
                                 <td class="celda-actividades"><input type="number" step="0.01" min="0" max="10" class="nota-input actividad" data-tipo="act1" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.actividades.act1 %}{{ estudiante.notas_existentes.actividades.act1 }}{% endif %}" /></td>
                                 <td class="celda-actividades"><input type="number" step="0.01" min="0" max="10" class="nota-input actividad" data-tipo="act2" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.actividades.act2 %}{{ estudiante.notas_existentes.actividades.act2 }}{% endif %}" /></td>
                                 <td class="celda-actividades"><input type="number" step="0.01" min="0" max="10" class="nota-input actividad" data-tipo="act3" value="{% if estudiante.notas_existentes and estudiante.notas_existentes.actividades.act3 %}{{ estudiante.notas_existentes.actividades.act3 }}{% endif %}" /></td>
@@ -386,17 +386,43 @@
         </div>
 
         <div class="d-flex justify-content-between align-items-center mt-4">
-            <a href="{{ url_for('docente_notas.mis_materias') }}" class="btn btn-secondary btn-lg">
-                <i class="fas fa-arrow-left"></i> Volver
-            </a>
-            <button type="button" onclick="guardarNotas(event)" class="btn btn-success btn-guardar-notas">
-                <i class="fas fa-save"></i> Guardar Notas
-            </button>
-        </div>
+    <a href="{{ url_for('docente_notas.mis_materias') }}" class="btn btn-secondary btn-lg">
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
+    <div class="d-flex gap-2">
+        <button type="button" id="btnEditar" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Editar
+        </button>
+        <button type="button" id="btnGuardar" onclick="guardarNotas(event)" class="btn btn-success btn-guardar-notas" disabled>
+            <i class="fas fa-save"></i> Guardar Notas
+        </button>
+    </div>
+</div>
     </form>
 </div>
 
 <script>
+// --- Modo edición de notas ---
+let editMode = false;
+function setModoEdicion(enabled) {
+    editMode = enabled;
+    const editables = document.querySelectorAll('.actividad, .nota-rc, .integradora, .prueba-obj, .actitud');
+    editables.forEach(inp => { inp.disabled = !enabled; });
+    const btnGuardar = document.getElementById('btnGuardar');
+    const btnEditar = document.getElementById('btnEditar');
+    if (btnGuardar) btnGuardar.disabled = !enabled;
+    if (btnEditar) btnEditar.innerHTML = enabled ? '<i class="fas fa-times"></i> Cancelar' : '<i class="fas fa-edit"></i> Editar';
+}
+
+// Inicializar modo lectura cuando cargue
+window.addEventListener('DOMContentLoaded', () => {
+    setModoEdicion(false);
+    const btnEditar = document.getElementById('btnEditar');
+    if (btnEditar) {
+        btnEditar.addEventListener('click', () => setModoEdicion(!editMode));
+    }
+});
+// --- Fin modo edición ---
 // Calcular promedios en tiempo real
 document.addEventListener('DOMContentLoaded', function() {
     // Calcular todas las filas al cargar (para notas existentes)
@@ -456,7 +482,7 @@ function calcularFila(fila) {
     const totalFinalInput = fila.querySelector('.total-final');
     totalFinalInput.value = totalFinal.toFixed(2);
     
-    // Aplicar clases según la nota final
+    // Aplicar clases segÃºn la nota final
     totalFinalInput.classList.remove('aprobado', 'recuperacion', 'reprobado');
     
     if (totalFinal >= 7.0) {
@@ -479,8 +505,8 @@ function guardarNotas() {
     if (!idPeriodo) {
         Swal.fire({
             icon: 'warning',
-            title: 'Período requerido',
-            text: 'Por favor seleccione un período'
+            title: 'PerÃ­odo requerido',
+            text: 'Por favor seleccione un perÃ­odo'
         });
         return;
     }
@@ -546,10 +572,10 @@ function guardarNotas() {
         });
     });
     
-    // Mostrar confirmación antes de guardar
+    // Mostrar confirmaciÃ³n antes de guardar
     Swal.fire({
-        title: '¿Guardar notas?',
-        text: `Se guardarán las notas de ${notas.length} estudiantes para este período`,
+        title: 'Â¿Guardar notas?',
+        text: `Se guardarÃ¡n las notas de ${notas.length} estudiantes para este perÃ­odo`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#28a745',
@@ -583,7 +609,7 @@ function guardarNotas() {
                 if (data.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: '¡Éxito!',
+                        title: 'Â¡Ã‰xito!',
                         text: 'Las notas se han guardado correctamente',
                         confirmButtonColor: '#28a745'
                     }).then(() => {
@@ -605,7 +631,7 @@ function guardarNotas() {
                 console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error de conexión',
+                    title: 'Error de conexiÃ³n',
                     text: 'No se pudo conectar con el servidor',
                     confirmButtonColor: '#dc3545'
                 });

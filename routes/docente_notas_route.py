@@ -136,6 +136,25 @@ def ingresar_notas(id_asignacion):
     periodos = Periodo.query.filter_by(
         id_ano_lectivo=info_result.id_ano_lectivo
     ).order_by(Periodo.numero_periodo).all()
+
+    # periodo = (
+    #                 db.session.query(Estudiante, Grado, Periodo)
+    #                 .join(Matricula, Matricula.id_estudiante == Estudiante.id_estudiante)
+    #                 .join(Seccion, Seccion.id_seccion == Matricula.id_seccion)
+    #                 .join(Grado, Grado.id_grado == Seccion.id_grado)
+    #                 .join(AnosLectivos, AnosLectivos.id_ano_lectivo == Grado.id_ano_lectivo)
+    #                 .join(Periodo, Periodo.id_ano_lectivo == AnosLectivos.id_ano_lectivo)
+    #                 .order_by(Estudiante.nombre, Periodo.numero_periodo)
+    #                 .all()
+    #             )
+
+    
+    nivel_grado = info_result.nivel.strip() if info_result and info_result.nivel else None
+
+    if nivel_grado == "Básico":
+        periodos = [p for p in periodos if p.numero_periodo in [1, 2, 3]]
+    elif nivel_grado == "Bachillerato":
+        periodos = [p for p in periodos if p.numero_periodo in [1, 2, 3, 4]]
     
     # Período seleccionado (por defecto el activo o el primero)
     id_periodo = request.args.get('periodo', type=int)
@@ -359,6 +378,9 @@ def ver_notas_finales(id_asignacion):
                          periodos=periodos)
 
 
+
+
+ #Guardar notas
 @docente_notas_bp.route('/guardar-notas/<int:id_asignacion>', methods=['POST'])
 def guardar_notas(id_asignacion):
     """Guarda las notas ingresadas por el docente"""

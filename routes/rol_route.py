@@ -16,29 +16,49 @@ def home():
 def create():
     if request.method == 'POST':
         nombre_rol = request.form['nombre']
+        if Rol.query.filter_by(nombre_rol=nombre_rol).first():
+            return jsonify({
+                "success": False,
+                "mensaje": "El nombre del rol ya existe. Por favor, elige otro nombre."
+            }), 400
         descripcion = request.form['descripcion']
         estado = request.form['estado']
         nuevo_rol = Rol(
-            nombre_rol=nombre_rol, 
-            descripcion=descripcion)
+            nombre_rol=nombre_rol,
+            descripcion=descripcion,
+            estado=estado)
         db.session.add(nuevo_rol)
         db.session.commit()
-        return redirect(url_for('user.user_index'))
-    
+        return jsonify({
+            "success": True,
+            "mensaje": "Rol creado correctamente.",
+            "redirect": url_for('user.user_index')
+        })
+
     return render_template("usuarios/user_index.html")
 
 @rol.route('/edit/<int:id>', methods=['POST'])
 def edit(id):
-    rol = Rol.query.get_or_404(request.form['id'])
-    # Do NOT allow changing the role name from this endpoint. Ignore any submitted nombre_rol.
-    descripcion = request.form.get('descripcion')
-    estado = request.form.get('estado')
+    rol = Rol.query.get_or_404(id)
+    nombre_rol = request.form['nombre_rol']
+    descripcion = request.form['descripcion']
+    estado = request.form['estado']
 
-    # Basic validation
-    if not descripcion or not estado:
-        return jsonify({"success": False, "mensaje": "Descripción y estado son obligatorios."}), 400
+    if not nombre_rol or not descripcion or not estado:
+        return jsonify({
+            "success": False,
+            "mensaje": "Todos los campos son obligatorios."
+        }), 400
 
-    # Only update mutable fields
+    if nombre_rol != rol.nombre_rol:
+        existing_rol = Rol.query.filter_by(nombre_rol=nombre_rol).first()
+        if existing_rol:
+            return jsonify({
+                "success": False,
+                "mensaje": "El nombre del rol ya existe. Por favor, elige otro nombre."
+            }), 400
+
+    rol.nombre_rol = nombre_rol
     rol.descripcion = descripcion
     rol.estado = estado
 
@@ -49,10 +69,3 @@ def edit(id):
         "mensaje": "Rol actualizado correctamente.",
         "redirect": url_for('user.user_index')
     })
-             
-            
-                
-
-   
-
-    return redirect(url_for('user.user_index'))
