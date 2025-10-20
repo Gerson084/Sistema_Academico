@@ -1,0 +1,749 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --secondary-blue: #0D2C63;
+        --light-blue: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #d97706;
+        --danger-red: #dc2626;
+        --dark-text: #000000;
+        --medium-text: #374151;
+        --neutral-gray: #6b7280;
+        --border-gray: #e5e7eb;
+    }
+
+    /* Encabezado del módulo sticky */
+    .page-header {
+        position: sticky;
+        top: 8px;
+        z-index: 102;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: #E9E2C3;
+        padding: 2rem 1.25rem;
+        margin: 0 0 2rem 0;
+        width: 100%;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .card-seccion {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        height: 100%;
+        background: white;
+    }
+    
+    .card-seccion:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(13, 44, 99, 0.15);
+    }
+    
+    .seccion-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: #E9E2C3;
+        padding: 1.5rem;
+    }
+
+    .seccion-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .seccion-info {
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+        background: white;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-item {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 2px solid #bfdbfe;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        color: var(--primary-blue);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--neutral-gray);
+        font-weight: 500;
+    }
+
+    .btn-ver-estudiantes {
+        background: var(--success-green);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-ver-estudiantes:hover {
+        background: #047857;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: var(--border-gray);
+        opacity: 0.5;
+    }
+
+    .empty-state h4 {
+        color: var(--dark-text);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: var(--neutral-gray);
+        font-size: 0.95rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid var(--primary-blue);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Estilos para las materias asignadas como docente */
+    .action-bar {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 200px;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--dark-text);
+        font-size: 0.9rem;
+    }
+
+    .filter-select {
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-gray);
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s ease;
+        background: white;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+    }
+
+    .search-box {
+        position: relative;
+        min-width: 300px;
+        flex: 1;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid var(--border-gray);
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--neutral-gray);
+        pointer-events: none;
+    }
+
+    .btn-clear {
+        background: var(--neutral-gray);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-clear:hover {
+        background: #4b5563;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    .card-materia {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        height: 100%;
+        background: white;
+    }
+    
+    .card-materia:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(13, 44, 99, 0.15);
+    }
+    
+    .materia-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: #E9E2C3;
+        padding: 1.25rem;
+    }
+
+    .materia-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .materia-code {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .info-section {
+        margin-bottom: 1rem;
+    }
+
+    .info-section-title {
+        font-weight: 600;
+        color: var(--neutral-gray);
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--dark-text);
+        font-size: 0.95rem;
+    }
+
+    .info-item i {
+        color: var(--primary-blue);
+        width: 20px;
+        margin-top: 2px;
+    }
+
+    .info-item strong {
+        color: var(--dark-text);
+        min-width: 90px;
+    }
+
+    .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 0.3rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-left: 0.25rem;
+    }
+
+    .badge-success {
+        background: #dcfce7;
+        color: #166534;
+        padding: 0.3rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-left: 0.25rem;
+    }
+
+    .alert-students {
+        background: linear-gradient(to right, #e0f2fe 0%, #dbeafe 100%);
+        border: 2px solid var(--secondary-blue);
+        color: var(--primary-blue);
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0;
+        font-weight: 500;
+    }
+
+    .card-footer {
+        background: white;
+        border-top: 1px solid var(--border-gray);
+        padding: 1rem 1.25rem;
+    }
+
+    .btn-ingresar {
+        background: var(--success-green);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-ingresar:hover {
+        background: #047857;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-ver-notas-finales {
+        background: linear-gradient(135deg, var(--primary-blue), #1a4080);
+        border: none;
+        color: #E9E2C3;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        flex: 1;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-ver-notas-finales::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-ver-notas-finales:hover::before {
+        left: 100%;
+    }
+
+    .btn-ver-notas-finales:hover {
+        background: linear-gradient(135deg, #1a4080, #0D2C63);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 44, 99, 0.4);
+        color: #E9E2C3;
+        text-decoration: none;
+    }
+
+    .btn-ver-notas-finales i {
+        font-size: 1.1rem;
+    }
+    
+    /* Asegurar overflow visible para sticky */
+    .sa-main, .container-fluid {
+        overflow: visible;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .search-box {
+            min-width: 100%;
+        }
+        
+        .filter-group {
+            min-width: 100%;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title">
+                <i class="fas fa-chalkboard-teacher"></i> 
+                {% if es_coordinador and es_docente %}
+                    Panel de Coordinador y Docente
+                {% elif es_coordinador %}
+                    Panel de Coordinador
+                {% else %}
+                    Mis Materias Asignadas
+                {% endif %}
+            </h1>
+            <p class="page-subtitle">
+                {% if es_coordinador and es_docente %}
+                    Gestiona tus secciones coordinadas y las materias que impartes
+                {% elif es_coordinador %}
+                    Gestiona las secciones a tu cargo
+                {% else %}
+                    Gestiona las notas de tus materias asignadas
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- SECCIÓN 1: COORDINADOR -->
+        {% if es_coordinador %}
+        <div class="mb-5">
+            <div class="section-title mb-4">
+                <i class="fas fa-user-tie"></i> Secciones Coordinadas
+            </div>
+            
+            {% if secciones_info %}
+            <div class="row">
+                {% for item in secciones_info %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card-seccion">
+                        <div class="seccion-header">
+                            <div class="seccion-title">
+                                <i class="fas fa-door-open"></i> 
+                                {{ item.seccion.grado.nombre_grado }} - {{ item.seccion.grado.nivel }}
+                                Sección {{ item.seccion.nombre_seccion }}
+                            </div>
+                            <div class="seccion-info">
+                                Año Lectivo: {{ item.seccion.ano_lectivo.ano }}
+                                {% if item.seccion.ano_lectivo.activo %}
+                                <span class="badge bg-success ms-2">Actual</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <span class="stat-value">{{ item.total_estudiantes }}</span>
+                                    <span class="stat-label">Estudiantes</span>
+                                </div>
+                                <div class="stat-item" style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-color: #86efac;">
+                                    <div class="stat-icon" style="color: #166534;">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    <span class="stat-value" style="color: #166534;">{{ item.total_materias }}</span>
+                                    <span class="stat-label">Materias</span>
+                                </div>
+                            </div>
+                            
+                            <a href="{{ url_for('coordinador.ver_estudiantes', id_seccion=item.seccion.id_seccion) }}" 
+                               class="btn-ver-estudiantes">
+                                <i class="fas fa-list"></i> Ver Estudiantes y Notas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- SECCIÓN 2: DOCENTE -->
+        {% if es_docente %}
+        <div>
+            <div class="section-title mb-4">
+                <i class="fas fa-chalkboard-teacher"></i> Mis Materias Asignadas
+            </div>
+
+            <!-- Filtros y Búsqueda -->
+            <div class="action-bar">
+                <form method="GET" action="{{ url_for('coordinador.dashboard') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; flex: 1;">
+                    <div class="filter-group">
+                        <label for="ano_lectivo" class="filter-label">Año Lectivo</label>
+                        <select name="ano_lectivo" id="ano_lectivo" class="filter-select" onchange="this.form.submit()">
+                            <option value="">Todos los años</option>
+                            {% for ano in anos_lectivos %}
+                            <option value="{{ ano.id_ano_lectivo }}" 
+                                    {% if ano_seleccionado == ano.id_ano_lectivo %}selected{% endif %}>
+                                {{ ano.ano }} {% if ano.activo %}(Actual){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="buscar" class="search-input" 
+                               placeholder="Buscar por materia, grado o sección...">
+                    </div>
+
+                    <a href="{{ url_for('coordinador.dashboard') }}" class="btn-clear">
+                        <i class="fas fa-times"></i> Limpiar
+                    </a>
+                </form>
+            </div>
+
+            <!-- Cards de Materias -->
+            {% if asignaciones %}
+            <div class="row" id="contenedor-cards">
+                {% for asig in asignaciones %}
+                <div class="col-lg-4 col-md-6 mb-4 card-item" 
+                     data-materia="{{ asig.nombre_materia|lower }}" 
+                     data-grado="{{ asig.nombre_grado|lower }}" 
+                     data-seccion="{{ asig.nombre_seccion|lower }}">
+                    <div class="card-materia">
+                        <div class="materia-header">
+                            <div class="materia-title">
+                                <i class="fas fa-book"></i> {{ asig.nombre_materia }}
+                            </div>
+                            <div class="materia-code">Código: {{ asig.codigo_materia }}</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-section">
+                                <div class="info-section-title">
+                                    <i class="fas fa-graduation-cap"></i> Información Académica
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-layer-group"></i>
+                                    <span><strong>Grado:</strong> {{ asig.nombre_grado }} - {{ asig.nivel }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-door-open"></i>
+                                    <span><strong>Sección:</strong> {{ asig.nombre_seccion }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>
+                                        <strong>Año Lectivo:</strong> 
+                                        <span class="badge-info">{{ asig.ano_lectivo }}</span>
+                                        {% if asig.ano_activo %}
+                                        <span class="badge-success">Actual</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="alert-students">
+                                <i class="fas fa-users"></i> 
+                                <strong>{{ asig.total_estudiantes }}</strong> estudiantes matriculados
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex gap-2">
+                            <a href="{{ url_for('docente_notas.ingresar_notas', id_asignacion=asig.id_asignacion) }}" 
+                               class="btn-ingresar">
+                                <i class="fas fa-edit"></i> Ingresar Notas
+                            </a>
+                            <a href="{{ url_for('docente_notas.ver_notas_finales', id_asignacion=asig.id_asignacion) }}" 
+                               class="btn-ver-notas-finales">
+                                <i class="fas fa-award"></i> Ver Notas Finales
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h4>No tienes materias asignadas</h4>
+                <p>No se encontraron materias asignadas para los filtros seleccionados.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Mensaje si no es ni coordinador ni docente -->
+        {% if not es_coordinador and not es_docente %}
+        <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h4>No tienes asignaciones</h4>
+            <p>No tienes secciones coordinadas ni materias asignadas.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscador = document.getElementById('buscar');
+    const cardItems = document.querySelectorAll('.card-item');
+    
+    if (buscador && cardItems.length > 0) {
+        // Búsqueda en tiempo real
+        buscador.addEventListener('input', function() {
+            const termino = this.value.toLowerCase().trim();
+            
+            cardItems.forEach(item => {
+                const materia = item.dataset.materia || '';
+                const grado = item.dataset.grado || '';
+                const seccion = item.dataset.seccion || '';
+                
+                const coincide = materia.includes(termino) || 
+                               grado.includes(termino) || 
+                               seccion.includes(termino);
+                
+                // Añadir transición suave
+                if (coincide) {
+                    item.style.display = '';
+                    setTimeout(() => item.style.opacity = '1', 10);
+                } else {
+                    item.style.opacity = '0';
+                    setTimeout(() => item.style.display = 'none', 300);
+                }
+            });
+            
+            // Mostrar mensaje si no hay resultados
+            const visibleCards = Array.from(cardItems).filter(item => 
+                window.getComputedStyle(item).display !== 'none'
+            );
+            
+            const container = document.getElementById('contenedor-cards');
+            let noResults = document.getElementById('no-results-msg');
+            
+            if (visibleCards.length === 0 && termino !== '') {
+                if (!noResults) {
+                    noResults = document.createElement('div');
+                    noResults.id = 'no-results-msg';
+                    noResults.className = 'col-12';
+                    noResults.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <h4>No se encontraron resultados</h4>
+                            <p>No hay materias que coincidan con "${termino}"</p>
+                        </div>
+                    `;
+                    container.appendChild(noResults);
+                }
+            } else if (noResults) {
+                noResults.remove();
+            }
+        });
+        
+        // Añadir estilos de transición
+        cardItems.forEach(item => {
+            item.style.transition = 'opacity 0.3s ease';
+            item.style.opacity = '1';
+        });
+    }
+});
+</script>
+
+{% endblock %}

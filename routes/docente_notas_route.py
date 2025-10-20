@@ -248,6 +248,117 @@ def ingresar_notas(id_asignacion):
                          id_periodo=id_periodo)
 
 
+@docente_notas_bp.route('/ver-notas-finales/<int:id_asignacion>')
+def ver_notas_finales(id_asignacion):
+    """Muestra la nota final por períodos y el promedio anual por estudiante"""
+    id_docente = session.get('user_id')
+    if not id_docente:
+        return redirect(url_for('auth.login'))
+
+    # Verificar que la asignación pertenece al docente
+    asignacion = MateriaSeccion.query.filter_by(
+        id_asignacion=id_asignacion,
+        id_maestro=id_docente
+    ).first_or_404()
+
+    # Obtener información de la asignación y año lectivo
+    query_info = text("""
+        SELECT 
+            m.nombre_materia,
+            m.codigo_materia,
+            g.nombre_grado,
+            g.nivel,
+            s.nombre_seccion,
+            al.ano as ano_lectivo,
+            al.id_ano_lectivo
+        FROM materia_seccion ms
+        INNER JOIN materias m ON ms.id_materia = m.id_materia
+        INNER JOIN secciones s ON ms.id_seccion = s.id_seccion
+        INNER JOIN grados g ON s.id_grado = g.id_grado
+        INNER JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
+        WHERE ms.id_asignacion = :id_asignacion
+    """)
+
+    info_result = db.session.execute(query_info, {'id_asignacion': id_asignacion}).first()
+
+    # Periodos del año lectivo
+    periodos = Periodo.query.filter_by(
+        id_ano_lectivo=info_result.id_ano_lectivo
+    ).order_by(Periodo.numero_periodo).all()
+
+    # Obtener estudiantes matriculados en la sección
+    query_estudiantes = text("""
+        SELECT 
+            e.id_estudiante,
+            e.nie,
+            e.nombres,
+            e.apellidos,
+            mat.id_matricula
+        FROM estudiantes e
+        INNER JOIN matriculas mat ON e.id_estudiante = mat.id_estudiante
+        WHERE mat.id_seccion = :id_seccion
+        AND mat.activa = 1
+        AND e.activo = 1
+        ORDER BY e.apellidos, e.nombres
+    """)
+
+    estudiantes_result = db.session.execute(query_estudiantes, {'id_seccion': asignacion.id_seccion})
+
+    # Cargar todos los resúmenes de notas para esta asignación y períodos
+    notas_map = {}
+    periodo_ids = [p.id_periodo for p in periodos]
+    if periodo_ids:
+        # Construir la consulta con parámetros seguros
+        query_resumen = text("""
+            SELECT id_estudiante, id_periodo, nota_final_periodo
+            FROM notas_resumen_periodo
+            WHERE id_asignacion = :id_asignacion
+        """)
+        resumen_result = db.session.execute(query_resumen, {'id_asignacion': id_asignacion})
+        for r in resumen_result:
+            # Solo mapear si el periodo está en la lista de periodos del año lectivo
+            if r.id_periodo in periodo_ids:
+                notas_map[(r.id_estudiante, r.id_periodo)] = float(r.nota_final_periodo) if r.nota_final_periodo is not None else None
+
+    estudiantes = []
+    for row in estudiantes_result:
+        id_est = row.id_estudiante
+        notas_por_periodo = []
+        valores = []
+        for p in periodos:
+            nota = notas_map.get((id_est, p.id_periodo))
+            notas_por_periodo.append(nota)
+            if nota is not None:
+                valores.append(nota)
+
+        promedio_anual = None
+        if valores:
+            promedio_anual = round(sum(valores) / len(valores), 2)
+
+        estudiantes.append({
+            'id_estudiante': id_est,
+            'nie': row.nie,
+            'nombre_completo': f"{row.apellidos}, {row.nombres}",
+            'id_matricula': row.id_matricula,
+            'notas_por_periodo': notas_por_periodo,
+            'promedio_anual': promedio_anual
+        })
+
+    info_asignacion = {
+        'nombre_materia': info_result.nombre_materia,
+        'codigo_materia': info_result.codigo_materia,
+        'grado': f"{info_result.nombre_grado} - {info_result.nivel}",
+        'seccion': info_result.nombre_seccion,
+        'ano_lectivo': info_result.ano_lectivo
+    }
+
+    return render_template('notas/notas_finales.html',
+                         id_asignacion=id_asignacion,
+                         info_asignacion=info_asignacion,
+                         estudiantes=estudiantes,
+                         periodos=periodos)
+
+
 @docente_notas_bp.route('/guardar-notas/<int:id_asignacion>', methods=['POST'])
 def guardar_notas(id_asignacion):
     """Guarda las notas ingresadas por el docente"""

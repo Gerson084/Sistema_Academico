@@ -540,9 +540,9 @@ function guardarNotas() {
             porcentaje_actividades: porcentajeActividades,
             porcentaje_rc: porcentajeRC,
             promedio_integradoras: 0, // Se calculará en el backend
-            porcentaje_integradoras: integradoras.reduce((sum, int) => sum + (int.nota * int.porcentaje / 10), 0),
+            porcentaje_integradoras: integradoras.reduce((sum, int) => sum + (int.nota * int.porcentaje / 100), 0),
             total_bi: totalBI,
-            total_final: totalFinal
+            nota_final: totalFinal  // ✅ Cambiado de total_final a nota_final
         });
     });
     

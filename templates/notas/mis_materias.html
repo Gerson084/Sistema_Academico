@@ -264,7 +264,7 @@
         align-items: center;
         gap: 0.5rem;
         transition: all 0.2s ease;
-        width: 100%;
+        flex: 1;
         justify-content: center;
     }
 
@@ -274,6 +274,51 @@
         box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
         color: white;
         text-decoration: none;
+    }
+
+    .btn-ver-notas {
+        background: linear-gradient(135deg, var(--primary-blue), #1a4080);
+        border: none;
+        color: #E9E2C3;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        flex: 1;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-ver-notas::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-ver-notas:hover::before {
+        left: 100%;
+    }
+
+    .btn-ver-notas:hover {
+        background: linear-gradient(135deg, #1a4080, #0D2C63);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 44, 99, 0.4);
+        color: #E9E2C3;
+        text-decoration: none;
+    }
+
+    .btn-ver-notas i {
+        font-size: 1.1rem;
     }
 
     .empty-state {
@@ -413,10 +458,14 @@
                             <strong>{{ asig.total_estudiantes }}</strong> estudiantes matriculados
                         </div>
                     </div>
-                    <div class="card-footer">
+                    <div class="card-footer d-flex gap-2">
                         <a href="{{ url_for('docente_notas.ingresar_notas', id_asignacion=asig.id_asignacion) }}" 
                            class="btn-ingresar">
                             <i class="fas fa-edit"></i> Ingresar Notas
+                        </a>
+                        <a href="{{ url_for('docente_notas.ver_notas_finales', id_asignacion=asig.id_asignacion) }}" 
+                           class="btn-ver-notas">
+                            <i class="fas fa-award"></i> Ver Notas Finales
                         </a>
                     </div>
                 </div>
