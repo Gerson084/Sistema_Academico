@@ -1,3 +1,4 @@
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from models.usuarios import Usuario
 from db import db
@@ -19,8 +20,10 @@ recover_bp = Blueprint('recover', __name__)
 # Diccionario temporal para almacenar códigos de recuperación
 recovery_codes = {}
 
-@recover_bp.route('/recuperar', methods=['GET', 'POST'])
-def recuperar():
+
+# Paso 1: Solicitar código de verificación
+@recover_bp.route('/request_code', methods=['GET', 'POST'])
+def request_code():
     if request.method == 'POST':
         email = request.form.get('email')
         user = Usuario.query.filter_by(email=email).first()
@@ -31,24 +34,36 @@ def recuperar():
             msg.body = f'Tu código de recuperación es: {code}'
             from app import mail
             mail.send(msg)
-        flash('Correo enviado, si su correo se encuentra registrado se le enviará el código para proceder con la recuperación de la contraseña.', 'info')
-        return redirect(url_for('recover.recuperar'))
-    return render_template('auth/recover.html')
+        flash('Correo enviado exitosamente, si su cuenta posee ese correo recibirá un código de verificación.', 'info')
+        return redirect(url_for('recover.verify_code', email=email))
+    return render_template('auth/request_code.html')
 
-@recover_bp.route('/verificar', methods=['GET', 'POST'])
-def verificar():
-    email = request.args.get('email')
+
+# Paso 2: Verificar código
+@recover_bp.route('/verify_code', methods=['GET', 'POST'])
+def verify_code():
+    email = request.args.get('email') or request.form.get('email')
     if request.method == 'POST':
         code = request.form.get('code')
-        nueva = request.form.get('nueva')
-        confirmar = request.form.get('confirmar')
         data = recovery_codes.get(email)
         if not data or datetime.datetime.utcnow() > data['expires']:
             flash('El código ha expirado. Solicita uno nuevo.', 'danger')
-            return redirect(url_for('recover.recuperar'))
+            return redirect(url_for('recover.request_code'))
         if code != data['code']:
             flash('Código incorrecto.', 'danger')
-        elif nueva != confirmar:
+        else:
+            flash('Código verificado. Ahora puedes cambiar tu contraseña.', 'success')
+            return redirect(url_for('recover.reset_password', email=email))
+    return render_template('auth/verify_code_step.html', email=email)
+
+# Paso 3: Cambiar contraseña
+@recover_bp.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    email = request.args.get('email') or request.form.get('email')
+    if request.method == 'POST':
+        nueva = request.form.get('nueva')
+        confirmar = request.form.get('confirmar')
+        if nueva != confirmar:
             flash('Las contraseñas no coinciden.', 'danger')
         elif len(nueva) < 6:
             flash('La nueva contraseña debe tener al menos 6 caracteres.', 'warning')
@@ -60,4 +75,6 @@ def verificar():
                 recovery_codes.pop(email, None)
                 flash('Contraseña actualizada. Ahora puedes iniciar sesión.', 'success')
                 return redirect(url_for('auth.login'))
-    return render_template('auth/verify_code.html', email=email)
+            else:
+                flash('No se encontró usuario con ese correo.', 'danger')
+    return render_template('auth/reset_password.html', email=email)
