@@ -20,8 +20,19 @@ def lista_secciones():
     secciones = Seccion.query.options(
         joinedload(Seccion.coordinador),
         joinedload(Seccion.grado),
-        joinedload(Seccion.ano_lectivo)
+        joinedload(Seccion.ano_lectivo )
     ).all()
+    
+    # secciones = Seccion.query.join(Usuario, Seccion.id_coordinador == Usuario.id_usuario)\
+    #     .join(Grado, Seccion.id_grado == Grado.id_grado)\
+    #     .join(AnoLectivo, Seccion.id_ano_lectivo == AnoLectivo.id_ano_lectivo)\
+    #     .add_columns(
+    #         Seccion.id_seccion,
+    #         Grado.id_grado,
+    #         Seccion.nombre_seccion,
+    #         Seccion.coordinador,
+    #         AnoLectivo.ano
+    #     ).all()
     
     return render_template("secciones/listar.html", secciones=secciones)
 
