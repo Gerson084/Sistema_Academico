@@ -243,21 +243,21 @@
             
             <div class="info-item-header">
                 <div class="info-label">
-                    <i class="fas fa-barcode"></i> CÃ³digo
+                    <i class="fas fa-barcode"></i> Código
                 </div>
                 <p class="info-value">{{ info_asignacion.codigo_materia }}</p>
             </div>
             
             <div class="info-item-header">
                 <div class="info-label">
-                    <i class="fas fa-graduation-cap"></i> Grado y SecciÃ³n
+                    <i class="fas fa-graduation-cap"></i> Grado y Sección
                 </div>
-                <p class="info-value">{{ info_asignacion.grado }} - SecciÃ³n {{ info_asignacion.seccion }}</p>
+                <p class="info-value">{{ info_asignacion.grado }} - Sección {{ info_asignacion.seccion }}</p>
             </div>
             
             <div class="info-item-header">
                 <div class="info-label">
-                    <i class="fas fa-calendar-alt"></i> AÃ±o Lectivo
+                    <i class="fas fa-calendar-alt"></i> Año Lectivo
                 </div>
                 <p class="info-value">
                     <span class="badge-year">{{ info_asignacion.ano_lectivo }}</span>
@@ -266,7 +266,7 @@
             
             <div class="info-item-header">
                 <div class="info-label">
-                    <i class="fas fa-clock"></i> PerÃ­odo
+                    <i class="fas fa-clock"></i> Periódo
                 </div>
                 <select id="select_periodo" class="periodo-select" onchange="cambiarPeriodo()">
                     {% for periodo in periodos %}
@@ -288,7 +288,7 @@
                     <table class="table table-bordered table-hover align-middle text-center table-notas mb-0">
                         <thead>
                             <tr>
-                                <th rowspan="2" style="min-width: 50px;">NÂ°</th>
+                                <th rowspan="2" style="min-width: 50px;">N°</th>
                                 <th rowspan="2" style="min-width: 100px;">NIE</th>
                                 <th rowspan="2" style="min-width: 200px;">Alumno</th>
                                 <th colspan="6" class="header-actividades"><i class="fas fa-tasks"></i> Actividades (30%)</th>
@@ -505,8 +505,8 @@ function guardarNotas() {
     if (!idPeriodo) {
         Swal.fire({
             icon: 'warning',
-            title: 'PerÃ­odo requerido',
-            text: 'Por favor seleccione un perÃ­odo'
+            title: 'Periódo requerido',
+            text: 'Por favor seleccione un periódo'
         });
         return;
     }
@@ -609,7 +609,7 @@ function guardarNotas() {
                 if (data.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Â¡Ã‰xito!',
+                        title: 'Exito!',
                         text: 'Las notas se han guardado correctamente',
                         confirmButtonColor: '#28a745'
                     }).then(() => {
@@ -631,7 +631,7 @@ function guardarNotas() {
                 console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error de conexiÃ³n',
+                    title: 'Error de conexión',
                     text: 'No se pudo conectar con el servidor',
                     confirmButtonColor: '#dc3545'
                 });

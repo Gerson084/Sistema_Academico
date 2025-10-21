@@ -30,21 +30,6 @@
                            value="{{ materia.codigo_materia }}" required maxlength="20">
                     <div class="invalid-feedback" id="codigoError"></div>
                 </div>
-
-                <div class="form-group">
-                    <label for="id_grado" class="form-label required-field">Grado</label>
-                    <select name="id_grado" id="id_grado" class="form-control" required>
-                        <option value="">Seleccione un grado</option>
-                        {% for grado in grados %}
-                        <option value="{{ grado.id_grado }}"
-                            {% if grado.id_grado == materia.id_grado %}selected{% endif %}>
-                            {{ grado.nombre_grado }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                    <div class="invalid-feedback" id="gradoError"></div>
-                </div>
-
                 <div class="form-group">
                     <label for="descripcion" class="form-label">Descripción</label>
                     <textarea name="descripcion" id="descripcion" class="form-control" maxlength="200">{{ materia.descripcion }}</textarea>
