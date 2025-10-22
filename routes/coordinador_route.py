@@ -182,7 +182,25 @@ def ver_estudiantes(id_seccion):
                  INNER JOIN calificaciones c ON pp.id_calificacion = c.id_calificacion
                  WHERE c.id_estudiante = e.id_estudiante
              )
-             LIMIT 1) as conducta_final
+             LIMIT 1) as conducta_final,
+            (SELECT pa.asistencia_final 
+             FROM promedios_anuales pa 
+             WHERE pa.id_promedio_periodo IN (
+                 SELECT pp.id_promedio_periodo 
+                 FROM promedios_periodo pp
+                 INNER JOIN calificaciones c ON pp.id_calificacion = c.id_calificacion
+                 WHERE c.id_estudiante = e.id_estudiante
+             )
+             LIMIT 1) as asistencia_final,
+            (SELECT pa.estado_final 
+             FROM promedios_anuales pa 
+             WHERE pa.id_promedio_periodo IN (
+                 SELECT pp.id_promedio_periodo 
+                 FROM promedios_periodo pp
+                 INNER JOIN calificaciones c ON pp.id_calificacion = c.id_calificacion
+                 WHERE c.id_estudiante = e.id_estudiante
+             )
+             LIMIT 1) as estado_final
         FROM estudiantes e
         INNER JOIN matriculas mat ON e.id_estudiante = mat.id_estudiante
         WHERE mat.id_seccion = :id_seccion
@@ -201,7 +219,9 @@ def ver_estudiantes(id_seccion):
             'nombre_completo': f"{row.apellidos}, {row.nombres}",
             'fecha_nacimiento': row.fecha_nacimiento,
             'id_matricula': row.id_matricula,
-            'conducta_final': row.conducta_final
+            'conducta_final': row.conducta_final,
+            'asistencia_final': row.asistencia_final,
+            'estado_final': row.estado_final
         })
     
     # Obtener materias de la sección
@@ -274,6 +294,24 @@ def ver_notas_estudiante(id_estudiante):
                  WHERE c.id_estudiante = e.id_estudiante
              )
              LIMIT 1) as conducta_final,
+            (SELECT pa.asistencia_final 
+             FROM promedios_anuales pa 
+             WHERE pa.id_promedio_periodo IN (
+                 SELECT pp.id_promedio_periodo 
+                 FROM promedios_periodo pp
+                 INNER JOIN calificaciones c ON pp.id_calificacion = c.id_calificacion
+                 WHERE c.id_estudiante = e.id_estudiante
+             )
+             LIMIT 1) as asistencia_final,
+            (SELECT pa.estado_final 
+             FROM promedios_anuales pa 
+             WHERE pa.id_promedio_periodo IN (
+                 SELECT pp.id_promedio_periodo 
+                 FROM promedios_periodo pp
+                 INNER JOIN calificaciones c ON pp.id_calificacion = c.id_calificacion
+                 WHERE c.id_estudiante = e.id_estudiante
+             )
+             LIMIT 1) as estado_final,
             s.nombre_seccion,
             g.nombre_grado,
             g.nivel,
@@ -377,8 +415,11 @@ def ver_notas_estudiante(id_estudiante):
         'fecha_nacimiento': est_result.fecha_nacimiento,
         'id_matricula': est_result.id_matricula,
         'conducta_final': est_result.conducta_final,
+        'asistencia_final': est_result.asistencia_final,
+        'estado_final': est_result.estado_final,
         'seccion': est_result.nombre_seccion,
         'grado': f"{est_result.nombre_grado} - {est_result.nivel}",
+        'nivel': est_result.nivel,
         'ano_lectivo': est_result.ano_lectivo,
         'id_seccion': est_result.id_seccion
     }
@@ -391,7 +432,7 @@ def ver_notas_estudiante(id_estudiante):
 
 @coordinador_bp.route('/estudiante/<int:id_estudiante>/conducta/guardar', methods=['POST'])
 def guardar_conducta(id_estudiante):
-    """Guardar la conducta final de un estudiante"""
+    """Guardar la conducta final, asistencia y estado final de un estudiante"""
     id_coordinador = session.get('user_id')
     
     if not id_coordinador:
@@ -400,10 +441,25 @@ def guardar_conducta(id_estudiante):
     try:
         data = request.get_json()
         conducta = data.get('conducta')
+        asistencia = data.get('asistencia')
+        estado = data.get('estado')
         id_matricula = data.get('id_matricula')
         
-        if not conducta or not id_matricula:
+        if not conducta or not id_matricula or not estado:
             return jsonify({"success": False, "mensaje": "Datos incompletos"})
+        
+        # Validar estado
+        if estado not in ['Aprobado', 'Reprobado', 'Pendiente']:
+            return jsonify({"success": False, "mensaje": "Estado inválido"})
+        
+        # Validar asistencia
+        if asistencia is not None:
+            try:
+                asistencia = float(asistencia)
+                if asistencia < 0 or asistencia > 100:
+                    return jsonify({"success": False, "mensaje": "La asistencia debe estar entre 0 y 100"})
+            except ValueError:
+                return jsonify({"success": False, "mensaje": "Asistencia inválida"})
         
         # Verificar que la matrícula pertenece a una sección del coordinador
         query_verificar = text("""
@@ -465,15 +521,19 @@ def guardar_conducta(id_estudiante):
         }).first()
         
         if registro_existente:
-            # Actualizar conducta en registro existente
+            # Actualizar conducta, asistencia y estado en registro existente
             update_conducta = text("""
                 UPDATE promedios_anuales
-                SET conducta_final = :conducta
+                SET conducta_final = :conducta,
+                    asistencia_final = :asistencia,
+                    estado_final = :estado
                 WHERE id_promedio_anual = :id_promedio_anual
             """)
             
             db.session.execute(update_conducta, {
                 'conducta': conducta,
+                'asistencia': asistencia,
+                'estado': estado,
                 'id_promedio_anual': registro_existente[0]
             })
         else:
@@ -516,14 +576,16 @@ def guardar_conducta(id_estudiante):
                 # Crear el registro en promedios_anuales
                 insert_conducta = text("""
                     INSERT INTO promedios_anuales 
-                    (id_promedio_periodo, id_periodo, conducta_final, estado_final)
-                    VALUES (:id_promedio_periodo, :id_periodo, :conducta, 'Pendiente')
+                    (id_promedio_periodo, id_periodo, conducta_final, asistencia_final, estado_final)
+                    VALUES (:id_promedio_periodo, :id_periodo, :conducta, :asistencia, :estado)
                 """)
                 
                 db.session.execute(insert_conducta, {
                     'id_promedio_periodo': promedio_result[0],
                     'id_periodo': id_periodo,
-                    'conducta': conducta
+                    'conducta': conducta,
+                    'asistencia': asistencia,
+                    'estado': estado
                 })
             else:
                 return jsonify({"success": False, "mensaje": "No se pueden guardar conductas sin calificaciones previas. Por favor, ingrese al menos una nota primero."})

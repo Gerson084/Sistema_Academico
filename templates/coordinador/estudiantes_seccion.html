@@ -327,6 +327,8 @@
                             <th style="width: 100px;">NIE</th>
                             <th style="min-width: 250px;">Estudiante</th>
                             <th style="min-width: 150px;">Conducta Final</th>
+                            <th style="width: 120px;">Asistencia</th>
+                            <th style="width: 140px;">Estado Final</th>
                             <th style="min-width: 150px;">Acciones</th>
                         </tr>
                     </thead>
@@ -350,6 +352,32 @@
                                         <span class="badge-conducta badge-regular">{{ est.conducta_final }}</span>
                                     {% else %}
                                         <span class="badge-conducta badge-necesita-mejorar">{{ est.conducta_final }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Sin evaluar</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if est.asistencia_final %}
+                                    <span style="color: #0D2C63; font-weight: 600;">{{ '%.2f%%'|format(est.asistencia_final) }}</span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if est.estado_final %}
+                                    {% if est.estado_final == 'Aprobado' %}
+                                        <span class="badge" style="background-color: #28a745; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600;">
+                                            <i class="fas fa-check-circle"></i> Aprobado
+                                        </span>
+                                    {% elif est.estado_final == 'Reprobado' %}
+                                        <span class="badge" style="background-color: #dc3545; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600;">
+                                            <i class="fas fa-times-circle"></i> Reprobado
+                                        </span>
+                                    {% else %}
+                                        <span class="badge" style="background-color: #ffc107; color: #000; padding: 6px 12px; border-radius: 20px; font-weight: 600;">
+                                            <i class="fas fa-clock"></i> Pendiente
+                                        </span>
                                     {% endif %}
                                 {% else %}
                                     <span class="text-muted">Sin evaluar</span>

@@ -301,14 +301,14 @@
             </div>
         </div>
 
-        <!-- Conducta Final -->
+        <!-- Conducta Final y Asistencia -->
         <div class="conducta-card">
             <div class="conducta-title">
-                <i class="fas fa-award"></i> Conducta Final del Estudiante
+                <i class="fas fa-award"></i> Evaluación Final del Estudiante
             </div>
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <div>
-                    <label for="conducta" class="form-label fw-bold">Selecciona la conducta:</label>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="conducta" class="form-label fw-bold">Conducta Final:</label>
                     <select id="conducta" class="conducta-select">
                         <option value="">-- Seleccione --</option>
                         <option value="Excelente" {% if info_estudiante.conducta_final == 'Excelente' %}selected{% endif %}>Excelente</option>
@@ -318,9 +318,27 @@
                         <option value="Necesita Mejorar" {% if info_estudiante.conducta_final == 'Necesita Mejorar' %}selected{% endif %}>Necesita Mejorar</option>
                     </select>
                 </div>
-                <button class="btn-guardar-conducta" onclick="guardarConducta()">
-                    <i class="fas fa-save"></i> Guardar Conducta
-                </button>
+                <div class="col-md-3">
+                    <label for="asistencia" class="form-label fw-bold">Asistencia (%):</label>
+                    <input type="number" id="asistencia" class="conducta-select" 
+                           min="0" max="100" step="0.01" 
+                           placeholder="Ej: 95.50"
+                           value="{{ info_estudiante.asistencia_final if info_estudiante.asistencia_final else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="estado" class="form-label fw-bold">Estado Final:</label>
+                    <select id="estado" class="conducta-select">
+                        <option value="">-- Seleccione --</option>
+                        <option value="Aprobado" {% if info_estudiante.estado_final == 'Aprobado' %}selected{% endif %}>Aprobado</option>
+                        <option value="Reprobado" {% if info_estudiante.estado_final == 'Reprobado' %}selected{% endif %}>Reprobado</option>
+                        <option value="Pendiente" {% if info_estudiante.estado_final == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn-guardar-conducta w-100" onclick="guardarConducta()">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -333,7 +351,8 @@
                             <th style="width: 50px;">N°</th>
                             <th style="min-width: 200px;">Materia</th>
                             <th style="min-width: 180px;">Docente</th>
-                            {% for p in periodos %}
+                            {% set num_periodos = 3 if info_estudiante.nivel == 'Básica' else 4 %}
+                            {% for p in periodos[:num_periodos] %}
                             <th style="min-width: 100px;">{{ p.nombre_periodo }}</th>
                             {% endfor %}
                             <th style="min-width: 120px;">Promedio Anual</th>
@@ -346,7 +365,8 @@
                             <td>{{ loop.index }}</td>
                             <td class="tabla-materia">{{ mat.nombre_materia }}</td>
                             <td class="tabla-docente">{{ mat.docente }}</td>
-                            {% for nota in mat.notas_por_periodo %}
+                            {% set num_periodos = 3 if info_estudiante.nivel == 'Básica' else 4 %}
+                            {% for nota in mat.notas_por_periodo[:num_periodos] %}
                             <td>
                                 {% if nota is not none %}
                                 <span class="nota-valor">{{ "%.2f"|format(nota) }}</span>
@@ -396,6 +416,8 @@
 <script>
 function guardarConducta() {
     const conducta = document.getElementById('conducta').value;
+    const asistencia = document.getElementById('asistencia').value;
+    const estado = document.getElementById('estado').value;
     
     if (!conducta) {
         Swal.fire({
@@ -406,9 +428,30 @@ function guardarConducta() {
         return;
     }
     
+    if (!estado) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Estado requerido',
+            text: 'Por favor seleccione el estado final del estudiante'
+        });
+        return;
+    }
+    
+    // Validar asistencia si se proporciona
+    if (asistencia && (parseFloat(asistencia) < 0 || parseFloat(asistencia) > 100)) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Asistencia inválida',
+            text: 'La asistencia debe estar entre 0 y 100'
+        });
+        return;
+    }
+    
+    const mensajeAsistencia = asistencia ? `, asistencia del ${asistencia}%` : '';
+    
     Swal.fire({
-        title: '¿Guardar conducta?',
-        text: `Se asignará la conducta "${conducta}" al estudiante`,
+        title: '¿Guardar información?',
+        text: `Se asignará conducta "${conducta}", estado "${estado}"${mensajeAsistencia}`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#059669',
@@ -426,15 +469,22 @@ function guardarConducta() {
                 }
             });
             
+            const data = {
+                conducta: conducta,
+                estado: estado,
+                id_matricula: {{ info_estudiante.id_matricula }}
+            };
+            
+            if (asistencia) {
+                data.asistencia = parseFloat(asistencia);
+            }
+            
             fetch(`{{ url_for('coordinador.guardar_conducta', id_estudiante=info_estudiante.id_estudiante) }}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    conducta: conducta,
-                    id_matricula: {{ info_estudiante.id_matricula }}
-                })
+                body: JSON.stringify(data)
             })
             .then(response => response.json())
             .then(data => {
@@ -444,6 +494,8 @@ function guardarConducta() {
                         title: '¡Éxito!',
                         text: data.mensaje,
                         confirmButtonColor: '#059669'
+                    }).then(() => {
+                        location.reload();
                     });
                 } else {
                     Swal.fire({
