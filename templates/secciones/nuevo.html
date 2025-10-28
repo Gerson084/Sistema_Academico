@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
    
 
     // ✅ Usamos JSON.parse para evitar errores si la variable no está definida
-        let existingSections = JSON.parse('{{ existing_sections | tojson | default("[]") | safe }}');
+    let existingSections = JSON.parse('{{ (existing_sections | default([])) | tojson | safe }}');
 
         if (!Array.isArray(existingSections)) {
             existingSections = [];

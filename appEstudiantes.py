@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, jsonif
 from models.Estudiantes import Estudiante
 from models.Secciones import Seccion
 from models.matriculas import Matricula
+from models.Calificaciones import Calificacion
 from models.Grados import Grado
 from db import db
 from sqlalchemy import or_
@@ -152,8 +153,30 @@ def editar_estudiante(id):
 @estudiantes_bp.route('/eliminar/<int:id>', methods=['POST'])
 def eliminar_estudiante(id):
     estudiante = Estudiante.query.get_or_404(id)
-    db.session.delete(estudiante)
-    db.session.commit()
+    # Prevent hard delete if student has related records (matriculas, calificaciones, etc.)
+    matriculas_count = Matricula.query.filter_by(id_estudiante=estudiante.id_estudiante).count()
+    calificaciones_count = Calificacion.query.filter_by(id_estudiante=estudiante.id_estudiante).count()
+
+    related = []
+    if matriculas_count:
+        related.append(f"matrículas ({matriculas_count})")
+    if calificaciones_count:
+        related.append(f"calificaciones ({calificaciones_count})")
+
+    if related:
+        # If any related records exist, do not delete. Suggest soft-delete instead.
+        detalles = ", ".join(related)
+        flash(f"No se puede eliminar el estudiante porque tiene registros relacionados: {detalles}.\nSi desea quitarlo del sistema, desactívelo en su ficha (eliminación suave).", 'danger')
+        return redirect(url_for('estudiantes.lista_estudiantes'))
+
+    # No related records found — safe to delete
+    try:
+        db.session.delete(estudiante)
+        db.session.commit()
+        flash('Estudiante eliminado correctamente.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error al eliminar el estudiante. Intente nuevamente o contacte al administrador.', 'danger')
     return redirect(url_for('estudiantes.lista_estudiantes'))
 
 
