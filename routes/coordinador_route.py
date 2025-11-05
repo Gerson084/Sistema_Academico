@@ -165,6 +165,20 @@ def ver_estudiantes(id_seccion):
     
     info_result = db.session.execute(query_info, {'id_seccion': id_seccion}).first()
     
+    info_seccion = {
+        'id_seccion': info_result.id_seccion,
+        'nombre_seccion': info_result.nombre_seccion,
+        'grado': f"{info_result.nombre_grado} - {info_result.nivel}",
+        'nivel': info_result.nivel,
+        'ano_lectivo': info_result.ano_lectivo,
+        'id_ano_lectivo': info_result.id_ano_lectivo
+    }
+    
+    # Obtener períodos del año lectivo
+    periodos = Periodo.query.filter_by(
+        id_ano_lectivo=info_result.id_ano_lectivo
+    ).order_by(Periodo.numero_periodo).all()
+    
     # Obtener estudiantes de la sección
     query_estudiantes = text("""
         SELECT 
@@ -211,19 +225,6 @@ def ver_estudiantes(id_seccion):
     
     estudiantes_result = db.session.execute(query_estudiantes, {'id_seccion': id_seccion})
     
-    estudiantes = []
-    for row in estudiantes_result:
-        estudiantes.append({
-            'id_estudiante': row.id_estudiante,
-            'nie': row.nie,
-            'nombre_completo': f"{row.apellidos}, {row.nombres}",
-            'fecha_nacimiento': row.fecha_nacimiento,
-            'id_matricula': row.id_matricula,
-            'conducta_final': row.conducta_final,
-            'asistencia_final': row.asistencia_final,
-            'estado_final': row.estado_final
-        })
-    
     # Obtener materias de la sección
     query_materias = text("""
         SELECT 
@@ -242,9 +243,70 @@ def ver_estudiantes(id_seccion):
     """)
     
     materias_result = db.session.execute(query_materias, {'id_seccion': id_seccion})
+    materias_list = list(materias_result)
     
+    # Procesar cada estudiante y sus notas
+    estudiantes = []
+    for row in estudiantes_result:
+        id_estudiante = row.id_estudiante
+        
+        # Obtener notas por materia para este estudiante
+        materias_notas = []
+        for mat_row in materias_list:
+            # Obtener notas de todos los períodos para esta materia
+            query_notas_periodos = text("""
+                SELECT 
+                    id_periodo,
+                    nota_final_periodo
+                FROM notas_resumen_periodo
+                WHERE id_estudiante = :id_estudiante
+                AND id_asignacion = :id_asignacion
+            """)
+            
+            notas_result = db.session.execute(query_notas_periodos, {
+                'id_estudiante': id_estudiante,
+                'id_asignacion': mat_row.id_asignacion
+            })
+            
+            notas_map = {r.id_periodo: float(r.nota_final_periodo) if r.nota_final_periodo else None 
+                        for r in notas_result}
+            
+            # Construir array de notas por período
+            notas_por_periodo = []
+            suma_notas = 0
+            count_notas = 0
+            
+            for periodo in periodos:
+                nota = notas_map.get(periodo.id_periodo)
+                notas_por_periodo.append(nota)
+                if nota is not None:
+                    suma_notas += nota
+                    count_notas += 1
+            
+            promedio_anual = round(suma_notas / count_notas, 2) if count_notas > 0 else None
+            
+            materias_notas.append({
+                'nombre_materia': mat_row.nombre_materia,
+                'docente': f"{mat_row.apellido_docente}, {mat_row.nombre_docente}" if mat_row.nombre_docente else "Sin asignar",
+                'notas_por_periodo': notas_por_periodo,
+                'promedio_anual': promedio_anual
+            })
+        
+        estudiantes.append({
+            'id_estudiante': row.id_estudiante,
+            'nie': row.nie,
+            'nombre_completo': f"{row.apellidos}, {row.nombres}",
+            'fecha_nacimiento': row.fecha_nacimiento,
+            'id_matricula': row.id_matricula,
+            'conducta_final': row.conducta_final,
+            'asistencia_final': row.asistencia_final,
+            'estado_final': row.estado_final,
+            'materias_notas': materias_notas
+        })
+    
+    # Obtener materias para la sección (para mostrar resumen)
     materias = []
-    for row in materias_result:
+    for row in materias_list:
         materias.append({
             'id_materia': row.id_materia,
             'nombre_materia': row.nombre_materia,
@@ -253,18 +315,11 @@ def ver_estudiantes(id_seccion):
             'docente': f"{row.apellido_docente}, {row.nombre_docente}" if row.nombre_docente else "Sin asignar"
         })
     
-    info_seccion = {
-        'id_seccion': info_result.id_seccion,
-        'nombre_seccion': info_result.nombre_seccion,
-        'grado': f"{info_result.nombre_grado} - {info_result.nivel}",
-        'ano_lectivo': info_result.ano_lectivo,
-        'id_ano_lectivo': info_result.id_ano_lectivo
-    }
-    
     return render_template('coordinador/estudiantes_seccion.html',
                          info_seccion=info_seccion,
                          estudiantes=estudiantes,
-                         materias=materias)
+                         materias=materias,
+                         periodos=periodos)
 
 
 @coordinador_bp.route('/estudiante/<int:id_estudiante>/notas')

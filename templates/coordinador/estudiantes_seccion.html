@@ -266,19 +266,270 @@
         margin-top: 0.25rem;
     }
 
+    /* Estilos para el accordion de estudiantes */
+    .estudiantes-accordion {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .estudiante-card {
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .estudiante-card:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .estudiante-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 1.25rem 1.5rem;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .estudiante-header:hover {
+        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    }
+
+    .estudiante-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .info-col {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .numero-badge {
+        background: var(--primary-blue);
+        color: white;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .nie-badge {
+        background: #e0f2fe;
+        color: var(--primary-blue);
+        padding: 0.4rem 0.85rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .nombre-estudiante {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--dark-text);
+    }
+
+    .estado-col {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .badge-success-lg {
+        background: #28a745;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .badge-danger-lg {
+        background: #dc3545;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .badge-warning-lg {
+        background: #ffc107;
+        color: #000;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .toggle-icon {
+        color: var(--primary-blue);
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .toggle-icon.rotated {
+        transform: rotate(180deg);
+    }
+
+    .estudiante-detalle {
+        border-top: 2px solid var(--border-gray);
+        padding: 1.5rem;
+        background: #fafbfc;
+    }
+
+    .evaluacion-form {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .evaluacion-form .form-label {
+        color: var(--primary-blue);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .evaluacion-form .form-select,
+    .evaluacion-form .form-control {
+        border: 2px solid var(--border-gray);
+        border-radius: 0.5rem;
+        padding: 0.6rem 0.75rem;
+        font-weight: 500;
+    }
+
+    .evaluacion-form .form-select:focus,
+    .evaluacion-form .form-control:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+    }
+
+    .notas-table-container {
+        background: white;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-notas-detalle {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .table-notas-detalle thead th {
+        background: var(--primary-blue);
+        color: #E9E2C3;
+        font-weight: 700;
+        text-align: center;
+        padding: 0.9rem 0.6rem;
+        border: none;
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+
+    .table-notas-detalle tbody td {
+        vertical-align: middle;
+        padding: 0.75rem 0.6rem;
+        border-bottom: 1px solid var(--border-gray);
+    }
+
+    .table-notas-detalle tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .materia-nombre {
+        text-align: left;
+        font-weight: 600;
+        color: var(--primary-blue);
+        font-size: 0.9rem;
+    }
+
+    .docente-nombre {
+        text-align: left;
+        font-size: 0.85rem;
+        color: var(--neutral-gray);
+    }
+
+    .nota-valor {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--dark-text);
+    }
+
+    .promedio-valor {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--primary-blue);
+    }
+
+    .badge-aprobado-mini {
+        background: #dcfce7;
+        color: #166534;
+        padding: 0.35rem 0.7rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    .badge-recuperacion-mini {
+        background: #fff7cd;
+        color: #7a5900;
+        padding: 0.35rem 0.7rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    .badge-reprobado-mini {
+        background: #fee2e2;
+        color: #7a1a1a;
+        padding: 0.35rem 0.7rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-block;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .page-title {
             font-size: 1.5rem;
         }
 
-        .table-estudiantes {
+        .estudiante-info-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .info-col {
+            flex-wrap: wrap;
+        }
+
+        .nombre-estudiante {
+            font-size: 1rem;
+        }
+
+        .table-notas-detalle {
             font-size: 0.8rem;
         }
 
-        .table-estudiantes thead th,
-        .table-estudiantes tbody td {
-            padding: 0.6rem 0.4rem;
+        .table-notas-detalle thead th,
+        .table-notas-detalle tbody td {
+            padding: 0.5rem 0.3rem;
         }
     }
 </style>
@@ -316,84 +567,150 @@
             </div>
         </div>
 
-        <!-- Tabla de Estudiantes -->
+        <!-- Tabla de Estudiantes con Accordion -->
         {% if estudiantes %}
-        <div class="table-card">
-            <div class="table-responsive">
-                <table class="table table-estudiantes">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">N°</th>
-                            <th style="width: 100px;">NIE</th>
-                            <th style="min-width: 250px;">Estudiante</th>
-                            <th style="min-width: 150px;">Conducta Final</th>
-                            <th style="width: 120px;">Asistencia</th>
-                            <th style="width: 140px;">Estado Final</th>
-                            <th style="min-width: 150px;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-body">
-                        {% for est in estudiantes %}
-                        <tr class="fila-estudiante" 
-                            data-nie="{{ est.nie }}" 
-                            data-nombre="{{ est.nombre_completo|lower }}">
-                            <td>{{ loop.index }}</td>
-                            <td class="tabla-nie">{{ est.nie }}</td>
-                            <td class="tabla-nombre">{{ est.nombre_completo }}</td>
-                            <td>
-                                {% if est.conducta_final %}
-                                    {% if est.conducta_final == 'Excelente' %}
-                                        <span class="badge-conducta badge-excelente">{{ est.conducta_final }}</span>
-                                    {% elif est.conducta_final == 'Muy Buena' %}
-                                        <span class="badge-conducta badge-muy-buena">{{ est.conducta_final }}</span>
-                                    {% elif est.conducta_final == 'Buena' %}
-                                        <span class="badge-conducta badge-buena">{{ est.conducta_final }}</span>
-                                    {% elif est.conducta_final == 'Regular' %}
-                                        <span class="badge-conducta badge-regular">{{ est.conducta_final }}</span>
-                                    {% else %}
-                                        <span class="badge-conducta badge-necesita-mejorar">{{ est.conducta_final }}</span>
-                                    {% endif %}
+        <div class="estudiantes-accordion">
+            {% for est in estudiantes %}
+            <div class="estudiante-card fila-estudiante" 
+                 data-nie="{{ est.nie }}" 
+                 data-nombre="{{ est.nombre_completo|lower }}">
+                <!-- Fila principal del estudiante -->
+                <div class="estudiante-header" onclick="toggleEstudiante({{ est.id_estudiante }})">
+                    <div class="estudiante-info-row">
+                        <div class="info-col">
+                            <span class="numero-badge">{{ loop.index }}</span>
+                            <span class="nie-badge">NIE: {{ est.nie }}</span>
+                            <span class="nombre-estudiante">{{ est.nombre_completo }}</span>
+                        </div>
+                        <div class="estado-col">
+                            {% if est.estado_final %}
+                                {% if est.estado_final == 'Aprobado' %}
+                                    <span class="badge badge-success-lg">
+                                        <i class="fas fa-check-circle"></i> Aprobado
+                                    </span>
+                                {% elif est.estado_final == 'Reprobado' %}
+                                    <span class="badge badge-danger-lg">
+                                        <i class="fas fa-times-circle"></i> Reprobado
+                                    </span>
                                 {% else %}
-                                    <span class="text-muted">Sin evaluar</span>
+                                    <span class="badge badge-warning-lg">
+                                        <i class="fas fa-clock"></i> Pendiente
+                                    </span>
                                 {% endif %}
-                            </td>
-                            <td class="text-center">
-                                {% if est.asistencia_final %}
-                                    <span style="color: #0D2C63; font-weight: 600;">{{ '%.2f%%'|format(est.asistencia_final) }}</span>
-                                {% else %}
-                                    <span class="text-muted">—</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                {% if est.estado_final %}
-                                    {% if est.estado_final == 'Aprobado' %}
-                                        <span class="badge" style="background-color: #28a745; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600;">
-                                            <i class="fas fa-check-circle"></i> Aprobado
-                                        </span>
-                                    {% elif est.estado_final == 'Reprobado' %}
-                                        <span class="badge" style="background-color: #dc3545; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600;">
-                                            <i class="fas fa-times-circle"></i> Reprobado
-                                        </span>
-                                    {% else %}
-                                        <span class="badge" style="background-color: #ffc107; color: #000; padding: 6px 12px; border-radius: 20px; font-weight: 600;">
-                                            <i class="fas fa-clock"></i> Pendiente
-                                        </span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="text-muted">Sin evaluar</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <a href="{{ url_for('coordinador.ver_notas_estudiante', id_estudiante=est.id_estudiante) }}" 
-                                   class="btn-ver-notas">
-                                    <i class="fas fa-clipboard-list"></i> Ver Notas
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            {% else %}
+                                <span class="text-muted">Sin evaluar</span>
+                            {% endif %}
+                            <i class="fas fa-chevron-down toggle-icon" id="icon-{{ est.id_estudiante }}"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenido expandible con notas -->
+                <div class="estudiante-detalle" id="detalle-{{ est.id_estudiante }}" style="display: none;">
+                    <!-- Formulario de Evaluación -->
+                    <div class="evaluacion-form">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Conducta Final:</label>
+                                <select id="conducta-{{ est.id_estudiante }}" class="form-select">
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="Excelente" {% if est.conducta_final == 'Excelente' %}selected{% endif %}>Excelente</option>
+                                    <option value="Muy Buena" {% if est.conducta_final == 'Muy Buena' %}selected{% endif %}>Muy Buena</option>
+                                    <option value="Buena" {% if est.conducta_final == 'Buena' %}selected{% endif %}>Buena</option>
+                                    <option value="Regular" {% if est.conducta_final == 'Regular' %}selected{% endif %}>Regular</option>
+                                    <option value="Necesita Mejorar" {% if est.conducta_final == 'Necesita Mejorar' %}selected{% endif %}>Necesita Mejorar</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Asistencia (%):</label>
+                                <input type="number" id="asistencia-{{ est.id_estudiante }}" class="form-control" 
+                                       min="0" max="100" step="0.01" placeholder="Ej: 95.50"
+                                       value="{{ est.asistencia_final if est.asistencia_final else '' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Estado Final:</label>
+                                <select id="estado-{{ est.id_estudiante }}" class="form-select">
+                                    <option value="">-- Seleccione --</option>
+                                    <option value="Aprobado" {% if est.estado_final == 'Aprobado' %}selected{% endif %}>Aprobado</option>
+                                    <option value="Reprobado" {% if est.estado_final == 'Reprobado' %}selected{% endif %}>Reprobado</option>
+                                    <option value="Pendiente" {% if est.estado_final == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-success w-100" 
+                                        onclick="guardarConducta({{ est.id_estudiante }}, {{ est.id_matricula }})">
+                                    <i class="fas fa-save"></i> Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Notas -->
+                    <div class="notas-table-container">
+                        <div class="table-responsive">
+                            <table class="table table-notas-detalle">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 200px;">Materia</th>
+                                        <th style="min-width: 180px;">Docente</th>
+                                        {% set num_periodos = 3 if info_seccion.nivel == 'Básica' else 4 %}
+                                        {% for p in periodos[:num_periodos] %}
+                                        <th>{{ p.nombre_periodo }}</th>
+                                        {% endfor %}
+                                        <th>Promedio</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mat in est.materias_notas %}
+                                    <tr>
+                                        <td class="materia-nombre">{{ mat.nombre_materia }}</td>
+                                        <td class="docente-nombre">{{ mat.docente }}</td>
+                                        {% set num_periodos = 3 if info_seccion.nivel == 'Básica' else 4 %}
+                                        {% for nota in mat.notas_por_periodo[:num_periodos] %}
+                                        <td class="text-center">
+                                            {% if nota is not none %}
+                                            <span class="nota-valor">{{ "%.2f"|format(nota) }}</span>
+                                            {% else %}
+                                            <span class="text-muted">—</span>
+                                            {% endif %}
+                                        </td>
+                                        {% endfor %}
+                                        <td class="text-center">
+                                            {% if mat.promedio_anual is not none %}
+                                            <span class="promedio-valor">{{ "%.2f"|format(mat.promedio_anual) }}</span>
+                                            {% else %}
+                                            <span class="text-muted">—</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if mat.promedio_anual is not none %}
+                                                {% if mat.promedio_anual >= 7.0 %}
+                                                    <span class="badge badge-aprobado-mini">
+                                                        <i class="fas fa-check"></i> Aprobado
+                                                    </span>
+                                                {% elif mat.promedio_anual >= 5.0 %}
+                                                    <span class="badge badge-recuperacion-mini">
+                                                        <i class="fas fa-exclamation-triangle"></i> Recuperación
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge badge-reprobado-mini">
+                                                        <i class="fas fa-times"></i> Reprobado
+                                                    </span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">Sin datos</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
+            {% endfor %}
         </div>
         {% endif %}
 
@@ -424,17 +741,143 @@
     </div>
 </div>
 
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
+// Función para expandir/contraer estudiante
+function toggleEstudiante(idEstudiante) {
+    const detalle = document.getElementById(`detalle-${idEstudiante}`);
+    const icon = document.getElementById(`icon-${idEstudiante}`);
+    
+    if (detalle.style.display === 'none') {
+        detalle.style.display = 'block';
+        icon.classList.add('rotated');
+    } else {
+        detalle.style.display = 'none';
+        icon.classList.remove('rotated');
+    }
+}
+
+// Función para guardar conducta
+function guardarConducta(idEstudiante, idMatricula) {
+    const conducta = document.getElementById(`conducta-${idEstudiante}`).value;
+    const asistencia = document.getElementById(`asistencia-${idEstudiante}`).value;
+    const estado = document.getElementById(`estado-${idEstudiante}`).value;
+    
+    if (!conducta) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Conducta requerida',
+            text: 'Por favor seleccione una conducta',
+            confirmButtonColor: '#0D2C63'
+        });
+        return;
+    }
+    
+    if (!estado) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Estado requerido',
+            text: 'Por favor seleccione el estado final del estudiante',
+            confirmButtonColor: '#0D2C63'
+        });
+        return;
+    }
+    
+    // Validar asistencia si se proporciona
+    if (asistencia && (parseFloat(asistencia) < 0 || parseFloat(asistencia) > 100)) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Asistencia inválida',
+            text: 'La asistencia debe estar entre 0 y 100',
+            confirmButtonColor: '#0D2C63'
+        });
+        return;
+    }
+    
+    const mensajeAsistencia = asistencia ? `, asistencia del ${asistencia}%` : '';
+    
+    Swal.fire({
+        title: '¿Guardar información?',
+        text: `Se asignará conducta "${conducta}", estado "${estado}"${mensajeAsistencia}`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fas fa-save me-2"></i>Guardar',
+        cancelButtonText: '<i class="fas fa-times me-2"></i>Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Guardando...',
+                text: 'Por favor espere',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            const data = {
+                conducta: conducta,
+                estado: estado,
+                id_matricula: idMatricula
+            };
+            
+            if (asistencia) {
+                data.asistencia = parseFloat(asistencia);
+            }
+            
+            fetch(`{{ url_for('coordinador.guardar_conducta', id_estudiante=0) }}`.replace('0', idEstudiante), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: data.mensaje,
+                        confirmButtonColor: '#059669'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.mensaje,
+                        confirmButtonColor: '#dc2626'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al conectar con el servidor',
+                    confirmButtonColor: '#dc2626'
+                });
+                console.error('Error:', error);
+            });
+        }
+    });
+}
+
+// Búsqueda en tiempo real
 document.addEventListener('DOMContentLoaded', function() {
     const buscarInput = document.getElementById('buscarEstudiante');
     const filas = document.querySelectorAll('.fila-estudiante');
     
-    // Búsqueda en tiempo real
     buscarInput.addEventListener('input', function() {
         const termino = this.value.toLowerCase().trim();
         let contador = 0;
         
-        filas.forEach(fila => {
+        filas.forEach((fila, index) => {
             const nie = fila.dataset.nie.toLowerCase();
             const nombre = fila.dataset.nombre;
             
@@ -443,7 +886,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (coincide) {
                 fila.classList.remove('row-hidden');
                 contador++;
-                fila.querySelector('td:first-child').textContent = contador;
+                // Actualizar el número de badge
+                const numeroBadge = fila.querySelector('.numero-badge');
+                if (numeroBadge) {
+                    numeroBadge.textContent = contador;
+                }
             } else {
                 fila.classList.add('row-hidden');
             }
