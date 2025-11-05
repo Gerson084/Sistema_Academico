@@ -513,6 +513,11 @@
         <!-- SECCIÓN 1: COORDINADOR -->
         {% if es_coordinador %}
         <div class="mb-5">
+            <div class="mb-4">
+                <a href="{{ url_for('mis_estudiantes.mis_estudiantes') }}" class="btn btn-success" style="font-weight:600;font-size:1.1rem;padding:0.75rem 2rem;">
+                    <i class="fas fa-users"></i> Ver todos mis estudiantes y descargar boleta de notas
+                </a>
+            </div>
             <div class="section-title mb-4">
                 <i class="fas fa-user-tie"></i> Secciones Coordinadas
             </div>
