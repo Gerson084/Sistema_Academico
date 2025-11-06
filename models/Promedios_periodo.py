@@ -12,8 +12,6 @@ class PromedioPeriodo(db.Model):
     nota_rc = db.Column(db.Numeric(4, 2))
     promedio_integradoras = db.Column(db.Numeric(4, 2))
     nota_prueba_objetiva = db.Column(db.Numeric(4, 2))
-    nota_actitud = db.Column(db.String(50))
-    asistencia = db.Column(db.Numeric(4, 2))
     nota_final_periodo = db.Column(db.Numeric(4, 2))
     fecha_calculo = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -21,4 +19,4 @@ class PromedioPeriodo(db.Model):
     calificacion = db.relationship('Calificacion', backref='promedios_periodo', lazy=True)
 
     def __repr__(self):
-        return f'<PromedioPeriodo {self.id_promedio_periodo} - Actitud: {self.nota_actitud}>'
+        return f'<PromedioPeriodo {self.id_promedio_periodo}>'

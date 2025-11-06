@@ -137,11 +137,7 @@ def reporte_conducta_periodo():
 
 @reportesC_bp.route('/reporte_conducta_estudiante', methods=['GET'])
 def reporte_conducta_estudiante():
-    """Reporte detallado de conducta/actitud de un estudiante.
-    Parámetros GET:
-      - estudiante_id (int): id del estudiante
-      - periodo_id (opcional): filtrar promedios_periodo por periodo
-    """
+        # Reporte detallado de estudiante (campos conducta/actitud eliminados)
     estudiante_id = request.args.get('estudiante_id', type=int)
     periodo_id = request.args.get('periodo_id', type=int)
 
@@ -275,7 +271,7 @@ def reporte_conducta_estudiante_download():
     writer.writerow(['Estudiante', estudiante.nie, f"{estudiante.nombres} {estudiante.apellidos}"])
     writer.writerow([])
     writer.writerow(['Promedios por Periodo'])
-    writer.writerow(['Periodo', 'Fecha Calculo', 'Nota Actitud'])
+    # columna Nota Actitud eliminada
 
     periodos = PromedioPeriodo.query.join(PromedioPeriodo.calificacion).filter(Calificacion.id_estudiante == estudiante_id)
     if asign_ids:
@@ -283,18 +279,18 @@ def reporte_conducta_estudiante_download():
     periodos = periodos.order_by(PromedioPeriodo.fecha_calculo.desc()).all()
     for p in periodos:
         periodo_nombre = p.calificacion.periodo.nombre if p.calificacion and p.calificacion.periodo else p.calificacion.id_periodo if p.calificacion else '-'
-        writer.writerow([periodo_nombre, p.fecha_calculo.strftime('%Y-%m-%d') if p.fecha_calculo else '-', p.nota_actitud])
+    # columna Nota Actitud eliminada
 
     writer.writerow([])
     writer.writerow(['Promedios Anuales'])
-    writer.writerow(['Periodo', 'Fecha Calculo', 'Promedio Final', 'Conducta Final', 'Estado'])
+    writer.writerow(['Periodo', 'Fecha Calculo', 'Promedio Final', 'Estado'])
     anuales = PromedioAnual.query.join(PromedioAnual.promedio_periodo).join(PromedioPeriodo.calificacion).filter(Calificacion.id_estudiante == estudiante_id)
     if asign_ids:
         anuales = anuales.filter(Calificacion.id_asignacion.in_(asign_ids))
     anuales = anuales.order_by(PromedioAnual.fecha_calculo.desc()).all()
     for a in anuales:
         periodo_nombre = a.periodo.nombre if a.periodo else a.id_periodo
-        writer.writerow([periodo_nombre, a.fecha_calculo.strftime('%Y-%m-%d') if a.fecha_calculo else '-', float(a.promedio_final) if a.promedio_final else '', a.conducta_final, a.estado_final])
+        # columna conducta_final eliminada
 
     output.seek(0)
     csv_data = output.getvalue()
@@ -338,11 +334,7 @@ def promedio_anual():
 
 @reportesC_bp.route('/reporte_conducta_estudiante/pdf', methods=['GET'])
 def reporte_conducta_estudiante_pdf():
-    """Genera PDF del reporte de conducta del estudiante.
-    Parámetros GET:
-      - estudiante_id (int): id del estudiante
-      - tipo (string): 'periodo', 'anual' o 'completo'
-    """
+        # Genera PDF del reporte del estudiante (campos conducta/actitud eliminados)
     estudiante_id = request.args.get('estudiante_id', type=int)
     tipo_reporte = request.args.get('tipo', 'completo')  # periodo, anual, completo
     

@@ -591,8 +591,7 @@ def verificar_estado_estudiante(id_estudiante):
                 g.nombre_grado,
                 g.nivel,
                 s.nombre_seccion,
-                pa.conducta_final,
-                pa.asistencia_final
+                # campo eliminado: conducta_final
             FROM matriculas m
             INNER JOIN secciones s ON m.id_seccion = s.id_seccion
             INNER JOIN grados g ON s.id_grado = g.id_grado
@@ -654,8 +653,8 @@ def verificar_estado_estudiante(id_estudiante):
                 "grado_anterior": grado_anterior_nombre,
                 "grado_anterior_id": grado_anterior_id,
                 "estado_final": estado,
-                "conducta_final": resultado.conducta_final or 'N/A',
-                "asistencia_final": float(resultado.asistencia_final) if resultado.asistencia_final else None,
+                # "conducta_final" eliminado
+                # "asistencia_final" eliminado
                 "puede_matricularse": puede_matricularse,
                 "mensaje": mensaje
             })

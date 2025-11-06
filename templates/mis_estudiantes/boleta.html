@@ -94,7 +94,7 @@
                     <th style="text-align:left">MATERIAS</th>
                     <th style="width:10%">TRIM</th>
                     <th style="width:10%">EXAMEN</th>
-                    <th style="width:10%">ACTITUD</th>
+                    <!-- Columna actitud eliminada -->
                     <th style="width:8%">1°P</th>
                     <th style="width:8%">2°P</th>
                     <th style="width:8%">3°P</th>
@@ -108,7 +108,7 @@
                     <td style="text-align:left">{{ materia.nombre_materia }}</td>
                     <td>{{ materia.trimestre|default('--') }}</td>
                     <td>{{ materia.examen|default('--') }}</td>
-                    <td>{{ materia.actitud|default('MB') }}</td>
+                    <!-- Celda actitud eliminada -->
                     <td>{{ materia.periodo1|default('--') }}</td>
                     <td>{{ materia.periodo2|default('--') }}</td>
                     <td>{{ materia.periodo3|default('--') }}</td>
@@ -123,11 +123,7 @@
             </tbody>
         </table>
         
-        <div class="faltas-asistencia">
-            <strong>FALTAS DE ASISTENCIA</strong>
-            <table>
-                <tr>
-                    <th>Ene</th>
+        <!-- Sección de faltas de asistencia eliminada -->
                     <th>Feb</th>
                     <th>Mar</th>
                     <th>Abr</th>

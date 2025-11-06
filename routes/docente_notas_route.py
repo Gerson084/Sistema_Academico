@@ -196,7 +196,7 @@ def ingresar_notas(id_asignacion):
                 integradora_2,
                 integradora_3,
                 prueba_objetiva,
-                nota_actitud
+                # campo eliminado: nota_actitud
             FROM notas_resumen_periodo
             WHERE id_estudiante = :id_estudiante
             AND id_asignacion = :id_asignacion
@@ -247,7 +247,7 @@ def ingresar_notas(id_asignacion):
                 'integradora_2': float(notas_existentes.integradora_2) if notas_existentes and notas_existentes.integradora_2 else None,
                 'integradora_3': float(notas_existentes.integradora_3) if notas_existentes and notas_existentes.integradora_3 else None,
                 'prueba_objetiva': float(notas_existentes.prueba_objetiva) if notas_existentes and notas_existentes.prueba_objetiva else None,
-                'actitud': notas_existentes.nota_actitud if notas_existentes and notas_existentes.nota_actitud else ''
+                # campo eliminado: actitud
             } if notas_existentes else None
         })
     
@@ -679,7 +679,7 @@ def guardar_notas(id_asignacion):
                     integradora_1, integradora_2, integradora_3,
                     promedio_integradoras, porcentaje_integradoras,
                     total_bi, prueba_objetiva, porcentaje_po,
-                    nota_final_periodo, nota_actitud
+                    nota_final_periodo
                 ) VALUES (
                     :id_estudiante, :id_asignacion, :id_periodo,
                     :promedio_actividades, :porcentaje_actividades,
@@ -687,7 +687,7 @@ def guardar_notas(id_asignacion):
                     :integradora_1, :integradora_2, :integradora_3,
                     :promedio_integradoras, :porcentaje_integradoras,
                     :total_bi, :prueba_objetiva, :porcentaje_po,
-                    :nota_final_periodo, :nota_actitud
+                    :nota_final_periodo
                 )
                 ON DUPLICATE KEY UPDATE
                     promedio_actividades = VALUES(promedio_actividades),
@@ -703,7 +703,7 @@ def guardar_notas(id_asignacion):
                     prueba_objetiva = VALUES(prueba_objetiva),
                     porcentaje_po = VALUES(porcentaje_po),
                     nota_final_periodo = VALUES(nota_final_periodo),
-                    nota_actitud = VALUES(nota_actitud),
+                    -- campo nota_actitud eliminado
                     fecha_actualizacion = CURRENT_TIMESTAMP
             """)
             
@@ -749,8 +749,7 @@ def guardar_notas(id_asignacion):
                 'total_bi': nota_data.get('total_bi'),
                 'prueba_objetiva': nota_data.get('prueba_objetiva'),
                 'porcentaje_po': porc_po,
-                'nota_final_periodo': nota_data.get('nota_final'),
-                'nota_actitud': nota_data.get('actitud') if nota_data.get('actitud') else None
+                'nota_final_periodo': nota_data.get('nota_final')
             })
         
         db.session.commit()

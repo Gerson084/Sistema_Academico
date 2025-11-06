@@ -615,7 +615,7 @@
             <tr>
               <th>📅 Periodo</th>
               <th>🗓️ Fecha de Cálculo</th>
-              <th>⭐ Nota Actitud / Conducta</th>
+              <!-- Columna actitud/conducta eliminada -->
             </tr>
           </thead>
           <tbody>
@@ -624,7 +624,7 @@
               <td><strong>{{ p.calificacion.periodo.nombre if p.calificacion and p.calificacion.periodo else (p.calificacion.id_periodo if p.calificacion else '-') }}</strong></td>
               <td>{{ p.fecha_calculo.strftime('%d/%m/%Y') if p.fecha_calculo else '-' }}</td>
               <td>
-                {% set nota = p.nota_actitud|float %}
+                {# campo nota_actitud eliminado #}
                 <span class="nota-badge {% if nota >= 9 %}nota-excelente{% elif nota >= 7 %}nota-buena{% elif nota >= 6 %}nota-regular{% else %}nota-baja{% endif %}">
                   {{ "%.2f"|format(nota) }}
                 </span>
@@ -667,7 +667,7 @@
                   {{ "%.2f"|format(promedio) }}
                 </span>
               </td>
-              <td>{{ a.conducta_final }}</td>
+              <!-- Celda conducta_final eliminada -->
               <td>
                 <span class="estado-badge {% if a.estado_final|lower == 'aprobado' %}estado-aprobado{% else %}estado-reprobado{% endif %}">
                   {{ a.estado_final }}

@@ -75,7 +75,6 @@ def ver_boleta(id_estudiante, id_asignacion):
     materias_data = []
     for asig in asignaciones:
         notas_periodos = []
-        actitud_periodos = []
         for per in periodos:
             cal = Calificacion.query.filter_by(id_estudiante=id_estudiante, id_asignacion=asig.id_asignacion, id_periodo=per.id_periodo).first()
             if cal:
@@ -87,22 +86,15 @@ def ver_boleta(id_estudiante, id_asignacion):
                     else:
                         # usar nota_prueba_objetiva como aproximación
                         notas_periodos.append(float(getattr(pp, 'nota_prueba_objetiva', 0)))
-                if pp and getattr(pp, 'nota_actitud', None) is not None:
-                    actitud_periodos.append(getattr(pp, 'nota_actitud'))
 
         trim_notas = notas_periodos[:3]
         trimestre = format(sum(trim_notas)/len(trim_notas), '.1f') if trim_notas else '--'
         examen = format(notas_periodos[-1], '.1f') if len(notas_periodos) > 3 else (format(notas_periodos[-1], '.1f') if notas_periodos else '--')
-        actitud = 'MB'
-        if actitud_periodos:
-            from collections import Counter
-            actitud = Counter(actitud_periodos).most_common(1)[0][0]
 
         materia_info = {
             'nombre_materia': asig.materia.nombre_materia if asig.materia else 'Sin materia',
             'trimestre': trimestre,
             'examen': examen,
-            'actitud': actitud,
             'periodo1': format(notas_periodos[0], '.1f') if len(notas_periodos) > 0 else '--',
             'periodo2': format(notas_periodos[1], '.1f') if len(notas_periodos) > 1 else '--',
             'periodo3': format(notas_periodos[2], '.1f') if len(notas_periodos) > 2 else '--',
@@ -170,7 +162,6 @@ def descargar_boleta(id_estudiante, id_asignacion):
             'nombre_materia': asig.materia.nombre_materia,
             'trimestre': format(sum(notas_periodos[:3])/3, '.1f') if len(notas_periodos) >= 3 else '--',
             'examen': format(notas_periodos[-1], '.1f') if notas_periodos else '--',
-            'actitud': 'MB',  # MB = Muy Bueno por defecto
             'periodo1': format(notas_periodos[0], '.1f') if len(notas_periodos) > 0 else '--',
             'periodo2': format(notas_periodos[1], '.1f') if len(notas_periodos) > 1 else '--',
             'periodo3': format(notas_periodos[2], '.1f') if len(notas_periodos) > 2 else '--',

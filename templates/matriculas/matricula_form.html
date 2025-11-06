@@ -299,8 +299,8 @@
                         <div style="margin-top: 8px; font-size: 0.9em;">
                             <div><strong>Año Anterior:</strong> ${data.ano_anterior}</div>
                             <div><strong>Grado Anterior:</strong> ${data.grado_anterior}</div>
-                            <div><strong>Conducta:</strong> ${data.conducta_final}</div>
-                            ${data.asistencia_final ? `<div><strong>Asistencia:</strong> ${data.asistencia_final.toFixed(2)}%</div>` : ''}
+                            <!-- Conducta eliminada -->
+                            <!-- Asistencia eliminada -->
                         </div>
                         <div style="margin-top: 8px; font-style: italic; ${data.puede_matricularse ? 'color: #28a745;' : 'color: #dc3545;'}">${data.mensaje}</div>
                     `;
