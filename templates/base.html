@@ -102,13 +102,18 @@
                 </a>
             </ul>
           </div>
-          {% elif current_role == 2 %}
+          {% elif current_role == 2 or current_role == 3 %}
           <div class="nav-section">
             <h6 class="nav-section-title">Docente</h6>
             <ul class="navbar-nav flex-column w-100">
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('coordinador.dashboard') }}">
                   <i class="bi bi-house-door"></i><span>Dashboard</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('inasistencias_bp.grados') }}">
+                  <i class="bi bi-calendar-x"></i><span>Registro de Inasistencias</span>
                 </a>
               </li>
             </ul>

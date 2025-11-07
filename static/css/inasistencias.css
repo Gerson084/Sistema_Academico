@@ -1,0 +1,69 @@
+/* Estilo inspirado en matricula_index.css y base.html */
+.page-header {
+  background: linear-gradient(135deg, #0D2C63 0%, #1a4480 100%);
+  color: white;
+  padding: 2rem 0 1rem 0;
+  margin-bottom: 2rem;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 2px 8px rgba(13,44,99,0.08);
+}
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.page-subtitle {
+  font-size: 1.1rem;
+  color: #e0e0e0;
+}
+.btn-primary, .btn-success, .btn-danger, .btn-outline-danger {
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+}
+.table {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(13,44,99,0.08);
+  margin-top: 1rem;
+}
+th, td {
+  vertical-align: middle !important;
+}
+.status-badge {
+  border-radius: 12px;
+  padding: 0.3em 0.8em;
+  font-size: 0.95em;
+  font-weight: 600;
+}
+.status-active {
+  background: #d4edda;
+  color: #155724;
+}
+.status-inactive {
+  background: #f8d7da;
+  color: #721c24;
+}
+.action-bar, .filters-container, .pagination-container {
+  margin-bottom: 1.5rem;
+}
+.action-bar .btn-new {
+  background: #0D2C63;
+  color: white;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+}
+.action-bar .btn-new:hover {
+  background: #1a4480;
+}
+.empty-state {
+  text-align: center;
+  color: #0D2C63;
+  padding: 2rem;
+}
+.empty-state i {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}

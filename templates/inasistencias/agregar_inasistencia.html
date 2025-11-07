@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inasistencias.css') }}">
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title"><i class="fas fa-calendar-plus"></i> Agregar inasistencia</h1>
+    <p class="page-subtitle">Completa los datos para registrar la inasistencia de {{ estudiante.nombres }} {{ estudiante.apellidos }}</p>
+  </div>
+</div>
+<div class="container">
+  <form method="post" class="card p-4 shadow-sm">
+    <div class="mb-3">
+      <label for="fecha" class="form-label">Fecha:</label>
+      <input type="date" name="fecha" id="fecha" required class="form-control">
+    </div>
+    <div class="mb-3">
+      <label for="razon" class="form-label">Razón:</label>
+      <textarea name="razon" id="razon" required class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="justificada" class="form-label">¿Justificada?</label>
+      <select name="justificada" id="justificada" class="form-select">
+        <option value="0">No</option>
+        <option value="1">Sí</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a href="{{ url_for('inasistencias_bp.inasistencias_estudiante', id_estudiante=estudiante.id_estudiante) }}" class="btn btn-secondary ms-2">&larr; Volver</a>
+  </form>
+</div>
+{% endblock %}

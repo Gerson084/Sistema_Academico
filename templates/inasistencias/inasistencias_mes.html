@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inasistencias.css') }}">
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title"><i class="fas fa-calendar-times"></i> Inasistencias de {{ estudiante.nombres }} {{ estudiante.apellidos }}</h1>
+    <p class="page-subtitle">Selecciona el mes para ver las inasistencias y registra nuevas</p>
+  </div>
+</div>
+<div class="container">
+  <form method="get" class="mb-3">
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <label for="mes" class="form-label">Mes:</label>
+      </div>
+      <div class="col-auto">
+        <select name="mes" id="mes" class="form-select" onchange="this.form.submit()">
+          {% set meses_nombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre'] %}
+          {% for m in meses %}
+            <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ meses_nombres[m-1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <a href="{{ url_for('inasistencias_bp.agregar_inasistencia', id_estudiante=estudiante.id_estudiante) }}" class="btn btn-primary">Agregar inasistencia</a>
+      </div>
+    </div>
+  </form>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Razón</th>
+        <th>Justificada</th>
+        <th>Detalle</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inasistencia in inasistencias %}
+      <tr>
+        <td>{{ inasistencia.fecha.strftime('%d/%m/%Y') }}</td>
+        <td>{{ inasistencia.razon }}</td>
+        <td>{% if inasistencia.justificada %}Sí{% else %}No{% endif %}</td>
+        <td><a href="{{ url_for('inasistencias_bp.detalle_inasistencia', id_inasistencia=inasistencia.id_inasistencia) }}" class="btn btn-outline-info btn-sm">Ver</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="empty-state">No hay inasistencias este mes.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="{{ url_for('inasistencias_bp.estudiantes_grado', id_grado=id_grado) }}" class="btn btn-secondary mt-3">&larr; Volver a estudiantes</a>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inasistencias.css') }}">
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title"><i class="fas fa-calendar-times"></i> Grados</h1>
+    <p class="page-subtitle">Selecciona un grado para ver los estudiantes y sus inasistencias</p>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    {% for grado in grados %}
+      <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body d-flex flex-column justify-content-between">
+            <div>
+              <h5 class="card-title"><i class="fas fa-building"></i> {{ grado.nombre_grado }}</h5>
+              <p class="card-text text-muted">Nivel: {{ grado.nivel }}</p>
+            </div>
+            <a href="{{ url_for('inasistencias_bp.estudiantes_grado', id_grado=grado.id_grado) }}" class="btn btn-primary mt-3">Ver estudiantes</a>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="col-12">
+        <div class="alert alert-info text-center">No hay grados registrados.</div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inasistencias.css') }}">
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title"><i class="fas fa-users"></i> Estudiantes de {{ grado.nombre }}</h1>
+    <p class="page-subtitle">Selecciona un estudiante para ver y registrar inasistencias</p>
+  </div>
+</div>
+<div class="container">
+  {% if estudiantes %}
+    <div class="row">
+      {% for item in estudiantes %}
+        <div class="col-md-6 mb-3">
+          <div class="card shadow-sm">
+            <div class="card-body d-flex flex-column justify-content-between">
+              <h5 class="card-title"><i class="fas fa-user"></i> {{ item.estudiante.nombres }} {{ item.estudiante.apellidos }}</h5>
+              <p class="card-text text-muted">Sección: {{ item.seccion.nombre_seccion }}</p>
+              <a href="{{ url_for('inasistencias_bp.inasistencias_estudiante', id_estudiante=item.estudiante.id_estudiante) }}" class="btn btn-success mt-2">Ver inasistencias</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info text-center">No hay estudiantes matriculados en este grado.</div>
+  {% endif %}
+  <a href="{{ url_for('inasistencias_bp.grados') }}" class="btn btn-secondary mt-3">&larr; Volver a grados</a>
+</div>
+{% endblock %}
