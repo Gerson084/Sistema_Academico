@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <h2>Detalle del incidente</h2>
+  <div class="card p-3">
+      <p><strong>Estudiante:</strong> {{ incidente.id_estudiante }}</p>
+      <p><strong>Reportado por:</strong>
+        {% if reportado_por %}
+          {{ reportado_por.nombres }} {{ reportado_por.apellidos }}
+        {% else %}
+          (No disponible)
+        {% endif %}
+      </p>
+      <p><strong>Fecha:</strong> {{ incidente.fecha_incidente }}</p>
+    <p><strong>Tipo:</strong> {{ incidente.tipo_incidente }}</p>
+    <p><strong>Lugar:</strong> {{ incidente.lugar }}</p>
+    <p><strong>Testigos:</strong> {{ incidente.testigos }}</p>
+    <p><strong>Descripción:</strong><br>{{ incidente.descripcion }}</p>
+    <p><strong>Medidas tomadas:</strong><br>{{ incidente.medidas_tomadas }}</p>
+    <div class="d-flex" style="gap:1rem;">
+      <a class="btn btn-primary" target="_blank" href="{{ url_for('incidentes_bp.imprimir_incidente', id_incidente=incidente.id_incidente) }}">Imprimir</a>
+      <a class="btn btn-secondary" href="{{ url_for('incidentes_bp.incidentes_estudiante', id_estudiante=incidente.id_estudiante) }}">Volver</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

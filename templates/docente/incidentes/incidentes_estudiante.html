@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <h2>Incidentes - {{ estudiante.nombres }} {{ estudiante.apellidos }}</h2>
+  <a class="btn btn-success mb-3" href="{{ url_for('incidentes_bp.agregar_incidente', id_estudiante=estudiante.id_estudiante) }}">Reportar nuevo incidente</a>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Tipo</th>
+        <th>Lugar</th>
+        <th>Testigos</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in incidentes %}
+        <tr>
+          <td>{{ i.fecha_incidente }}</td>
+          <td>{{ i.tipo_incidente }}</td>
+          <td>{{ i.lugar }}</td>
+          <td>{{ i.testigos }}</td>
+          <td><a class="btn btn-sm btn-primary" href="{{ url_for('incidentes_bp.detalle_incidente', id_incidente=i.id_incidente) }}">Ver</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">No hay incidentes registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Incidente - Imprimir{% endblock %}
+{% block content %}
+<style>
+  /* Letterhead style inspired by provided image */
+  .letterhead {
+    background: linear-gradient(180deg,#0d2c63 0%, #1a4480 100%);
+    color: #0d2c63;
+    padding: 30px 40px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .letterhead .logo { position: absolute; left: 40px; top: 18px; }
+  .letterhead .meta { position: absolute; right: 40px; top: 18px; color: #fff; font-size: 0.95rem; }
+  .document { background: #fff; padding: 30px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);} 
+  .document h3 { text-align: center; margin-bottom: 1rem; }
+  .doc-body { margin: 20px 0; line-height: 1.6; color: #222; }
+  .signatures { display:flex; gap:30px; margin-top:60px; }
+  .signature { flex:1; text-align:center; }
+  .signature .line { border-top: 1px solid #333; margin-top:60px; }
+  .print-btn { margin-bottom: 15px; }
+  @media print {
+    .print-btn { display:none; }
+    .sidebar, .content .btn { display:none; }
+    .content { margin-left: 0; }
+  }
+</style>
+
+<div class="container">
+  <div class="print-btn text-end">
+    <button onclick="window.print()" class="btn btn-primary">Imprimir</button>
+    <a href="{{ url_for('incidentes_bp.detalle_incidente', id_incidente=incidente.id_incidente) }}" class="btn btn-secondary ms-2">Volver</a>
+  </div>
+
+  <div class="letterhead">
+    <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="logo" width="80" class="logo">
+    <div class="meta">
+      <div>{{ incidente.fecha_incidente.strftime('%A %d de %B de %Y') if incidente.fecha_incidente else '' }}</div>
+      <div>{{ incidente.lugar or '' }}</div>
+    </div>
+    <div style="height:40px"></div>
+  </div>
+
+  <div class="document">
+    <h3>Reporte de Incidente Disciplinario</h3>
+
+    <div class="doc-body">
+      <p><strong>Estudiante:</strong> {{ estudiante.nombres if estudiante else '' }} {{ estudiante.apellidos if estudiante else '' }} (NIE: {{ estudiante.nie if estudiante else incidente.id_estudiante }})</p>
+      <p><strong>Periodo:</strong> {{ periodo.nombre_periodo if periodo else '' }}</p>
+      <p><strong>Tipo de incidente:</strong> {{ incidente.tipo_incidente }}</p>
+      <p><strong>Fecha y hora:</strong> {{ incidente.fecha_incidente }}</p>
+      <p><strong>Lugar:</strong> {{ incidente.lugar }}</p>
+      <hr>
+      <p><strong>Descripción:</strong></p>
+      <p>{{ incidente.descripcion|default('No aplica') }}</p>
+      <p><strong>Medidas tomadas:</strong></p>
+      <p>{{ incidente.medidas_tomadas|default('No registra') }}</p>
+      <p><strong>Testigos:</strong> {{ incidente.testigos|default('No registra') }}</p>
+    </div>
+
+    <div class="signatures">
+      <div class="signature">
+        <div class="line"></div>
+        <div>Firma Padre / Madre de Familia</div>
+        <div style="margin-top:8px; font-size:0.9rem; color:#555">Nombre: __________________________</div>
+      </div>
+      <div class="signature">
+        <div class="line"></div>
+        <div>Firma del Estudiante</div>
+        <div style="margin-top:8px; font-size:0.9rem; color:#555">Nombre: __________________________</div>
+      </div>
+      <div class="signature">
+        <div class="line"></div>
+        <div>Firma del Docente</div>
+        <div style="margin-top:8px; font-size:0.9rem; color:#555">{{ reportado_por.nombres if reportado_por else '' }} {{ reportado_por.apellidos if reportado_por else '' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

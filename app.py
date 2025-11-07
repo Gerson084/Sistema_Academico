@@ -23,6 +23,7 @@ from routes.coordinador_route import coordinador_bp
 from routes.reportesC_bp import reportesC_bp
 from routes.mis_estudiantes_bp import mis_estudiantes_bp
 from routes.inasistencias_bp import inasistencias_bp
+from routes.incidentes_bp import incidentes_bp
 
 
 
@@ -76,6 +77,7 @@ app.register_blueprint(coordinador_bp, url_prefix='/coordinador')
 app.register_blueprint(reportesC_bp, url_prefix='/reportesC')
 app.register_blueprint(mis_estudiantes_bp)
 app.register_blueprint(inasistencias_bp)
+app.register_blueprint(incidentes_bp)
 
 # Rutas de compatibilidad: redirigen a los endpoints del blueprint con prefijo
 @app.route('/reporte_conducta_estudiante')
@@ -107,6 +109,15 @@ def test_db():
     if result['status'] == 'error':
         return jsonify(result), 500
     return jsonify(result)
+
+
+@app.route('/_routes')
+def show_routes():
+    """Ruteo de depuración: lista todas las rutas registradas (solo para desarrollo)."""
+    output = []
+    for rule in app.url_map.iter_rules():
+        output.append(f"{rule.endpoint}: {rule}")
+    return '<br>'.join(output)
 
 if __name__ == '__main__':
     with app.app_context():

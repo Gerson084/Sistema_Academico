@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <h2>Grados - Reporte de incidentes</h2>
+  <div class="list-group">
+    {% for grado in grados %}
+      <a class="list-group-item list-group-item-action" href="{{ url_for('incidentes_bp.estudiantes_grado', id_grado=grado.id_grado) }}">{{ grado.nombre_grado|default(grado.id_grado) }}</a>
+    {% else %}
+      <p>No hay grados.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

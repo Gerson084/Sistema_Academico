@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <h2>Estudiantes - {{ grado.nombre_grado|default(grado.id_grado) }}</h2>
+
+  <!-- Filtros: sección y búsqueda por NIE/nombre -->
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+      <select name="seccion" class="form-select">
+        <option value="">-- Todas las secciones --</option>
+        {% for s in secciones %}
+          <option value="{{ s.id_seccion }}" {% if selected_seccion and selected_seccion == s.id_seccion %}selected{% endif %}>{{ s.nombre|default(s.nombre_seccion) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6">
+      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por NIE, nombre o apellido">
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-primary w-100">Filtrar</button>
+    </div>
+  </form>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>NIE</th>
+        <th>Nombre</th>
+        <th>Sección</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in estudiantes %}
+        <tr>
+          <td>{{ item.estudiante.nie }}</td>
+          <td>{{ item.estudiante.nombres }} {{ item.estudiante.apellidos }}</td>
+          <td>{{ item.seccion.nombre|default(item.seccion.nombre_seccion) }}</td>
+          <td>
+            <a class="btn btn-sm btn-primary " href="{{ url_for('incidentes_bp.incidentes_estudiante', id_estudiante=item.estudiante.id_estudiante) }}">Ver incidentes</a>
+            <a class="btn btn-sm btn-success" href="{{ url_for('incidentes_bp.agregar_incidente', id_estudiante=item.estudiante.id_estudiante) }}">Reportar incidente</a>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4">No se encontraron estudiantes.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
