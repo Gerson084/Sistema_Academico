@@ -195,8 +195,7 @@ def ingresar_notas(id_asignacion):
                 integradora_1,
                 integradora_2,
                 integradora_3,
-                prueba_objetiva,
-                # campo eliminado: nota_actitud
+                prueba_objetiva
             FROM notas_resumen_periodo
             WHERE id_estudiante = :id_estudiante
             AND id_asignacion = :id_asignacion

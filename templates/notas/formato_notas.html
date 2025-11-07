@@ -376,7 +376,7 @@
         </div>
 
         <div class="d-flex justify-content-between align-items-center mt-4">
-    <a href="{{ url_for('docente_notas.mis_materias') }}" class="btn btn-secondary btn-lg">
+    <a href="{{ url_for('coordinador.dashboard') }}" class="btn btn-secondary btn-lg">
         <i class="fas fa-arrow-left"></i> Volver
     </a>
     <div class="d-flex gap-2">
@@ -396,20 +396,37 @@
 let editMode = false;
 function setModoEdicion(enabled) {
     editMode = enabled;
+    console.log('Modo edición:', enabled ? 'ACTIVADO' : 'DESACTIVADO');
+    
     const editables = document.querySelectorAll('.actividad, .nota-rc, .integradora, .prueba-obj');
+    console.log('Total de campos editables:', editables.length);
     editables.forEach(inp => { inp.disabled = !enabled; });
+    
     const btnGuardar = document.getElementById('btnGuardar');
     const btnEditar = document.getElementById('btnEditar');
-    if (btnGuardar) btnGuardar.disabled = !enabled;
-    if (btnEditar) btnEditar.innerHTML = enabled ? '<i class="fas fa-times"></i> Cancelar' : '<i class="fas fa-edit"></i> Editar';
+    
+    if (btnGuardar) {
+        btnGuardar.disabled = !enabled;
+        console.log('Botón Guardar:', enabled ? 'HABILITADO' : 'DESHABILITADO');
+    }
+    
+    if (btnEditar) {
+        btnEditar.innerHTML = enabled ? '<i class="fas fa-times"></i> Cancelar' : '<i class="fas fa-edit"></i> Editar';
+    }
 }
 
 // Inicializar modo lectura cuando cargue
 window.addEventListener('DOMContentLoaded', () => {
+    console.log('Página cargada, inicializando modo edición');
     setModoEdicion(false);
     const btnEditar = document.getElementById('btnEditar');
     if (btnEditar) {
-        btnEditar.addEventListener('click', () => setModoEdicion(!editMode));
+        btnEditar.addEventListener('click', () => {
+            console.log('Botón Editar clickeado');
+            setModoEdicion(!editMode);
+        });
+    } else {
+        console.error('Botón Editar no encontrado');
     }
 });
 // --- Fin modo edición ---
@@ -421,10 +438,57 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Validación de rango 0-10 con decimales
 document.querySelectorAll('.nota-input').forEach(input => {
     input.addEventListener('input', function() {
+        // Validar que esté entre 0 y 10
+        let valor = parseFloat(this.value);
+        
+        if (!isNaN(valor)) {
+            if (valor < 0) {
+                this.value = 0;
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Nota inválida',
+                    text: 'La nota no puede ser menor a 0',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            } else if (valor > 10) {
+                this.value = 10;
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Nota inválida',
+                    text: 'La nota no puede ser mayor a 10',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
+        }
+        
         const fila = this.closest('tr');
         calcularFila(fila);
+    });
+    
+    // Validar al perder el foco
+    input.addEventListener('blur', function() {
+        let valor = parseFloat(this.value);
+        
+        if (!isNaN(valor)) {
+            // Redondear a 2 decimales
+            this.value = valor.toFixed(2);
+            
+            // Validar rango
+            if (valor < 0) {
+                this.value = '0.00';
+            } else if (valor > 10) {
+                this.value = '10.00';
+            }
+        }
     });
 });
 
@@ -489,28 +553,46 @@ function cambiarPeriodo() {
     window.location.href = `{{ url_for('docente_notas.ingresar_notas', id_asignacion=id_asignacion) }}?periodo=${periodo}`;
 }
 
-function guardarNotas() {
+function guardarNotas(event) {
+    console.log('Función guardarNotas llamada');
+    if (event) event.preventDefault();
+    
     const idPeriodo = document.getElementById('select_periodo').value;
     
     if (!idPeriodo) {
         Swal.fire({
             icon: 'warning',
-            title: 'Periódo requerido',
-            text: 'Por favor seleccione un periódo'
+            title: 'Período requerido',
+            text: 'Por favor seleccione un período'
         });
         return;
     }
     
+    console.log('Período seleccionado:', idPeriodo);
+    
     const notas = [];
     
-    document.querySelectorAll('tbody tr').forEach(fila => {
-        const idEstudiante = fila.dataset.estudiante;
+    console.log('Procesando filas de estudiantes...');
+    
+    try {
+        document.querySelectorAll('tbody tr').forEach(fila => {
+            const idEstudiante = fila.dataset.estudiante;
         
         // Recopilar actividades
         const actividades = [];
         fila.querySelectorAll('.actividad').forEach((input, index) => {
             const valor = input.value ? parseFloat(input.value) : null;
             if (valor !== null) {
+                // Validar rango
+                if (valor < 0 || valor > 10) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Nota inválida',
+                        text: `La actividad ${index + 1} del estudiante ID ${idEstudiante} tiene una nota fuera del rango (0-10): ${valor}`,
+                        confirmButtonColor: '#dc2626'
+                    });
+                    throw new Error('Nota fuera de rango');
+                }
                 actividades.push({
                     numero: index + 1,
                     nota: valor
@@ -524,6 +606,16 @@ function guardarNotas() {
         fila.querySelectorAll('.integradora').forEach((input, index) => {
             const valor = input.value ? parseFloat(input.value) : null;
             if (valor !== null) {
+                // Validar rango
+                if (valor < 0 || valor > 10) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Nota inválida',
+                        text: `La integradora ${index + 1} del estudiante ID ${idEstudiante} tiene una nota fuera del rango (0-10): ${valor}`,
+                        confirmButtonColor: '#dc2626'
+                    });
+                    throw new Error('Nota fuera de rango');
+                }
                 integradoras.push({
                     numero: index + 1,
                     nota: valor,
@@ -535,7 +627,28 @@ function guardarNotas() {
         // Recopilar otros datos
         const notaRC = fila.querySelector('.nota-rc').value ? parseFloat(fila.querySelector('.nota-rc').value) : null;
         const pruebaObj = fila.querySelector('.prueba-obj').value ? parseFloat(fila.querySelector('.prueba-obj').value) : null;
-        const actitud = fila.querySelector('.actitud').value || null;
+        
+        // Validar R.C
+        if (notaRC !== null && (notaRC < 0 || notaRC > 10)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Nota inválida',
+                text: `La Nota R.C. del estudiante ID ${idEstudiante} está fuera del rango (0-10): ${notaRC}`,
+                confirmButtonColor: '#dc2626'
+            });
+            throw new Error('Nota fuera de rango');
+        }
+        
+        // Validar Prueba Objetiva
+        if (pruebaObj !== null && (pruebaObj < 0 || pruebaObj > 10)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Nota inválida',
+                text: `La Prueba Objetiva del estudiante ID ${idEstudiante} está fuera del rango (0-10): ${pruebaObj}`,
+                confirmButtonColor: '#dc2626'
+            });
+            throw new Error('Nota fuera de rango');
+        }
         
         // Obtener totales calculados
         const promedioActividades = parseFloat(fila.querySelector('.promedio-act').value) || 0;
@@ -544,28 +657,43 @@ function guardarNotas() {
         const totalBI = parseFloat(fila.querySelector('.total-bi').value) || 0;
         const totalFinal = parseFloat(fila.querySelector('.total-final').value) || 0;
         
-        notas.push({
-            id_estudiante: idEstudiante,
-            actividades: actividades,
-            nota_rc: notaRC,
-            integradoras: integradoras,
-            prueba_objetiva: pruebaObj,
-            actitud: actitud,
-            // Resumen para notas_resumen_periodo
-            promedio_actividades: promedioActividades,
-            porcentaje_actividades: porcentajeActividades,
-            porcentaje_rc: porcentajeRC,
-            promedio_integradoras: 0, // Se calculará en el backend
-            porcentaje_integradoras: integradoras.reduce((sum, int) => sum + (int.nota * int.porcentaje / 100), 0),
-            total_bi: totalBI,
-            nota_final: totalFinal  // ✅ Cambiado de total_final a nota_final
+        // Solo agregar si hay al menos una nota ingresada
+        const tieneNotas = actividades.length > 0 || notaRC !== null || integradoras.length > 0 || pruebaObj !== null;
+        
+        if (tieneNotas) {
+            console.log('Estudiante ID:', idEstudiante, '- Tiene notas, será guardado');
+            notas.push({
+                id_estudiante: idEstudiante,
+                actividades: actividades,
+                nota_rc: notaRC,
+                integradoras: integradoras,
+                prueba_objetiva: pruebaObj,
+                // Resumen para notas_resumen_periodo
+                promedio_actividades: promedioActividades,
+                porcentaje_actividades: porcentajeActividades,
+                porcentaje_rc: porcentajeRC,
+                promedio_integradoras: 0, // Se calculará en el backend
+                porcentaje_integradoras: integradoras.reduce((sum, int) => sum + (int.nota * int.porcentaje / 100), 0),
+                total_bi: totalBI,
+                nota_final: totalFinal
+            });
+        } else {
+            console.log('Estudiante ID:', idEstudiante, '- Sin notas, se omite');
+        }
         });
-    });
+        
+        console.log('Total de notas recopiladas:', notas.length);
+        console.log('Datos a enviar:', JSON.stringify(notas, null, 2));
+        
+    } catch (error) {
+        console.error('Error al validar notas:', error);
+        return; // Detener el proceso de guardado
+    }
     
-    // Mostrar confirmaciÃ³n antes de guardar
+    // Mostrar confirmación antes de guardar
     Swal.fire({
-        title: 'Â¿Guardar notas?',
-        text: `Se guardarÃ¡n las notas de ${notas.length} estudiantes para este perÃ­odo`,
+        title: '¿Guardar notas?',
+        text: `Se guardarán las notas de ${notas.length} estudiantes para este período`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#28a745',
@@ -594,19 +722,21 @@ function guardarNotas() {
                     notas: notas
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Respuesta del servidor:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('Datos recibidos:', data);
                 if (data.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Exito!',
+                        title: '¡Éxito!',
                         text: 'Las notas se han guardado correctamente',
                         confirmButtonColor: '#28a745'
                     }).then(() => {
-                        // Marcar todas las filas como guardadas
-                        document.querySelectorAll('tbody tr').forEach(fila => {
-                            fila.classList.add('nota-guardada');
-                        });
+                        // Recargar la página para ver las notas actualizadas
+                        location.reload();
                     });
                 } else {
                     Swal.fire({
@@ -618,11 +748,11 @@ function guardarNotas() {
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Error completo:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error de conexión',
-                    text: 'No se pudo conectar con el servidor',
+                    text: 'No se pudo conectar con el servidor: ' + error.message,
                     confirmButtonColor: '#dc3545'
                 });
             });
