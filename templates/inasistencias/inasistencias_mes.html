@@ -26,28 +26,50 @@
       </div>
     </div>
   </form>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Razón</th>
-        <th>Justificada</th>
-        <th>Detalle</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for inasistencia in inasistencias %}
-      <tr>
-        <td>{{ inasistencia.fecha.strftime('%d/%m/%Y') }}</td>
-        <td>{{ inasistencia.razon }}</td>
-        <td>{% if inasistencia.justificada %}Sí{% else %}No{% endif %}</td>
-        <td><a href="{{ url_for('inasistencias_bp.detalle_inasistencia', id_inasistencia=inasistencia.id_inasistencia) }}" class="btn btn-outline-info btn-sm">Ver</a></td>
-      </tr>
+  <div class="calendar-container mb-4">
+    {% set dias_semana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] %}
+    {% set inasistencias_por_dia = {} %}
+    {% for inasistencia in inasistencias %}
+      {% set dia = inasistencia.fecha.day %}
+      {% if dia in inasistencias_por_dia %}
+        {% set _ = inasistencias_por_dia[dia].append(inasistencia) %}
       {% else %}
-      <tr><td colspan="4" class="empty-state">No hay inasistencias este mes.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+        {% set _ = inasistencias_por_dia.update({dia: [inasistencia]}) %}
+      {% endif %}
+    {% endfor %}
+    <table class="table table-bordered calendar-table">
+      <thead>
+        <tr>
+          {% for d in dias_semana %}
+            <th class="text-center">{{ d }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for week in weeks %}
+          <tr>
+            {% for day in week %}
+              {% if day %}
+                <td class="text-center {% if day in inasistencias_por_dia %}bg-danger text-white fw-bold{% endif %}">
+                  <div>{{ day }}</div>
+                  {% if day in inasistencias_por_dia %}
+                    <div>
+                      {% for inasistencia in inasistencias_por_dia[day] %}
+                        <a href="{{ url_for('inasistencias_bp.detalle_inasistencia', id_inasistencia=inasistencia.id_inasistencia) }}" class="badge bg-warning text-dark mb-1" title="{{ inasistencia.razon }}">Inasistencia</a>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </td>
+              {% else %}
+                <td></td>
+              {% endif %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="mt-2"><span class="badge bg-danger">&nbsp;</span> Días con inasistencia</div>
+  </div>
   <a href="{{ url_for('inasistencias_bp.estudiantes_grado', id_grado=id_grado) }}" class="btn btn-secondary mt-3">&larr; Volver a estudiantes</a>
 </div>
 {% endblock %}

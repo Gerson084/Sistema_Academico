@@ -35,6 +35,7 @@ def estudiantes_grado(id_grado):
 
 @inasistencias_bp.route('/estudiante/<int:id_estudiante>', methods=['GET', 'POST'])
 def inasistencias_estudiante(id_estudiante):
+    import calendar
     meses = list(range(1, 11))  # Enero a Octubre
     mes = int(request.args.get('mes', date.today().month))
     ano_actual = date.today().year
@@ -48,7 +49,27 @@ def inasistencias_estudiante(id_estudiante):
         seccion = Seccion.query.get(matricula.id_seccion)
         if seccion:
             id_grado = seccion.id_grado
-    return render_template('inasistencias/inasistencias_mes.html', estudiante=estudiante, inasistencias=inasistencias, mes=mes, meses=meses, id_grado=id_grado)
+    # Construir matriz de calendario (semanas)
+    first_weekday, dias_en_mes = calendar.monthrange(ano_actual, mes)
+    # Python: lunes=0, domingo=6. Queremos semanas de lunes a domingo.
+    weeks = []
+    week = []
+    day_counter = 1
+    # Rellenar días vacíos al inicio
+    for i in range(first_weekday):
+        week.append(None)
+    while day_counter <= dias_en_mes:
+        week.append(day_counter)
+        if len(week) == 7:
+            weeks.append(week)
+            week = []
+        day_counter += 1
+    # Rellenar días vacíos al final
+    if week:
+        while len(week) < 7:
+            week.append(None)
+        weeks.append(week)
+    return render_template('inasistencias/inasistencias_mes.html', estudiante=estudiante, inasistencias=inasistencias, mes=mes, meses=meses, id_grado=id_grado, weeks=weeks)
 
 @inasistencias_bp.route('/estudiante/<int:id_estudiante>/agregar', methods=['GET', 'POST'])
 def agregar_inasistencia(id_estudiante):
