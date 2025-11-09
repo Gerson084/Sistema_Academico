@@ -153,6 +153,7 @@ def ver_estudiantes(id_seccion):
         SELECT 
             s.id_seccion,
             s.nombre_seccion,
+            g.id_grado,
             g.nombre_grado,
             g.nivel,
             al.ano as ano_lectivo,
@@ -162,9 +163,13 @@ def ver_estudiantes(id_seccion):
         INNER JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
         WHERE s.id_seccion = :id_seccion
     """)
-    
     info_result = db.session.execute(query_info, {'id_seccion': id_seccion}).first()
-    
+
+    # Redirigir a evaluación integral si es un grado especial
+    grados_integral = ['Inicial', 'PreKinder', 'Kinder', 'Preparatoria', 'Primer Grado']
+    if info_result and info_result.nombre_grado.strip() in grados_integral:
+        return redirect(url_for('evaluacion_integral_bp.ingreso', id_seccion=info_result.id_seccion, id_grado=info_result.id_grado, id_ano_lectivo=info_result.id_ano_lectivo))
+
     info_seccion = {
         'id_seccion': info_result.id_seccion,
         'nombre_seccion': info_result.nombre_seccion,
@@ -173,7 +178,7 @@ def ver_estudiantes(id_seccion):
         'ano_lectivo': info_result.ano_lectivo,
         'id_ano_lectivo': info_result.id_ano_lectivo
     }
-    
+
     # Obtener períodos del año lectivo
     periodos = Periodo.query.filter_by(
         id_ano_lectivo=info_result.id_ano_lectivo

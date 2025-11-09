@@ -22,9 +22,11 @@ from routes.coordinador_route import coordinador_bp
 
 from routes.reportesC_bp import reportesC_bp
 from routes.mis_estudiantes_bp import mis_estudiantes_bp
+
 from routes.inasistencias_bp import inasistencias_bp
 from routes.incidentes_bp import incidentes_bp
 from routes.conducta_grado_route import conducta_grado_bp
+from routes.evaluacion_integral_bp import evaluacion_integral_bp
 
 
 
@@ -78,8 +80,10 @@ app.register_blueprint(coordinador_bp, url_prefix='/coordinador')
 app.register_blueprint(reportesC_bp, url_prefix='/reportesC')
 app.register_blueprint(mis_estudiantes_bp)
 app.register_blueprint(inasistencias_bp)
+
 app.register_blueprint(incidentes_bp)
 app.register_blueprint(conducta_grado_bp)
+app.register_blueprint(evaluacion_integral_bp)
 
 # Rutas de compatibilidad: redirigen a los endpoints del blueprint con prefijo
 @app.route('/reporte_conducta_estudiante')

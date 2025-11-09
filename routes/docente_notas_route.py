@@ -115,10 +115,13 @@ def ingresar_notas(id_asignacion):
     # Obtener información de la asignación
     query_info = text("""
         SELECT 
+            ms.id_asignacion,
             m.nombre_materia,
             m.codigo_materia,
+            g.id_grado,
             g.nombre_grado,
             g.nivel,
+            s.id_seccion,
             s.nombre_seccion,
             al.ano as ano_lectivo,
             al.id_ano_lectivo
@@ -129,8 +132,11 @@ def ingresar_notas(id_asignacion):
         INNER JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
         WHERE ms.id_asignacion = :id_asignacion
     """)
-    
     info_result = db.session.execute(query_info, {'id_asignacion': id_asignacion}).first()
+    # Si el grado es especial, redirigir a evaluación integral
+    grados_integral = ['Inicial', 'PreKinder', 'Kinder', 'Preparatoria', 'Primer Grado']
+    if info_result and info_result.nombre_grado.strip() in grados_integral:
+        return redirect(url_for('evaluacion_integral_bp.ingreso', id_seccion=info_result.id_seccion, id_grado=info_result.id_grado, id_ano_lectivo=info_result.id_ano_lectivo))
     
     # Obtener períodos del año lectivo
     periodos = Periodo.query.filter_by(

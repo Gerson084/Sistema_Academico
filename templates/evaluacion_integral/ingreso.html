@@ -1,0 +1,115 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-3">Evaluación Integral - Ingreso de Valoraciones</h2>
+  <div class="mb-3">
+    <label for="periodo" class="form-label">Período:</label>
+    <form method="get" class="d-inline">
+      <select name="id_periodo" id="periodo" class="form-select d-inline w-auto" onchange="this.form.submit()" required>
+        {% for periodo in periodos %}
+          <option value="{{ periodo.id_periodo }}" {% if periodo.id_periodo == id_periodo %}selected{% endif %}>{{ periodo.nombre }} ({{ periodo.numero_periodo }})</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+  <div class="accordion" id="accordionEstudiantes">
+    {% for estudiante in estudiantes %}
+    <div class="accordion-item mb-2">
+      <h2 class="accordion-header" id="headingEst{{ estudiante.id_estudiante }}">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEst{{ estudiante.id_estudiante }}" aria-expanded="false" aria-controls="collapseEst{{ estudiante.id_estudiante }}">
+          {{ estudiante.nombres }} {{ estudiante.apellidos }}
+        </button>
+      </h2>
+      <div id="collapseEst{{ estudiante.id_estudiante }}" class="accordion-collapse collapse" aria-labelledby="headingEst{{ estudiante.id_estudiante }}" data-bs-parent="#accordionEstudiantes">
+        <div class="accordion-body">
+          <form method="post" action="?id_periodo={{ id_periodo }}">
+            <input type="hidden" name="id_estudiante" value="{{ estudiante.id_estudiante }}">
+            <input type="hidden" name="id_periodo" value="{{ id_periodo }}">
+            {% for ambito in ambitos %}
+              <div class="mb-3 border rounded p-2">
+                <h5 class="mb-2">{{ ambito.nombre }}</h5>
+                {% for apartado in apartados if apartado.id_ambito == ambito.id_ambito %}
+                  <div class="mb-2 ms-3">
+                    <strong>{{ apartado.nombre }}</strong>
+                    <table class="table table-sm table-bordered align-middle mb-2">
+                      <thead>
+                        <tr>
+                          <th style="width:60%">Criterio</th>
+                          <th style="width:40%">Valoración</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% set criterios_apartado = criterios|selectattr('id_apartado', 'equalto', apartado.id_apartado)|list %}
+                        {% for criterio in criterios_apartado %}
+                        <tr>
+                          <td>{{ criterio.descripcion }}</td>
+                          <td>
+                            <select name="valoracion_{{ criterio.id_criterio }}" class="form-select form-select-sm" required>
+                              <option value="">-</option>
+                              <option value="PA" {% if valoraciones.get((criterio.id_criterio, estudiante.id_estudiante)) == 'PA' %}selected{% endif %}>PA</option>
+                              <option value="PM" {% if valoraciones.get((criterio.id_criterio, estudiante.id_estudiante)) == 'PM' %}selected{% endif %}>PM</option>
+                              <option value="PB" {% if valoraciones.get((criterio.id_criterio, estudiante.id_estudiante)) == 'PB' %}selected{% endif %}>PB</option>
+                              <option value="NE" {% if valoraciones.get((criterio.id_criterio, estudiante.id_estudiante)) == 'NE' %}selected{% endif %}>NE</option>
+                            </select>
+                          </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                          <td colspan="2" class="text-center text-muted">No hay criterios definidos para este apartado.</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                    {% if criterios_apartado|length < 10 %}
+                      <button type="button" class="btn btn-outline-success btn-sm" onclick="showAddCriterioModal({{ apartado.id_apartado }})">Agregar criterio</button>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+            <div class="text-end mt-3">
+              <button type="submit" class="btn btn-primary">Guardar valoraciones</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal para agregar criterio -->
+<div class="modal fade" id="addCriterioModal" tabindex="-1" aria-labelledby="addCriterioModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formAddCriterio" method="post" action="">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addCriterioModalLabel">Agregar Criterio</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id_apartado" id="inputIdApartado">
+          <div class="mb-3">
+            <label for="descripcionCriterio" class="form-label">Descripción del criterio</label>
+            <input type="text" class="form-control" name="descripcion_criterio" id="descripcionCriterio" maxlength="255" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Agregar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function showAddCriterioModal(idApartado) {
+  document.getElementById('inputIdApartado').value = idApartado;
+  document.getElementById('descripcionCriterio').value = '';
+  var modal = new bootstrap.Modal(document.getElementById('addCriterioModal'));
+  modal.show();
+}
+</script>
+{% endblock %}

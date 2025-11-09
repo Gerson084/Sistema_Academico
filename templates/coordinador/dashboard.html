@@ -655,10 +655,18 @@
                             </div>
                         </div>
                         <div class="card-footer d-flex gap-2">
-                            <a href="{{ url_for('docente_notas.ingresar_notas', id_asignacion=asig.id_asignacion) }}" 
-                               class="btn-ingresar">
-                                <i class="fas fa-edit"></i> Ingresar Notas
-                            </a>
+                            {% set grados_integral = ['Inicial', 'PreKinder', 'Kinder', 'Preparatoria', 'Primer Grado'] %}
+                            {% if asig.nombre_grado.strip() in grados_integral %}
+                                <a href="{{ url_for('evaluacion_integral_bp.ingreso', id_seccion=asig.id_seccion, id_grado=asig.id_grado, id_ano_lectivo=asig.id_ano_lectivo) }}" 
+                                   class="btn-ingresar">
+                                    <i class="fas fa-edit"></i> Evaluación Integral
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('docente_notas.ingresar_notas', id_asignacion=asig.id_asignacion) }}" 
+                                   class="btn-ingresar">
+                                    <i class="fas fa-edit"></i> Ingresar Notas
+                                </a>
+                            {% endif %}
                             <a href="{{ url_for('docente_notas.ver_notas_finales', id_asignacion=asig.id_asignacion) }}" 
                                class="btn-ver-notas-finales">
                                 <i class="fas fa-award"></i> Ver Notas Finales
