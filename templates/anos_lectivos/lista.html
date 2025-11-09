@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --light-cream: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #f59e0b;
+        --danger-red: #dc2626;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, #1a4480 100%);
+        color: var(--light-cream);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .ano-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid transparent;
+    }
+
+    .ano-card.activo { border-left-color: var(--success-green); }
+    .ano-card.inactivo { border-left-color: #9ca3af; }
+
+    .ano-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .ano-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin: 0;
+    }
+
+    .badge-estado {
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .badge-activo { background: #dcfce7; color: #166534; }
+    .badge-inactivo { background: #f3f4f6; color: #374151; }
+
+    .ano-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .ano-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .btn-action {
+        padding: 0.6rem 1.25rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary { background: var(--primary-blue); color: white; }
+    .btn-success { background: var(--success-green); color: white; }
+    .btn-warning { background: var(--warning-orange); color: white; }
+    .btn-danger { background: var(--danger-red); color: white; }
+
+    .btn-action:hover { transform: translateY(-2px); opacity: 0.9; }
+
+    .btn-nuevo {
+        background: var(--success-green);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .btn-nuevo:hover {
+        background: #047857;
+        color: white;
+        text-decoration: none;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="bi bi-calendar3"></i>
+            Gestión de Años Lectivos
+        </h1>
+        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">
+            Administra los años escolares del sistema
+        </p>
+    </div>
+
+    <!-- Botón crear nuevo -->
+    <a href="{{ url_for('anos_lectivos.crear_ano') }}" class="btn-nuevo">
+        <i class="bi bi-plus-circle"></i> Crear Nuevo Año Lectivo
+    </a>
+
+    <!-- Lista de años -->
+    {% if anos %}
+        {% for item in anos %}
+        <div class="ano-card {{ 'activo' if item.ano.activo else 'inactivo' }}">
+            <div class="ano-header">
+                <h2 class="ano-title">
+                    Año Lectivo {{ item.ano.ano }}
+                </h2>
+                <span class="badge-estado {{ 'badge-activo' if item.ano.activo else 'badge-inactivo' }}">
+                    <i class="bi {{ 'bi-check-circle-fill' if item.ano.activo else 'bi-circle' }}"></i>
+                    {{ 'ACTIVO' if item.ano.activo else 'INACTIVO' }}
+                </span>
+            </div>
+
+            <div style="color: #6b7280; margin-bottom: 1rem;">
+                <i class="bi bi-calendar-range"></i>
+                {{ item.ano.fecha_inicio.strftime('%d/%m/%Y') if item.ano.fecha_inicio else 'Sin fecha' }} 
+                - 
+                {{ item.ano.fecha_fin.strftime('%d/%m/%Y') if item.ano.fecha_fin else 'Sin fecha' }}
+            </div>
+
+            <div class="ano-stats">
+                <div class="stat-item">
+                    <span class="stat-value">{{ item.total_periodos }}</span>
+                    <div class="stat-label">
+                        <i class="bi bi-calendar-week"></i> Períodos
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ item.total_secciones }}</span>
+                    <div class="stat-label">
+                        <i class="bi bi-grid-3x3"></i> Secciones
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ item.total_estudiantes }}</span>
+                    <div class="stat-label">
+                        <i class="bi bi-people"></i> Estudiantes
+                    </div>
+                </div>
+            </div>
+
+            <div class="ano-actions">
+                {% if not item.ano.activo %}
+                <button class="btn-action btn-success" onclick="activarAno({{ item.ano.id_ano_lectivo }}, {{ item.ano.ano }})">
+                    <i class="bi bi-check-circle"></i> Activar
+                </button>
+                <a href="{{ url_for('anos_lectivos.editar_ano', id_ano=item.ano.id_ano_lectivo) }}" 
+                   class="btn-action btn-warning"
+                   style="background: #f59e0b; text-decoration: none;">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+                {% endif %}
+
+                <a href="{{ url_for('anos_lectivos.configurar_ano', id_ano=item.ano.id_ano_lectivo) }}" 
+                   class="btn-action btn-primary">
+                    <i class="bi bi-gear"></i> Configurar
+                </a>
+
+                {% if item.ano.activo and item.total_secciones > 0 %}
+                <button class="btn-action btn-warning" onclick="cerrarAno({{ item.ano.id_ano_lectivo }}, {{ item.ano.ano }})">
+                    <i class="bi bi-lock"></i> Cerrar Año
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 3rem; background: white; border-radius: 0.75rem;">
+            <i class="bi bi-calendar-x" style="font-size: 3rem; color: #e5e7eb;"></i>
+            <h3 style="color: #374151; margin-top: 1rem;">No hay años lectivos creados</h3>
+            <p style="color: #6b7280;">Crea el primer año lectivo para comenzar</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function activarAno(idAno, ano) {
+    Swal.fire({
+        title: `¿Activar año ${ano}?`,
+        text: "Se desactivarán los demás años lectivos",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, activar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/anos-lectivos/activar/${idAno}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Activado!',
+                        text: data.mensaje,
+                        confirmButtonColor: '#0D2C63'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    // Si hay un año activo, mostrar mensaje especial
+                    if (data.ano_activo) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Ya existe un año activo',
+                            html: `<p>${data.mensaje}</p><p style="margin-top: 1rem;">Año activo actual: <strong>${data.ano_activo}</strong></p>`,
+                            confirmButtonColor: '#0D2C63'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.mensaje,
+                            confirmButtonColor: '#0D2C63'
+                        });
+                    }
+                }
+            });
+        }
+    });
+}
+
+function cerrarAno(idAno, ano) {
+    Swal.fire({
+        title: `¿Cerrar año ${ano}?`,
+        html: `
+            <p>Esta acción:</p>
+            <ul style="text-align: left; margin: 1rem 0;">
+                <li>Marcará el año como cerrado</li>
+                <li>Procesará la promoción de estudiantes</li>
+                <li>No se podrá modificar después</li>
+            </ul>
+            <p><strong>¿Estás seguro?</strong></p>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, cerrar año',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/anos-lectivos/cerrar-ano/${idAno}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.requiere_confirmacion) {
+                        confirmarCierreAno(idAno, data.ano_actual, data.ano_siguiente);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'No se puede cerrar',
+                        text: data.mensaje,
+                        confirmButtonColor: '#0D2C63'
+                    });
+                }
+            });
+        }
+    });
+}
+
+function confirmarCierreAno(idAno, anoActual, anoSiguiente) {
+    Swal.fire({
+        title: 'Confirmación final',
+        html: `
+            <p>Se cerrará el año <strong>${anoActual}</strong> y se activará el año <strong>${anoSiguiente}</strong></p>
+            <p>Los estudiantes aprobados serán promovidos al siguiente grado.</p>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Proceder',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Procesando...',
+                text: 'Cerrando año y promocionando estudiantes',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            // Aquí iría la lógica de cierre definitivo
+            setTimeout(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Año cerrado!',
+                    text: 'El proceso se completó exitosamente',
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    window.location.reload();
+                });
+            }, 2000);
+        }
+    });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --light-cream: #E9E2C3;
+        --warning-orange: #f59e0b;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, #1a4480 100%);
+        color: var(--light-cream);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-container {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--primary-blue);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: var(--warning-orange);
+        color: white;
+        flex: 1;
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        flex: 1;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        opacity: 0.9;
+    }
+
+    .info-box {
+        background: #fffbeb;
+        border-left: 4px solid var(--warning-orange);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="page-header">
+        <h1 style="font-size: 2rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="bi bi-pencil-square"></i>
+            Editar Año Lectivo {{ ano.ano }}
+        </h1>
+    </div>
+
+    <div class="form-container">
+        <div class="info-box">
+            <i class="bi bi-info-circle"></i>
+            <strong>Restricciones:</strong> Solo puedes editar años <strong>INACTIVOS</strong> 
+            que <strong>NO tengan matrículas</strong> registradas.
+        </div>
+
+        <form id="formEditarAno">
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-calendar3"></i> Año Lectivo *
+                </label>
+                <input type="number" 
+                       class="form-control" 
+                       id="ano" 
+                       name="ano" 
+                       value="{{ ano.ano }}"
+                       required 
+                       min="2020" 
+                       max="2050">
+                <small style="color: #6b7280; display: block; margin-top: 0.25rem;">
+                    Cambiar solo si te equivocaste al crear
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-calendar-event"></i> Fecha de Inicio *
+                </label>
+                <input type="date" 
+                       class="form-control" 
+                       id="fecha_inicio" 
+                       name="fecha_inicio" 
+                       value="{{ ano.fecha_inicio.strftime('%Y-%m-%d') if ano.fecha_inicio else '' }}"
+                       required>
+                <small style="color: #6b7280; display: block; margin-top: 0.25rem;">
+                    Primer día del año lectivo
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-calendar-event"></i> Fecha de Fin *
+                </label>
+                <input type="date" 
+                       class="form-control" 
+                       id="fecha_fin" 
+                       name="fecha_fin" 
+                       value="{{ ano.fecha_fin.strftime('%Y-%m-%d') if ano.fecha_fin else '' }}"
+                       required>
+            </div>
+
+            <div class="btn-group">
+                <a href="{{ url_for('anos_lectivos.listar_anos') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Calcular rangos dinámicos
+const anoActual = new Date().getFullYear();
+const anoMinimo = 2020;
+const anoMaximo = anoActual + 5; // Permitir planificar hasta 5 años adelante
+
+// Actualizar límites de inputs
+document.getElementById('ano').setAttribute('min', anoMinimo);
+document.getElementById('ano').setAttribute('max', anoMaximo);
+
+const fechaMinima = `${anoMinimo}-01-01`;
+const fechaMaxima = `${anoMaximo}-12-31`;
+document.getElementById('fecha_inicio').setAttribute('min', fechaMinima);
+document.getElementById('fecha_inicio').setAttribute('max', fechaMaxima);
+document.getElementById('fecha_fin').setAttribute('min', fechaMinima);
+document.getElementById('fecha_fin').setAttribute('max', fechaMaxima);
+
+document.getElementById('formEditarAno').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const ano = parseInt(document.getElementById('ano').value);
+    const fechaInicio = document.getElementById('fecha_inicio').value;
+    const fechaFin = document.getElementById('fecha_fin').value;
+
+    // ===== VALIDACIONES FRONTEND =====
+    
+    // 1. Validar rango de año (dinámico)
+    if (ano < anoMinimo || ano > anoMaximo) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Año inválido',
+            text: `El año ${ano} está fuera del rango válido (${anoMinimo}-${anoMaximo})`,
+            confirmButtonColor: '#0D2C63'
+        });
+        return;
+    }
+    
+    // 2. Validar fechas
+    const fechaInicioDate = new Date(fechaInicio);
+    const fechaFinDate = new Date(fechaFin);
+    
+    if (fechaFinDate <= fechaInicioDate) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de validación',
+            text: 'La fecha de fin debe ser posterior a la fecha de inicio',
+            confirmButtonColor: '#0D2C63'
+        });
+        return;
+    }
+    
+    // 3. Validar años de las fechas
+    const anoInicio = fechaInicioDate.getFullYear();
+    const anoFin = fechaFinDate.getFullYear();
+    
+    if (anoInicio < anoMinimo || anoInicio > anoMaximo) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Fecha inválida',
+            text: `El año de la fecha de inicio (${anoInicio}) está fuera del rango válido (${anoMinimo}-${anoMaximo})`,
+            confirmButtonColor: '#0D2C63'
+        });
+        return;
+    }
+    
+    if (anoFin < anoMinimo || anoFin > anoMaximo) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Fecha inválida',
+            text: `El año de la fecha de fin (${anoFin}) está fuera del rango válido (${anoMinimo}-${anoMaximo})`,
+            confirmButtonColor: '#0D2C63'
+        });
+        return;
+    }
+    
+    // 4. Validar coherencia: las fechas deben corresponder al año lectivo
+    if (Math.abs(anoInicio - ano) > 1) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia de coherencia',
+            html: `
+                <p>La fecha de inicio es del año <strong>${anoInicio}</strong></p>
+                <p>Pero el año lectivo es <strong>${ano}</strong></p>
+                <p>¿Estás seguro que las fechas son correctas?</p>
+            `,
+            confirmButtonColor: '#0D2C63'
+        });
+        return;
+    }
+
+    // Confirmar edición
+    Swal.fire({
+        title: '¿Guardar cambios?',
+        html: `
+            <p><strong>Año:</strong> ${ano}</p>
+            <p><strong>Inicio:</strong> ${fechaInicioDate.toLocaleDateString('es-ES')}</p>
+            <p><strong>Fin:</strong> ${fechaFinDate.toLocaleDateString('es-ES')}</p>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#f59e0b',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, guardar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/anos-lectivos/editar/{{ ano.id_ano_lectivo }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    ano: ano,
+                    fecha_inicio: fechaInicio,
+                    fecha_fin: fechaFin
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Actualizado!',
+                        text: data.mensaje,
+                        confirmButtonColor: '#0D2C63'
+                    }).then(() => {
+                        window.location.href = data.redirect;
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.mensaje,
+                        confirmButtonColor: '#0D2C63'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo actualizar el año lectivo',
+                    confirmButtonColor: '#0D2C63'
+                });
+            });
+        }
+    });
+});
+</script>
+
+{% endblock %}

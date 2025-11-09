@@ -551,11 +551,11 @@
                 </thead>
                 <tbody>
                 {% for e in estudiantes %}
-                    <tr class="student-row" data-search="{{ (e.nombres + ' ' + e.apellidos + ' ' + e.nie + ' ' + (e.email or ''))|lower }}">
-                        <td><strong>{{ e.nie }}</strong></td>
+                    <tr class="student-row" data-search="{{ ((e.nombres or '') + ' ' + (e.apellidos or '') + ' ' + (e.nie or '') + ' ' + (e.email or ''))|lower }}">
+                        <td><strong>{{ e.nie or '-' }}</strong></td>
                         <td>
-                            <div style="font-weight: 600;">{{ e.nombres }}</div>
-                            <div style="font-size: 0.85em; color: var(--neutral-gray);">{{ e.apellidos }}</div>
+                            <div style="font-weight: 600;">{{ e.nombres or '-' }}</div>
+                            <div style="font-size: 0.85em; color: var(--neutral-gray);">{{ e.apellidos or '-' }}</div>
                         </td>
                         <td>{{ e.fecha_nacimiento.strftime('%d/%m/%Y') if e.fecha_nacimiento else '-' }}</td>
                         <td>

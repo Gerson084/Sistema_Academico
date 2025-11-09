@@ -121,13 +121,28 @@
                         <select name="id_ano_lectivo" id="id_ano_lectivo" class="form-select" required>
                             <option value="">-- Selecciona un año lectivo --</option>
                             {% for ano in anos_lectivos %}
-                            <option value="{{ ano.id_ano_lectivo }}" data-year="{{ ano.ano }}">
-                                {{ ano.ano }}
+                            <option value="{{ ano.id_ano_lectivo }}" 
+                                    data-year="{{ ano.ano }}"
+                                    data-fecha-inicio="{{ ano.fecha_inicio.strftime('%Y-%m-%d') if ano.fecha_inicio else '' }}"
+                                    data-fecha-fin="{{ ano.fecha_fin.strftime('%Y-%m-%d') if ano.fecha_fin else '' }}">
+                                {{ ano.ano }}{% if ano.activo %} ✓ (Activo){% endif %}
                             </option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="form-help">Año lectivo en el que estará activa esta sección</div>
+                    
+                    <!-- Información del calendario del año lectivo seleccionado -->
+                    <div id="yearCalendarInfo" style="margin-top: 0.5rem; padding: 0.75rem; background: #f0f9ff; border-left: 4px solid #0284c7; border-radius: 0.375rem; display: none;">
+                        <div style="color: #075985; font-size: 0.875rem;">
+                            <strong><i class="fas fa-calendar-check"></i> Calendario del Año Lectivo:</strong>
+                            <div style="margin-top: 0.5rem;">
+                                📅 <strong>Inicio:</strong> <span id="yearStartDate">-</span><br>
+                                📅 <strong>Fin:</strong> <span id="yearEndDate">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-help">Selecciona el año lectivo para esta sección</div>
                     <div class="invalid-feedback" id="yearError"></div>
                     <div class="valid-feedback" id="yearSuccess"></div>
                 </div>
@@ -245,7 +260,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     isValid = false;
                     errorMsg = 'Debe seleccionar un año lectivo';
                 } else {
-                    successMsg = 'Año lectivo seleccionado correctamente';
+                    // Validar coherencia de fechas del año lectivo
+                    const selectedOption = yearSelect.options[yearSelect.selectedIndex];
+                    const yearNumber = parseInt(selectedOption.getAttribute('data-year'));
+                    const fechaInicio = selectedOption.getAttribute('data-fecha-inicio');
+                    const fechaFin = selectedOption.getAttribute('data-fecha-fin');
+                    
+                    if (fechaInicio && fechaFin) {
+                        const yearInicio = new Date(fechaInicio).getFullYear();
+                        const yearFin = new Date(fechaFin).getFullYear();
+                        
+                        // Validar que las fechas correspondan al año lectivo
+                        if (Math.abs(yearInicio - yearNumber) > 1 || Math.abs(yearFin - yearNumber) > 1) {
+                            isValid = false;
+                            errorMsg = `⚠️ ADVERTENCIA: El año lectivo ${yearNumber} tiene fechas inconsistentes (${yearInicio}-${yearFin}). Por favor, corrígelo antes de crear secciones.`;
+                        } else {
+                            successMsg = 'Año lectivo seleccionado correctamente';
+                        }
+                    } else {
+                        successMsg = 'Año lectivo seleccionado correctamente';
+                    }
                 }
                 break;
                 
@@ -333,6 +367,75 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Función para mostrar información del calendario del año lectivo
+    function updateYearCalendarInfo() {
+        const selectedOption = yearSelect.options[yearSelect.selectedIndex];
+        const yearCalendarInfo = document.getElementById('yearCalendarInfo');
+        const yearStartDate = document.getElementById('yearStartDate');
+        const yearEndDate = document.getElementById('yearEndDate');
+        
+        if (selectedOption && selectedOption.value) {
+            const yearNumber = selectedOption.getAttribute('data-year');
+            const fechaInicio = selectedOption.getAttribute('data-fecha-inicio');
+            const fechaFin = selectedOption.getAttribute('data-fecha-fin');
+            
+            if (fechaInicio && fechaFin) {
+                const fechaInicioDate = new Date(fechaInicio);
+                const fechaFinDate = new Date(fechaFin);
+                
+                yearStartDate.textContent = fechaInicioDate.toLocaleDateString('es-ES', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                yearEndDate.textContent = fechaFinDate.toLocaleDateString('es-ES', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                // Verificar coherencia
+                const yearInicio = fechaInicioDate.getFullYear();
+                const yearFin = fechaFinDate.getFullYear();
+                
+                if (Math.abs(yearInicio - parseInt(yearNumber)) > 1 || Math.abs(yearFin - parseInt(yearNumber)) > 1) {
+                    yearCalendarInfo.style.background = '#fef3c7';
+                    yearCalendarInfo.style.borderLeft = '4px solid #f59e0b';
+                    yearCalendarInfo.innerHTML = `
+                        <div style="color: #92400e; font-size: 0.875rem;">
+                            <strong><i class="fas fa-exclamation-triangle"></i> ⚠️ ADVERTENCIA DE COHERENCIA:</strong>
+                            <div style="margin-top: 0.5rem;">
+                                El año lectivo <strong>${yearNumber}</strong> tiene fechas del año <strong>${yearInicio}-${yearFin}</strong>.<br>
+                                Esto puede ser un error. Por favor, verifica las fechas del año lectivo antes de continuar.
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    yearCalendarInfo.style.background = '#f0f9ff';
+                    yearCalendarInfo.style.borderLeft = '4px solid #0284c7';
+                    yearCalendarInfo.innerHTML = `
+                        <div style="color: #075985; font-size: 0.875rem;">
+                            <strong><i class="fas fa-calendar-check"></i> Calendario del Año Lectivo ${yearNumber}:</strong>
+                            <div style="margin-top: 0.5rem;">
+                                📅 <strong>Inicio:</strong> ${yearStartDate.textContent}<br>
+                                📅 <strong>Fin:</strong> ${yearEndDate.textContent}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                yearCalendarInfo.style.display = 'block';
+            } else {
+                yearCalendarInfo.style.display = 'none';
+            }
+        } else {
+            yearCalendarInfo.style.display = 'none';
+        }
+    }
+    
     // Event listeners para validación en tiempo real
     [gradeSelect, coordinadorSelect, yearSelect, nameInput].forEach(field => {
         field.addEventListener('input', function() {
@@ -341,11 +444,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.id === 'nombre_seccion') {
                 updateCharCounter();
             }
+            if (this.id === 'id_ano_lectivo') {
+                updateYearCalendarInfo();
+            }
         });
         
         field.addEventListener('change', function() {
             validateField(this);
             updatePreview();
+            if (this.id === 'id_ano_lectivo') {
+                updateYearCalendarInfo();
+            }
         });
         
         field.addEventListener('blur', function() {

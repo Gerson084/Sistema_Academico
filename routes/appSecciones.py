@@ -14,27 +14,50 @@ secciones_bp = Blueprint('secciones', __name__, template_folder="templates")
 
 @secciones_bp.route('/')
 def lista_secciones():
+    # Obtener parámetro de año (si viene del filtro)
+    ano_filtro = request.args.get('ano_lectivo', None)
+    
+    # Obtener año activo
+    ano_activo = AnoLectivo.query.filter_by(activo=True).first()
+    
+    # Si no se especifica filtro, usar año activo
+    if not ano_filtro and ano_activo:
+        ano_filtro = str(ano_activo.id_ano_lectivo)
+    
     # Usar joinedload para cargar las relaciones de una vez (más eficiente)
     from sqlalchemy.orm import joinedload
     
-    secciones = Seccion.query.options(
+    # Construir query base
+    query = Seccion.query.options(
         joinedload(Seccion.coordinador),
         joinedload(Seccion.grado),
-        joinedload(Seccion.ano_lectivo )
-    ).all()
+        joinedload(Seccion.ano_lectivo)
+    )
     
-    # secciones = Seccion.query.join(Usuario, Seccion.id_coordinador == Usuario.id_usuario)\
-    #     .join(Grado, Seccion.id_grado == Grado.id_grado)\
-    #     .join(AnoLectivo, Seccion.id_ano_lectivo == AnoLectivo.id_ano_lectivo)\
-    #     .add_columns(
-    #         Seccion.id_seccion,
-    #         Grado.id_grado,
-    #         Seccion.nombre_seccion,
-    #         Seccion.coordinador,
-    #         AnoLectivo.ano
-    #     ).all()
+    # Aplicar filtro de año si existe
+    if ano_filtro:
+        query = query.filter(Seccion.id_ano_lectivo == int(ano_filtro))
     
-    return render_template("secciones/listar.html", secciones=secciones)
+    secciones = query.all()
+    
+    # Obtener todos los años para el filtro
+    anos_lectivos = AnoLectivo.query.order_by(AnoLectivo.ano.desc()).all()
+    
+    # Calcular estadísticas
+    total_secciones = len(secciones)
+    secciones_activas = sum(1 for s in secciones if s.activo)
+    secciones_inactivas = total_secciones - secciones_activas
+    
+    return render_template("secciones/listar.html", 
+                         secciones=secciones,
+                         anos_lectivos=anos_lectivos,
+                         ano_activo=ano_activo,
+                         ano_filtro_actual=int(ano_filtro) if ano_filtro else None,
+                         estadisticas={
+                             'total': total_secciones,
+                             'activas': secciones_activas,
+                             'inactivas': secciones_inactivas
+                         })
 
 @secciones_bp.route('/nuevo', methods=['GET', 'POST'])
 def nueva_seccion():

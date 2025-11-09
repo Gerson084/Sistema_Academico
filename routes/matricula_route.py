@@ -11,36 +11,94 @@ from datetime import datetime
 # Blueprint para matrículas
 matriculas_bp = Blueprint('matricula', __name__, template_folder="templates")
 
-# LISTAR MATRÍCULAS - SIN NÚMERO DE LISTA
+# LISTAR MATRÍCULAS - Filtrado por año activo
 @matriculas_bp.route("/")
 def lista_matriculas():
     try:
-        # Consulta SQL sin número de lista
-        query = text("""
-            SELECT 
-                m.id_matricula,
-                m.id_estudiante,
-                m.id_seccion,
-                m.fecha_matricula,
-                m.activa,
-                e.nombres as estudiante_nombres,
-                e.apellidos as estudiante_apellidos,
-                e.nie as estudiante_nie,
-                s.nombre_seccion,
-                g.nombre_grado,
-                g.nivel as grado_nivel,
-                al.ano as ano_lectivo,
-                al.fecha_inicio,
-                al.fecha_fin
-            FROM matriculas m
-            JOIN estudiantes e ON m.id_estudiante = e.id_estudiante
-            JOIN secciones s ON m.id_seccion = s.id_seccion
-            JOIN grados g ON s.id_grado = g.id_grado
-            JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
-            ORDER BY m.id_matricula DESC
-        """)
+        # Obtener parámetro de año (si viene del filtro)
+        ano_filtro = request.args.get('ano_lectivo', None)
         
-        result = db.session.execute(query)
+        # Obtener año activo
+        ano_activo = AnoLectivo.query.filter_by(activo=True).first()
+        
+        # Si no se especifica filtro, usar año activo
+        if not ano_filtro and ano_activo:
+            ano_filtro = ano_activo.id_ano_lectivo
+        
+        # Consulta SQL filtrando por año lectivo
+        if ano_filtro:
+            query = text("""
+                SELECT 
+                    m.id_matricula,
+                    m.id_estudiante,
+                    m.id_seccion,
+                    m.fecha_matricula,
+                    m.activa as matricula_activa,
+                    estados.estado_final,
+                    e.nombres as estudiante_nombres,
+                    e.apellidos as estudiante_apellidos,
+                    e.nie as estudiante_nie,
+                    s.nombre_seccion,
+                    g.nombre_grado,
+                    g.nivel as grado_nivel,
+                    al.ano as ano_lectivo,
+                    al.id_ano_lectivo,
+                    al.activo as ano_activo,
+                    al.fecha_inicio,
+                    al.fecha_fin
+                FROM matriculas m
+                JOIN estudiantes e ON m.id_estudiante = e.id_estudiante
+                JOIN secciones s ON m.id_seccion = s.id_seccion
+                JOIN grados g ON s.id_grado = g.id_grado
+                JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
+                LEFT JOIN (
+                    SELECT DISTINCT c.id_estudiante, pa.estado_final
+                    FROM calificaciones c
+                    INNER JOIN periodos p ON c.id_periodo = p.id_periodo
+                    INNER JOIN promedios_periodo pp ON pp.id_calificacion = c.id_calificacion
+                    INNER JOIN promedios_anuales pa ON pa.id_promedio_periodo = pp.id_promedio_periodo
+                    WHERE p.id_ano_lectivo = :ano_filtro
+                ) estados ON estados.id_estudiante = m.id_estudiante
+                WHERE s.id_ano_lectivo = :ano_filtro
+                ORDER BY m.activa DESC, al.ano DESC, m.id_matricula DESC
+            """)
+            result = db.session.execute(query, {'ano_filtro': ano_filtro})
+        else:
+            # Si no hay año activo, mostrar todas las matrículas
+            query = text("""
+                SELECT 
+                    m.id_matricula,
+                    m.id_estudiante,
+                    m.id_seccion,
+                    m.fecha_matricula,
+                    m.activa as matricula_activa,
+                    estados.estado_final,
+                    e.nombres as estudiante_nombres,
+                    e.apellidos as estudiante_apellidos,
+                    e.nie as estudiante_nie,
+                    s.nombre_seccion,
+                    g.nombre_grado,
+                    g.nivel as grado_nivel,
+                    al.ano as ano_lectivo,
+                    al.id_ano_lectivo,
+                    al.activo as ano_activo,
+                    al.fecha_inicio,
+                    al.fecha_fin
+                FROM matriculas m
+                JOIN estudiantes e ON m.id_estudiante = e.id_estudiante
+                JOIN secciones s ON m.id_seccion = s.id_seccion
+                JOIN grados g ON s.id_grado = g.id_grado
+                JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
+                LEFT JOIN (
+                    SELECT DISTINCT c.id_estudiante, pa.estado_final, p.id_ano_lectivo
+                    FROM calificaciones c
+                    INNER JOIN periodos p ON c.id_periodo = p.id_periodo
+                    INNER JOIN promedios_periodo pp ON pp.id_calificacion = c.id_calificacion
+                    INNER JOIN promedios_anuales pa ON pa.id_promedio_periodo = pp.id_promedio_periodo
+                ) estados ON estados.id_estudiante = m.id_estudiante AND estados.id_ano_lectivo = al.id_ano_lectivo
+                ORDER BY m.activa DESC, al.ano DESC, m.id_matricula DESC
+            """)
+            result = db.session.execute(query)
         
         # Convertir resultado a lista de diccionarios
         matriculas_data = []
@@ -50,7 +108,8 @@ def lista_matriculas():
                 'id_estudiante': row.id_estudiante,
                 'id_seccion': row.id_seccion,
                 'fecha_matricula': row.fecha_matricula,
-                'activa': row.activa,
+                'matricula_activa': row.matricula_activa,
+                'estado_final': row.estado_final,
                 'estudiante_nombres': row.estudiante_nombres,
                 'estudiante_apellidos': row.estudiante_apellidos,
                 'estudiante_nie': row.estudiante_nie,
@@ -58,6 +117,8 @@ def lista_matriculas():
                 'nombre_grado': row.nombre_grado,
                 'grado_nivel': row.grado_nivel,
                 'ano_lectivo': row.ano_lectivo,
+                'id_ano_lectivo': row.id_ano_lectivo,
+                'ano_activo': row.ano_activo,
                 'fecha_inicio': row.fecha_inicio,
                 'fecha_fin': row.fecha_fin
             })
@@ -67,11 +128,27 @@ def lista_matriculas():
         grados = Grado.query.order_by(Grado.nombre_grado).all()
         secciones = Seccion.query.all()
         
+        # Calcular estadísticas del año actual
+        total_matriculas = len(matriculas_data)
+        matriculas_activas = sum(1 for m in matriculas_data if m['matricula_activa'])
+        aprobados = sum(1 for m in matriculas_data if m['estado_final'] == 'Aprobado')
+        reprobados = sum(1 for m in matriculas_data if m['estado_final'] == 'Reprobado')
+        sin_estado = sum(1 for m in matriculas_data if not m['estado_final'] and m['matricula_activa'])
+        
         return render_template("matriculas/matricula_index.html", 
                              matriculas=matriculas_data,
                              anos_lectivos=anos_lectivos,
                              grados=grados,
-                             secciones=secciones)
+                             secciones=secciones,
+                             ano_activo=ano_activo,
+                             ano_filtro_actual=int(ano_filtro) if ano_filtro else None,
+                             estadisticas={
+                                 'total': total_matriculas,
+                                 'activas': matriculas_activas,
+                                 'aprobados': aprobados,
+                                 'reprobados': reprobados,
+                                 'sin_estado': sin_estado
+                             })
                              
     except Exception as e:
         print(f"Error en lista_matriculas: {str(e)}")
@@ -80,12 +157,15 @@ def lista_matriculas():
         anos_lectivos = AnoLectivo.query.all()
         grados = Grado.query.all()
         secciones = Seccion.query.all()
+        ano_activo = AnoLectivo.query.filter_by(activo=True).first()
         
         return render_template("matriculas/matricula_index.html", 
                              matriculas=matriculas,
                              anos_lectivos=anos_lectivos,
                              grados=grados,
-                             secciones=secciones)
+                             secciones=secciones,
+                             ano_activo=ano_activo,
+                             estadisticas={'total': 0, 'activas': 0, 'aprobados': 0, 'reprobados': 0, 'sin_estado': 0})
 
 # CREAR MATRÍCULA - SIN NÚMERO DE LISTA
 @matriculas_bp.route("/matricula/create", methods=['GET', 'POST'])

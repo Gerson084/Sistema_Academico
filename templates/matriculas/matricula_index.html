@@ -12,6 +12,81 @@
 </div>
 
 <div class="container">
+  <!-- Indicador de Año Activo y Estadísticas -->
+  <div class="stats-container">
+    <div class="year-indicator">
+      {% if ano_activo %}
+      <div class="current-year">
+        <i class="fas fa-calendar-check"></i>
+        <div>
+          <strong>Año Lectivo Activo</strong>
+          <div class="year-number">{{ ano_activo.ano }}</div>
+        </div>
+      </div>
+      {% else %}
+      <div class="current-year warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>Sin Año Activo</strong>
+          <div class="year-number">Configure un año</div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ estadisticas.total }}</div>
+          <div class="stat-label">Total Matrículas</div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ estadisticas.activas }}</div>
+          <div class="stat-label">Activas</div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon success">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ estadisticas.aprobados }}</div>
+          <div class="stat-label">Aprobados</div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon danger">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ estadisticas.reprobados }}</div>
+          <div class="stat-label">Reprobados</div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon warning">
+          <i class="fas fa-hourglass-half"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ estadisticas.sin_estado }}</div>
+          <div class="stat-label">Sin Estado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Barra de acciones -->
   <div class="action-bar">
     <a href="{{ url_for('matricula.crear_matricula') }}" class="btn-new"><i class="fas fa-plus"></i> Nueva Matrícula</a>
@@ -28,11 +103,17 @@
     </div>
     <div class="filters-grid">
       <div class="filter-group">
-        <label class="filter-label">Año Lectivo</label>
-        <select class="filter-select" id="filterAno">
+        <label class="filter-label">
+          <i class="fas fa-calendar-alt"></i> Año Lectivo
+        </label>
+        <select class="filter-select" id="filterAno" onchange="filtrarPorAno()">
           <option value="">Todos los años</option>
           {% for ano in anos_lectivos %}
-          <option value="{{ ano.ano }}">{{ ano.ano }}</option>
+          <option value="{{ ano.id_ano_lectivo }}" 
+                  {% if ano_filtro_actual and ano_filtro_actual == ano.id_ano_lectivo %}selected{% endif %}
+                  {% if ano.activo %}data-activo="true"{% endif %}>
+            {{ ano.ano }}{% if ano.activo %} ✓ (Activo){% endif %}
+          </option>
           {% endfor %}
         </select>
       </div>
@@ -160,11 +241,31 @@
                 </div>
             </td>
             <td>
-              {% if m.activa %}
-              <span class="status-badge status-active"><i class="fas fa-check-circle"></i> Activa</span>
-              {% else %}
-              <span class="status-badge status-inactive"><i class="fas fa-times-circle"></i> Inactiva</span>
-              {% endif %}
+              <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                {% if is_dict %}
+                  {% if m.matricula_activa %}
+                  <span class="status-badge status-active"><i class="fas fa-check-circle"></i> Activa</span>
+                  {% else %}
+                  <span class="status-badge status-inactive"><i class="fas fa-times-circle"></i> Inactiva</span>
+                  {% endif %}
+                  
+                  {% if m.estado_final %}
+                    {% if m.estado_final == 'Aprobado' %}
+                    <span class="status-badge status-aprobado"><i class="fas fa-trophy"></i> Aprobado</span>
+                    {% elif m.estado_final == 'Reprobado' %}
+                    <span class="status-badge status-reprobado"><i class="fas fa-times"></i> Reprobado</span>
+                    {% endif %}
+                  {% elif m.matricula_activa %}
+                  <span class="status-badge status-pendiente"><i class="fas fa-hourglass-half"></i> Pendiente</span>
+                  {% endif %}
+                {% else %}
+                  {% if m.activo %}
+                  <span class="status-badge status-active"><i class="fas fa-check-circle"></i> Activa</span>
+                  {% else %}
+                  <span class="status-badge status-inactive"><i class="fas fa-times-circle"></i> Inactiva</span>
+                  {% endif %}
+                {% endif %}
+              </div>
             </td>
             <td>
               <div class="action-buttons">
@@ -267,6 +368,18 @@
   const searchInput = document.getElementById("searchInput");
 
   filteredRows = rows;
+
+  // Función para filtrar por año (con recarga de página)
+  function filtrarPorAno() {
+    const anoSelect = document.getElementById('filterAno');
+    const anoSeleccionado = anoSelect.value;
+    
+    if (anoSeleccionado) {
+      window.location.href = `{{ url_for('matricula.lista_matriculas') }}?ano_lectivo=${anoSeleccionado}`;
+    } else {
+      window.location.href = `{{ url_for('matricula.lista_matriculas') }}`;
+    }
+  }
 
   function applyFilters() {
     activeFilters = {
