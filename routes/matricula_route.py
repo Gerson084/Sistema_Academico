@@ -318,13 +318,14 @@ def crear_matricula(id_estudiante=None):
     # GET: Mostrar formulario
     estudiantes = Estudiante.query.filter_by(activo=True).order_by(Estudiante.nombres, Estudiante.apellidos).all()
     
-    # Obtener secciones con información de grado y año lectivo
+    # Obtener solo las secciones del año lectivo activo
     secciones_query = text("""
         SELECT s.id_seccion, s.nombre_seccion, g.id_grado, g.nombre_grado, g.nivel, al.ano 
         FROM secciones s
         JOIN grados g ON s.id_grado = g.id_grado
         JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
-        ORDER BY al.ano DESC, g.nombre_grado, s.nombre_seccion
+        WHERE al.activo = 1
+        ORDER BY g.nombre_grado, s.nombre_seccion
     """)
     
     secciones_result = db.session.execute(secciones_query)

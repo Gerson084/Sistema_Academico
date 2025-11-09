@@ -11,6 +11,36 @@
 </div>
 
 <div class="container">
+  <!-- Indicador de Año Lectivo -->
+  {% if ano_activo %}
+  <div class="year-indicator">
+    <div class="current-year">
+      <i class="bi bi-calendar-check"></i>
+      <span>Año Lectivo Actual: <strong>{{ ano_activo.ano }}</strong></span>
+    </div>
+    <div class="year-filter">
+      <label for="anoFilter" style="margin-right: 0.5rem; color: #374151;">Filtrar por año:</label>
+      <select id="anoFilter" class="filter-select" onchange="filtrarPorAno()" style="width: 150px;">
+        {% for ano in anos_lectivos %}
+        <option value="{{ ano.id_ano_lectivo }}" {% if ano_filtro_actual == ano.id_ano_lectivo %}selected{% endif %}>
+          {{ ano.ano }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  
+  <!-- Estadísticas -->
+  <div class="stats-container">
+    <div class="stat-card">
+      <div class="stat-value">{{ estadisticas.total }}</div>
+      <div class="stat-label">
+        <i class="bi bi-bookmarks"></i> Total Asignaciones
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Barra de acciones -->
   <div class="action-bar">
     <a href="{{ url_for('materia_seccion.crear_asignacion') }}" class="btn-new"><i class="bi bi-plus"></i> Nueva Asignación</a>
@@ -431,6 +461,16 @@
                 confirmButtonColor: '#0D2C63'
             });
         }
+    }
+  }
+
+  // Función para filtrar por año lectivo (recarga la página)
+  function filtrarPorAno() {
+    const anoSelect = document.getElementById('anoFilter');
+    const anoSeleccionado = anoSelect.value;
+    
+    if (anoSeleccionado) {
+      window.location.href = `{{ url_for('materia_seccion.lista_asignaciones') }}?ano_lectivo=${anoSeleccionado}`;
     }
   }
 

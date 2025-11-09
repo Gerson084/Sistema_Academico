@@ -15,31 +15,67 @@ materia_seccion_bp = Blueprint('materia_seccion', __name__, template_folder="tem
 @materia_seccion_bp.route("/")
 def lista_asignaciones():
     try:
-        # Consulta SQL para obtener todas las asignaciones con información relacionada (sin período)
-        query = text("""
-            SELECT 
-                ms.id_asignacion,
-                m.nombre_materia,
-                m.codigo_materia,
-                g.nombre_grado,
-                g.nivel,
-                s.nombre_seccion,
-                al.ano as ano_lectivo,
-                u.nombres as maestro_nombres,
-                u.apellidos as maestro_apellidos,
-                u.usuario as maestro_usuario
-            FROM materia_seccion ms
-            JOIN materias m ON ms.id_materia = m.id_materia
-            JOIN secciones s ON ms.id_seccion = s.id_seccion
-            JOIN grados g ON s.id_grado = g.id_grado
-            JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
-            JOIN usuarios u ON ms.id_maestro = u.id_usuario
-            ORDER BY al.ano DESC, g.nombre_grado, s.nombre_seccion, m.nombre_materia
-        """)
+        # Obtener año lectivo activo
+        ano_activo = AnoLectivo.query.filter_by(activo=True).first()
         
-        result = db.session.execute(query)
+        # Obtener filtro de año desde la URL (si existe)
+        ano_filtro = request.args.get('ano_lectivo', type=int)
+        
+        # Si no hay filtro, usar el año activo
+        if not ano_filtro and ano_activo:
+            ano_filtro = ano_activo.id_ano_lectivo
+        
+        # Consulta SQL con filtro de año lectivo
+        if ano_filtro:
+            query = text("""
+                SELECT 
+                    ms.id_asignacion,
+                    m.nombre_materia,
+                    m.codigo_materia,
+                    g.nombre_grado,
+                    g.nivel,
+                    s.nombre_seccion,
+                    al.ano as ano_lectivo,
+                    al.id_ano_lectivo,
+                    u.nombres as maestro_nombres,
+                    u.apellidos as maestro_apellidos,
+                    u.usuario as maestro_usuario
+                FROM materia_seccion ms
+                JOIN materias m ON ms.id_materia = m.id_materia
+                JOIN secciones s ON ms.id_seccion = s.id_seccion
+                JOIN grados g ON s.id_grado = g.id_grado
+                JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
+                JOIN usuarios u ON ms.id_maestro = u.id_usuario
+                WHERE al.id_ano_lectivo = :ano_filtro
+                ORDER BY g.nombre_grado, s.nombre_seccion, m.nombre_materia
+            """)
+            result = db.session.execute(query, {'ano_filtro': ano_filtro})
+        else:
+            # Si no hay año activo, mostrar todas
+            query = text("""
+                SELECT 
+                    ms.id_asignacion,
+                    m.nombre_materia,
+                    m.codigo_materia,
+                    g.nombre_grado,
+                    g.nivel,
+                    s.nombre_seccion,
+                    al.ano as ano_lectivo,
+                    al.id_ano_lectivo,
+                    u.nombres as maestro_nombres,
+                    u.apellidos as maestro_apellidos,
+                    u.usuario as maestro_usuario
+                FROM materia_seccion ms
+                JOIN materias m ON ms.id_materia = m.id_materia
+                JOIN secciones s ON ms.id_seccion = s.id_seccion
+                JOIN grados g ON s.id_grado = g.id_grado
+                JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
+                JOIN usuarios u ON ms.id_maestro = u.id_usuario
+                ORDER BY al.ano DESC, g.nombre_grado, s.nombre_seccion, m.nombre_materia
+            """)
+            result = db.session.execute(query)
+        
         asignaciones_data = []
-        
         for row in result:
             asignaciones_data.append({
                 'id_asignacion': row.id_asignacion,
@@ -49,12 +85,16 @@ def lista_asignaciones():
                 'nivel': row.nivel,
                 'nombre_seccion': row.nombre_seccion,
                 'ano_lectivo': row.ano_lectivo,
+                'id_ano_lectivo': row.id_ano_lectivo,
                 'maestro_nombres': row.maestro_nombres,
                 'maestro_apellidos': row.maestro_apellidos,
                 'maestro_usuario': row.maestro_usuario
             })
         
-        # Obtener datos para filtros (sin períodos)
+        # Calcular estadísticas
+        total_asignaciones = len(asignaciones_data)
+        
+        # Obtener datos para filtros
         anos_lectivos = AnoLectivo.query.order_by(AnoLectivo.ano.desc()).all()
         grados = Grado.query.order_by(Grado.nombre_grado).all()
         materias = Materia.query.filter_by(activa=True).order_by(Materia.nombre_materia).all()
@@ -63,16 +103,23 @@ def lista_asignaciones():
                              asignaciones=asignaciones_data,
                              anos_lectivos=anos_lectivos,
                              grados=grados,
-                             materias=materias)
+                             materias=materias,
+                             ano_activo=ano_activo,
+                             ano_filtro_actual=int(ano_filtro) if ano_filtro else None,
+                             estadisticas={'total': total_asignaciones})
                              
     except Exception as e:
         print(f"Error en lista_asignaciones: {str(e)}")
         asignaciones = MateriaSeccion.query.all()
+        ano_activo = AnoLectivo.query.filter_by(activo=True).first()
+        anos_lectivos = AnoLectivo.query.order_by(AnoLectivo.ano.desc()).all()
         return render_template("materia_seccion/asignacion_index.html", 
                              asignaciones=asignaciones,
-                             anos_lectivos=[],
+                             anos_lectivos=anos_lectivos,
                              grados=[],
-                             materias=[])
+                             materias=[],
+                             ano_activo=ano_activo,
+                             estadisticas={'total': 0})
 
 # CREAR ASIGNACIÓN - SIN PERÍODO
 @materia_seccion_bp.route("/asignacion/create", methods=['GET', 'POST'])
@@ -144,12 +191,14 @@ def crear_asignacion():
     # GET: Mostrar formulario (sin períodos)
     materias = Materia.query.filter_by(activa=True).order_by(Materia.nombre_materia).all()
     
+    # Filtrar solo secciones del año lectivo activo
     secciones_query = text("""
         SELECT s.id_seccion, s.nombre_seccion, g.nombre_grado, g.nivel, al.ano 
         FROM secciones s
         JOIN grados g ON s.id_grado = g.id_grado
         JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
-        ORDER BY al.ano DESC, g.nombre_grado, s.nombre_seccion
+        WHERE al.activo = 1
+        ORDER BY g.nombre_grado, s.nombre_seccion
     """)
     
     secciones_result = db.session.execute(secciones_query)
@@ -242,12 +291,14 @@ def editar_asignacion(id):
     # GET: Mostrar formulario de edición (sin períodos)
     materias = Materia.query.filter_by(activa=True).order_by(Materia.nombre_materia).all()
     
+    # Filtrar solo secciones del año lectivo activo
     secciones_query = text("""
         SELECT s.id_seccion, s.nombre_seccion, g.nombre_grado, g.nivel, al.ano 
         FROM secciones s
         JOIN grados g ON s.id_grado = g.id_grado
         JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
-        ORDER BY al.ano DESC, g.nombre_grado, s.nombre_seccion
+        WHERE al.activo = 1
+        ORDER BY g.nombre_grado, s.nombre_seccion
     """)
     
     secciones_result = db.session.execute(secciones_query)

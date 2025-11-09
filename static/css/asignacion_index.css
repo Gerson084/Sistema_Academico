@@ -379,3 +379,83 @@
         padding: .75rem .5rem;
     }
 }
+
+/* Indicador de año lectivo */
+.year-indicator {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.current-year {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--medium-text);
+    font-size: 1rem;
+}
+
+.current-year i {
+    color: var(--success-green);
+    font-size: 1.25rem;
+}
+
+.current-year strong {
+    color: var(--primary-blue);
+    font-size: 1.1rem;
+}
+
+.year-filter {
+    display: flex;
+    align-items: center;
+}
+
+/* Estadísticas */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--medium-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.stat-label i {
+    font-size: 1.1rem;
+    color: var(--success-green);
+}
