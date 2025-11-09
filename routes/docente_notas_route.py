@@ -234,6 +234,21 @@ def ingresar_notas(id_asignacion):
                 numero = act_row.nombre_tipo.replace('Actividad ', '')
                 actividades_existentes[f'act{numero}'] = float(act_row.nota) if act_row.nota else None
         
+        # Cargar conducta existente
+        query_conducta = text("""
+            SELECT nota_conducta, conducta_literal, observacion
+            FROM conducta_materia_periodo
+            WHERE id_estudiante = :id_estudiante
+            AND id_asignacion = :id_asignacion
+            AND id_periodo = :id_periodo
+        """)
+        
+        conducta_existente = db.session.execute(query_conducta, {
+            'id_estudiante': id_est,
+            'id_asignacion': id_asignacion,
+            'id_periodo': id_periodo
+        }).first()
+        
         estudiantes.append({
             'id_estudiante': id_est,
             'nie': row.nie,
@@ -246,8 +261,12 @@ def ingresar_notas(id_asignacion):
                 'integradora_2': float(notas_existentes.integradora_2) if notas_existentes and notas_existentes.integradora_2 else None,
                 'integradora_3': float(notas_existentes.integradora_3) if notas_existentes and notas_existentes.integradora_3 else None,
                 'prueba_objetiva': float(notas_existentes.prueba_objetiva) if notas_existentes and notas_existentes.prueba_objetiva else None,
-                # campo eliminado: actitud
-            } if notas_existentes else None
+            } if notas_existentes else None,
+            'conducta_existente': {
+                'nota_conducta': float(conducta_existente.nota_conducta) if conducta_existente and conducta_existente.nota_conducta else None,
+                'conducta_literal': conducta_existente.conducta_literal if conducta_existente else None,
+                'observacion': conducta_existente.observacion if conducta_existente else None
+            } if conducta_existente else None
         })
     
     info_asignacion = {
@@ -337,15 +356,33 @@ def ver_notas_finales(id_asignacion):
             # Solo mapear si el periodo está en la lista de periodos del año lectivo
             if r.id_periodo in periodo_ids:
                 notas_map[(r.id_estudiante, r.id_periodo)] = float(r.nota_final_periodo) if r.nota_final_periodo is not None else None
+    
+    # Cargar conducta por período
+    conducta_map = {}
+    if periodo_ids:
+        query_conducta = text("""
+            SELECT id_estudiante, id_periodo, nota_conducta, conducta_literal
+            FROM conducta_materia_periodo
+            WHERE id_asignacion = :id_asignacion
+        """)
+        conducta_result = db.session.execute(query_conducta, {'id_asignacion': id_asignacion})
+        for c in conducta_result:
+            if c.id_periodo in periodo_ids:
+                # Priorizar conducta literal si existe, sino usar numérica
+                conducta_valor = c.conducta_literal if c.conducta_literal else (float(c.nota_conducta) if c.nota_conducta is not None else None)
+                conducta_map[(c.id_estudiante, c.id_periodo)] = conducta_valor
 
     estudiantes = []
     for row in estudiantes_result:
         id_est = row.id_estudiante
         notas_por_periodo = []
+        conductas_por_periodo = []
         valores = []
         for p in periodos:
             nota = notas_map.get((id_est, p.id_periodo))
+            conducta = conducta_map.get((id_est, p.id_periodo))
             notas_por_periodo.append(nota)
+            conductas_por_periodo.append(conducta)
             if nota is not None:
                 valores.append(nota)
 
@@ -359,6 +396,7 @@ def ver_notas_finales(id_asignacion):
             'nombre_completo': f"{row.apellidos}, {row.nombres}",
             'id_matricula': row.id_matricula,
             'notas_por_periodo': notas_por_periodo,
+            'conductas_por_periodo': conductas_por_periodo,
             'promedio_anual': promedio_anual
         })
 
@@ -408,168 +446,125 @@ def guardar_notas(id_asignacion):
         print(f"DEBUG - Guardando notas para asignación {id_asignacion}, período {id_periodo}")
         print(f"DEBUG - Total estudiantes: {len(notas_estudiantes)}")
         
+        # OPTIMIZACIÓN: Crear todos los tipos de evaluación de una vez al inicio
+        # Esto evita consultas repetidas para cada estudiante
+        tipos_necesarios = {
+            'Actividad 1': (1, None),
+            'Actividad 2': (1, None),
+            'Actividad 3': (1, None),
+            'Actividad 4': (1, None),
+            'Actividad 5': (1, None),
+            'Actividad 6': (1, None),
+            'Revisión de Cuaderno': (1, 5.00),
+            'Integradora 1': (2, 25.00),
+            'Integradora 2': (2, 5.00),
+            'Integradora 3': (2, 5.00),
+            'Prueba Objetiva': (2, 30.00)
+        }
+        
+        # Cargar tipos existentes
+        query_tipos_existentes = text("""
+            SELECT nombre_tipo, id_tipo_evaluacion
+            FROM tipos_evaluacion
+            WHERE id_asignacion = :id_asignacion
+        """)
+        
+        tipos_existentes = {}
+        result = db.session.execute(query_tipos_existentes, {'id_asignacion': id_asignacion})
+        for row in result:
+            tipos_existentes[row.nombre_tipo] = row.id_tipo_evaluacion
+        
+        # Crear tipos faltantes
+        for nombre_tipo, (categoria, porcentaje) in tipos_necesarios.items():
+            if nombre_tipo not in tipos_existentes:
+                insert_tipo = text("""
+                    INSERT INTO tipos_evaluacion 
+                    (id_categoria_evaluacion, id_asignacion, nombre_tipo, porcentaje)
+                    VALUES (:categoria, :id_asignacion, :nombre_tipo, :porcentaje)
+                """)
+                result = db.session.execute(insert_tipo, {
+                    'categoria': categoria,
+                    'id_asignacion': id_asignacion,
+                    'nombre_tipo': nombre_tipo,
+                    'porcentaje': porcentaje
+                })
+                db.session.flush()
+                # Guardar el nuevo ID
+                tipos_existentes[nombre_tipo] = result.lastrowid
+        
+        print(f"DEBUG - Tipos de evaluación preparados: {len(tipos_existentes)}")
+        
         # Procesar cada estudiante
         for nota_data in notas_estudiantes:
             id_estudiante = nota_data.get('id_estudiante')
             
             print(f"DEBUG - Procesando estudiante {id_estudiante}")
             
-            # 1. GUARDAR ACTIVIDADES (Categoría 1: Actividades - 30%)
+            # Preparar lista de calificaciones para insertar en batch
+            calificaciones_batch = []
+            
+            # 1. ACTIVIDADES
             actividades = nota_data.get('actividades', [])
             for actividad in actividades:
-                # Buscar o crear el tipo de evaluación para esta actividad
-                query_tipo = text("""
-                    SELECT id_tipo_evaluacion 
-                    FROM tipos_evaluacion 
-                    WHERE id_categoria_evaluacion = 1 
-                    AND id_asignacion = :id_asignacion
-                    AND nombre_tipo = :nombre_tipo
-                """)
-                
                 nombre_actividad = f"Actividad {actividad['numero']}"
-                tipo_result = db.session.execute(query_tipo, {
-                    'id_asignacion': id_asignacion,
-                    'nombre_tipo': nombre_actividad
-                }).first()
-                
-                if not tipo_result:
-                    # Crear el tipo de evaluación
-                    insert_tipo = text("""
-                        INSERT INTO tipos_evaluacion 
-                        (id_categoria_evaluacion, id_asignacion, nombre_tipo, porcentaje)
-                        VALUES (1, :id_asignacion, :nombre_tipo, NULL)
-                    """)
-                    db.session.execute(insert_tipo, {
+                id_tipo = tipos_existentes.get(nombre_actividad)
+                if id_tipo:
+                    calificaciones_batch.append({
+                        'id_estudiante': id_estudiante,
                         'id_asignacion': id_asignacion,
-                        'nombre_tipo': nombre_actividad
+                        'id_periodo': id_periodo,
+                        'id_tipo_evaluacion': id_tipo,
+                        'nota': actividad['nota']
                     })
-                    db.session.flush()
-                    
-                    # Obtener el ID recién creado
-                    tipo_result = db.session.execute(query_tipo, {
+            
+            # 2. NOTA R.C
+            if nota_data.get('nota_rc') is not None:
+                id_tipo = tipos_existentes.get('Revisión de Cuaderno')
+                if id_tipo:
+                    calificaciones_batch.append({
+                        'id_estudiante': id_estudiante,
                         'id_asignacion': id_asignacion,
-                        'nombre_tipo': nombre_actividad
-                    }).first()
-                
-                id_tipo_evaluacion = tipo_result[0]
-                
-                # Insertar o actualizar la calificación
+                        'id_periodo': id_periodo,
+                        'id_tipo_evaluacion': id_tipo,
+                        'nota': nota_data['nota_rc']
+                    })
+            
+            # 3. INTEGRADORAS
+            integradoras = nota_data.get('integradoras', [])
+            for integradora in integradoras:
+                nombre_integradora = f"Integradora {integradora['numero']}"
+                id_tipo = tipos_existentes.get(nombre_integradora)
+                if id_tipo:
+                    calificaciones_batch.append({
+                        'id_estudiante': id_estudiante,
+                        'id_asignacion': id_asignacion,
+                        'id_periodo': id_periodo,
+                        'id_tipo_evaluacion': id_tipo,
+                        'nota': integradora['nota']
+                    })
+            
+            # 4. PRUEBA OBJETIVA
+            if nota_data.get('prueba_objetiva') is not None:
+                id_tipo = tipos_existentes.get('Prueba Objetiva')
+                if id_tipo:
+                    calificaciones_batch.append({
+                        'id_estudiante': id_estudiante,
+                        'id_asignacion': id_asignacion,
+                        'id_periodo': id_periodo,
+                        'id_tipo_evaluacion': id_tipo,
+                        'nota': nota_data['prueba_objetiva']
+                    })
+            
+            # INSERTAR TODAS LAS CALIFICACIONES DE ESTE ESTUDIANTE EN UNA SOLA OPERACIÓN
+            if calificaciones_batch:
                 upsert_calificacion = text("""
                     INSERT INTO calificaciones 
                     (id_estudiante, id_asignacion, id_periodo, id_tipo_evaluacion, nota)
                     VALUES (:id_estudiante, :id_asignacion, :id_periodo, :id_tipo_evaluacion, :nota)
-                    ON DUPLICATE KEY UPDATE nota = :nota, fecha_ingreso = CURRENT_TIMESTAMP
+                    ON DUPLICATE KEY UPDATE nota = VALUES(nota), fecha_ingreso = CURRENT_TIMESTAMP
                 """)
                 
-                db.session.execute(upsert_calificacion, {
-                    'id_estudiante': id_estudiante,
-                    'id_asignacion': id_asignacion,
-                    'id_periodo': id_periodo,
-                    'id_tipo_evaluacion': id_tipo_evaluacion,
-                    'nota': actividad['nota']
-                })
-            
-            # 2. GUARDAR NOTA R.C (puede ser categoría especial o parte de actividades)
-            if nota_data.get('nota_rc') is not None:
-                # Guardar R.C como un tipo especial
-                nombre_rc = "Revisión de Cuaderno"
-                query_tipo_rc = text("""
-                    SELECT id_tipo_evaluacion 
-                    FROM tipos_evaluacion 
-                    WHERE id_categoria_evaluacion = 1 
-                    AND id_asignacion = :id_asignacion
-                    AND nombre_tipo = :nombre_tipo
-                """)
-                
-                tipo_rc_result = db.session.execute(query_tipo_rc, {
-                    'id_asignacion': id_asignacion,
-                    'nombre_tipo': nombre_rc
-                }).first()
-                
-                if not tipo_rc_result:
-                    insert_tipo_rc = text("""
-                        INSERT INTO tipos_evaluacion 
-                        (id_categoria_evaluacion, id_asignacion, nombre_tipo, porcentaje)
-                        VALUES (1, :id_asignacion, :nombre_tipo, 5.00)
-                    """)
-                    db.session.execute(insert_tipo_rc, {
-                        'id_asignacion': id_asignacion,
-                        'nombre_tipo': nombre_rc
-                    })
-                    db.session.flush()
-                    tipo_rc_result = db.session.execute(query_tipo_rc, {
-                        'id_asignacion': id_asignacion,
-                        'nombre_tipo': nombre_rc
-                    }).first()
-                
-                id_tipo_rc = tipo_rc_result[0]
-                
-                upsert_rc = text("""
-                    INSERT INTO calificaciones 
-                    (id_estudiante, id_asignacion, id_periodo, id_tipo_evaluacion, nota)
-                    VALUES (:id_estudiante, :id_asignacion, :id_periodo, :id_tipo_evaluacion, :nota)
-                    ON DUPLICATE KEY UPDATE nota = :nota, fecha_ingreso = CURRENT_TIMESTAMP
-                """)
-                
-                db.session.execute(upsert_rc, {
-                    'id_estudiante': id_estudiante,
-                    'id_asignacion': id_asignacion,
-                    'id_periodo': id_periodo,
-                    'id_tipo_evaluacion': id_tipo_rc,
-                    'nota': nota_data['nota_rc']
-                })
-            
-            # 3. GUARDAR INTEGRADORAS (Categoría 2: Exámenes - 60% -> usaremos para integradoras)
-            integradoras = nota_data.get('integradoras', [])
-            for integradora in integradoras:
-                nombre_integradora = f"Integradora {integradora['numero']}"
-                
-                query_tipo_int = text("""
-                    SELECT id_tipo_evaluacion 
-                    FROM tipos_evaluacion 
-                    WHERE id_categoria_evaluacion = 2 
-                    AND id_asignacion = :id_asignacion
-                    AND nombre_tipo = :nombre_tipo
-                """)
-                
-                tipo_int_result = db.session.execute(query_tipo_int, {
-                    'id_asignacion': id_asignacion,
-                    'nombre_tipo': nombre_integradora
-                }).first()
-                
-                if not tipo_int_result:
-                    insert_tipo_int = text("""
-                        INSERT INTO tipos_evaluacion 
-                        (id_categoria_evaluacion, id_asignacion, nombre_tipo, porcentaje)
-                        VALUES (2, :id_asignacion, :nombre_tipo, :porcentaje)
-                    """)
-                    db.session.execute(insert_tipo_int, {
-                        'id_asignacion': id_asignacion,
-                        'nombre_tipo': nombre_integradora,
-                        'porcentaje': integradora['porcentaje']
-                    })
-                    db.session.flush()
-                    tipo_int_result = db.session.execute(query_tipo_int, {
-                        'id_asignacion': id_asignacion,
-                        'nombre_tipo': nombre_integradora
-                    }).first()
-                
-                id_tipo_int = tipo_int_result[0]
-                
-                upsert_int = text("""
-                    INSERT INTO calificaciones 
-                    (id_estudiante, id_asignacion, id_periodo, id_tipo_evaluacion, nota)
-                    VALUES (:id_estudiante, :id_asignacion, :id_periodo, :id_tipo_evaluacion, :nota)
-                    ON DUPLICATE KEY UPDATE nota = :nota, fecha_ingreso = CURRENT_TIMESTAMP
-                """)
-                
-                db.session.execute(upsert_int, {
-                    'id_estudiante': id_estudiante,
-                    'id_asignacion': id_asignacion,
-                    'id_periodo': id_periodo,
-                    'id_tipo_evaluacion': id_tipo_int,
-                    'nota': integradora['nota']
-                })
+                db.session.execute(upsert_calificacion, calificaciones_batch)
             
             # Extraer valores de integradoras para el resumen
             int1_nota = None
@@ -582,56 +577,6 @@ def guardar_notas(id_asignacion):
                     int2_nota = integradora['nota']
                 elif integradora['numero'] == 3:
                     int3_nota = integradora['nota']
-            
-            # 4. GUARDAR PRUEBA OBJETIVA
-            if nota_data.get('prueba_objetiva') is not None:
-                nombre_po = "Prueba Objetiva"
-                
-                query_tipo_po = text("""
-                    SELECT id_tipo_evaluacion 
-                    FROM tipos_evaluacion 
-                    WHERE id_categoria_evaluacion = 2 
-                    AND id_asignacion = :id_asignacion
-                    AND nombre_tipo = :nombre_tipo
-                """)
-                
-                tipo_po_result = db.session.execute(query_tipo_po, {
-                    'id_asignacion': id_asignacion,
-                    'nombre_tipo': nombre_po
-                }).first()
-                
-                if not tipo_po_result:
-                    insert_tipo_po = text("""
-                        INSERT INTO tipos_evaluacion 
-                        (id_categoria_evaluacion, id_asignacion, nombre_tipo, porcentaje)
-                        VALUES (2, :id_asignacion, :nombre_tipo, 30.00)
-                    """)
-                    db.session.execute(insert_tipo_po, {
-                        'id_asignacion': id_asignacion,
-                        'nombre_tipo': nombre_po
-                    })
-                    db.session.flush()
-                    tipo_po_result = db.session.execute(query_tipo_po, {
-                        'id_asignacion': id_asignacion,
-                        'nombre_tipo': nombre_po
-                    }).first()
-                
-                id_tipo_po = tipo_po_result[0]
-                
-                upsert_po = text("""
-                    INSERT INTO calificaciones 
-                    (id_estudiante, id_asignacion, id_periodo, id_tipo_evaluacion, nota)
-                    VALUES (:id_estudiante, :id_asignacion, :id_periodo, :id_tipo_evaluacion, :nota)
-                    ON DUPLICATE KEY UPDATE nota = :nota, fecha_ingreso = CURRENT_TIMESTAMP
-                """)
-                
-                db.session.execute(upsert_po, {
-                    'id_estudiante': id_estudiante,
-                    'id_asignacion': id_asignacion,
-                    'id_periodo': id_periodo,
-                    'id_tipo_evaluacion': id_tipo_po,
-                    'nota': nota_data['prueba_objetiva']
-                })
             
             # 5. GUARDAR RESUMEN EN TABLA notas_resumen_periodo
             # Primero verificar si la tabla existe, si no, crearla
@@ -750,6 +695,34 @@ def guardar_notas(id_asignacion):
                 'porcentaje_po': porc_po,
                 'nota_final_periodo': nota_data.get('nota_final')
             })
+            
+            # 6. GUARDAR CONDUCTA en tabla conducta_materia_periodo
+            conducta_numerica = nota_data.get('conducta_numerica')
+            conducta_literal = nota_data.get('conducta_literal')
+            
+            # Solo guardar si hay al menos una conducta
+            if conducta_numerica is not None or conducta_literal is not None:
+                upsert_conducta = text("""
+                    INSERT INTO conducta_materia_periodo (
+                        id_estudiante, id_asignacion, id_periodo,
+                        nota_conducta, conducta_literal
+                    ) VALUES (
+                        :id_estudiante, :id_asignacion, :id_periodo,
+                        :nota_conducta, :conducta_literal
+                    )
+                    ON DUPLICATE KEY UPDATE
+                        nota_conducta = VALUES(nota_conducta),
+                        conducta_literal = VALUES(conducta_literal),
+                        fecha_ingreso = CURRENT_TIMESTAMP
+                """)
+                
+                db.session.execute(upsert_conducta, {
+                    'id_estudiante': id_estudiante,
+                    'id_asignacion': id_asignacion,
+                    'id_periodo': id_periodo,
+                    'nota_conducta': conducta_numerica,
+                    'conducta_literal': conducta_literal
+                })
         
         db.session.commit()
         print("DEBUG - Todas las notas guardadas correctamente")

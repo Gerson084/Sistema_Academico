@@ -16,50 +16,34 @@
         --medium-text: #374151;
     }
 
-    /* Reset de márgenes para eliminar espacios no deseados */
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
-    /* Sobrescribir el mt-4 del contenedor base */
-    .container.mt-4 {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-
     .btn-assign {
-    background: #0D2C63; /* color azul principal */
-    border: none;
-    color: white;
-    padding: 0.4rem 0.8rem;
-    border-radius: 0.375rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    transition: all 0.2s ease;
-    text-decoration: none;
-}
+        background: #0D2C63; /* color azul principal */
+        border: none;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
 
-.btn-assign:hover {
-    background: #0a1f4a;
-    color: white;
-    transform: translateY(-1px);
-}
+    .btn-assign:hover {
+        background: #0a1f4a;
+        color: white;
+        transform: translateY(-1px);
+    }
 
     .page-header {
         background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
         color: #E9E2C3;
-        padding: 2rem 0;
-        margin: 0 0 2rem 0 !important;
-        border-radius: 0 0 1rem 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border-radius: 0.75rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        width: 100vw;
-        margin-left: calc(-50vw + 50%) !important;
-        position: relative;
-        top: 0;
     }
 
     .page-title {
@@ -439,14 +423,13 @@
         }
     }
 </style>
-<div class="page-header">
-    <div class="container">
+
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="page-header">
         <h1 class="page-title"><i class="fas fa-book"></i> Lista de Materias</h1>
         <p class="page-subtitle">Todas las materias registradas en el sistema</p>
     </div>
-</div>
-
-<div class="container">
     <!-- Mensaje de éxito
     {% if success %}
     <div class="alert-success show">

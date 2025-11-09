@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --light-cream: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #f59e0b;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, #1a4080 100%);
+        color: var(--light-cream);
+        padding: 2rem;
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .breadcrumb-custom {
+        background: rgba(233, 226, 195, 0.2);
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .breadcrumb-custom a {
+        color: var(--light-cream);
+        text-decoration: none;
+        opacity: 0.9;
+    }
+    
+    .breadcrumb-custom a:hover {
+        opacity: 1;
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-custom span {
+        color: var(--light-cream);
+        margin: 0 0.5rem;
+    }
+    
+    .seccion-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--primary-blue);
+        margin-bottom: 1.5rem;
+    }
+    
+    .seccion-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 16px rgba(13, 44, 99, 0.15);
+    }
+    
+    .seccion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+    
+    .seccion-nombre {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .seccion-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, #1a4080 100%);
+        color: var(--light-cream);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .progreso-container {
+        margin: 1rem 0;
+    }
+    
+    .progreso-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: #374151;
+    }
+    
+    .progress {
+        height: 25px;
+        border-radius: 0.5rem;
+        background: #e5e7eb;
+    }
+    
+    .progress-bar {
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .progress-bar.completado {
+        background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+    }
+    
+    .progress-bar.parcial {
+        background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+    }
+    
+    .progress-bar.sin-datos {
+        background: linear-gradient(90deg, #6b7280 0%, #9ca3af 100%);
+    }
+    
+    .seccion-stats {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+    
+    .stat-box {
+        flex: 1;
+        background: #f9fafb;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        text-align: center;
+    }
+    
+    .stat-box i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .stat-box.estudiantes i {
+        color: #3b82f6;
+    }
+    
+    .stat-box.conductas i {
+        color: var(--success-green);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+    
+    .btn-ingresar {
+        background: var(--primary-blue);
+        color: var(--light-cream);
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-ingresar:hover {
+        background: #1a4080;
+        color: var(--light-cream);
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 44, 99, 0.3);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #e5e7eb;
+        margin-bottom: 1rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .seccion-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .seccion-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-users-class"></i>
+            Secciones - {{ grado.nombre_grado }} {{ grado.nivel }}
+        </h1>
+        <div class="breadcrumb-custom">
+            <a href="{{ url_for('conducta_grado.listar_grados') }}">
+                <i class="fas fa-graduation-cap"></i> Grados
+            </a>
+            <span>/</span>
+            <strong>{{ grado.nombre_grado }}</strong>
+        </div>
+    </div>
+    
+    <div class="container">
+        {% if secciones %}
+        {% for seccion in secciones %}
+        <div class="seccion-card">
+            <div class="seccion-header">
+                <div class="seccion-nombre">
+                    <div class="seccion-icon">
+                        <i class="fas fa-chalkboard"></i>
+                    </div>
+                    <span>Sección {{ seccion.nombre_seccion }}</span>
+                </div>
+                <a href="{{ url_for('conducta_grado.ingresar_conducta', id_seccion=seccion.id_seccion) }}" 
+                   class="btn-ingresar">
+                    <i class="fas fa-edit"></i> Ingresar Conducta
+                </a>
+            </div>
+            
+            <div class="progreso-container">
+                <div class="progreso-label">
+                    <span>
+                        <i class="fas fa-chart-line"></i> 
+                        Progreso de Ingreso
+                    </span>
+                    <strong>{{ seccion.total_conductas }} / {{ seccion.total_estudiantes }}</strong>
+                </div>
+                <div class="progress">
+                    {% if seccion.porcentaje == 100 %}
+                    <div class="progress-bar completado" style="width: {{ seccion.porcentaje }}%">
+                        {{ seccion.porcentaje }}% Completo
+                    </div>
+                    {% elif seccion.porcentaje > 0 %}
+                    <div class="progress-bar parcial" style="width: {{ seccion.porcentaje }}%">
+                        {{ seccion.porcentaje }}%
+                    </div>
+                    {% else %}
+                    <div class="progress-bar sin-datos" style="width: 5%">
+                        Sin datos
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="seccion-stats">
+                <div class="stat-box estudiantes">
+                    <i class="fas fa-user-graduate"></i>
+                    <div class="stat-number">{{ seccion.total_estudiantes }}</div>
+                    <div class="stat-label">Estudiantes</div>
+                </div>
+                <div class="stat-box conductas">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="stat-number">{{ seccion.total_conductas }}</div>
+                    <div class="stat-label">Conductas Registradas</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>No hay secciones disponibles</h3>
+            <p>No se encontraron secciones para este grado en el año lectivo actual.</p>
+        </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{{ url_for('conducta_grado.listar_grados') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left"></i> Volver a Grados
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

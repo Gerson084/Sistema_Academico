@@ -15,6 +15,76 @@
         --border-gray: #e5e7eb;
     }
 
+    /* Estilos para conducta literal con colores */
+    .conducta-badge {
+        display: inline-block;
+        padding: 0.25rem 0.6rem;
+        border-radius: 0.4rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    
+    .conducta-e {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .conducta-mb {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .conducta-b {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .conducta-r {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .conducta-nm {
+        background-color: #f5c6cb;
+        color: #721c24;
+    }
+    
+    .conducta-numerica {
+        font-weight: 600;
+        color: var(--primary-blue);
+        font-size: 0.85rem;
+    }
+    
+    /* Leyenda de conductas */
+    .conducta-leyenda {
+        background: #f8f9fa;
+        border: 1px solid var(--border-gray);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .conducta-leyenda-title {
+        font-weight: 700;
+        color: var(--dark-text);
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .conducta-leyenda-items {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .conducta-leyenda-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+    }
+
     /* Encabezado del módulo sticky */
     .page-header {
         position: sticky;
@@ -392,17 +462,35 @@
         }
 
         .table-notas-finales {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         .table-notas-finales thead th,
         .table-notas-finales tbody td {
-            padding: 0.6rem 0.4rem;
+            padding: 0.5rem 0.3rem;
         }
 
         .badge-estado {
-            font-size: 0.7rem;
-            padding: 0.3rem 0.6rem;
+            font-size: 0.65rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .conducta-badge {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.4rem;
+        }
+        
+        .conducta-leyenda {
+            padding: 0.75rem;
+        }
+        
+        .conducta-leyenda-items {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .conducta-leyenda-item {
+            font-size: 0.75rem;
         }
 
         .stats-card {
@@ -528,6 +616,35 @@
             </div>
         </div>
 
+        <!-- Leyenda de Conducta -->
+        <div class="conducta-leyenda">
+            <div class="conducta-leyenda-title">
+                <i class="fas fa-info-circle"></i> Leyenda de Conducta
+            </div>
+            <div class="conducta-leyenda-items">
+                <div class="conducta-leyenda-item">
+                    <span class="conducta-badge conducta-e">E</span>
+                    <span>Excelente (10-9)</span>
+                </div>
+                <div class="conducta-leyenda-item">
+                    <span class="conducta-badge conducta-mb">MB</span>
+                    <span>Muy Bueno (8-7)</span>
+                </div>
+                <div class="conducta-leyenda-item">
+                    <span class="conducta-badge conducta-b">B</span>
+                    <span>Bueno (6-5)</span>
+                </div>
+                <div class="conducta-leyenda-item">
+                    <span class="conducta-badge conducta-r">R</span>
+                    <span>Regular (4-3)</span>
+                </div>
+                <div class="conducta-leyenda-item">
+                    <span class="conducta-badge conducta-nm">NM</span>
+                    <span>Necesita Mejorar (2-1)</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Tabla de Notas Finales -->
         {% if estudiantes %}
         <div class="table-card">
@@ -535,14 +652,20 @@
                 <table class="table table-notas-finales">
                     <thead>
                         <tr>
-                            <th style="width: 50px;">N°</th>
-                            <th style="width: 100px;">NIE</th>
-                            <th style="min-width: 250px;">Estudiante</th>
+                            <th rowspan="2" style="width: 50px;">N°</th>
+                            <th rowspan="2" style="width: 100px;">NIE</th>
+                            <th rowspan="2" style="min-width: 250px;">Estudiante</th>
                             {% for p in periodos %}
-                            <th style="min-width: 100px;">{{ p.nombre_periodo }}</th>
+                            <th colspan="2" style="min-width: 100px;">{{ p.nombre_periodo }}</th>
                             {% endfor %}
-                            <th style="min-width: 120px;">Promedio Anual</th>
-                            <th style="min-width: 130px;">Estado</th>
+                            <th rowspan="2" style="min-width: 120px;">Promedio Anual</th>
+                            <th rowspan="2" style="min-width: 130px;">Estado</th>
+                        </tr>
+                        <tr>
+                            {% for p in periodos %}
+                            <th style="font-size: 0.75rem; background: rgba(13, 44, 99, 0.9);">Nota</th>
+                            <th style="font-size: 0.75rem; background: rgba(13, 44, 99, 0.9);">Conducta</th>
+                            {% endfor %}
                         </tr>
                     </thead>
                     <tbody id="tabla-body">
@@ -555,10 +678,22 @@
                             <td>{{ loop.index }}</td>
                             <td class="tabla-nie">{{ est.nie }}</td>
                             <td class="tabla-nombre">{{ est.nombre_completo }}</td>
-                            {% for nota in est.notas_por_periodo %}
+                            {% for i in range(est.notas_por_periodo|length) %}
                             <td>
-                                {% if nota is not none %}
-                                <span class="nota-valor">{{ "%.2f"|format(nota) }}</span>
+                                {% if est.notas_por_periodo[i] is not none %}
+                                <span class="nota-valor">{{ "%.2f"|format(est.notas_por_periodo[i]) }}</span>
+                                {% else %}
+                                <span class="nota-vacia">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if est.conductas_por_periodo[i] is not none %}
+                                    {% set conducta = est.conductas_por_periodo[i] %}
+                                    {% if conducta in ['E', 'MB', 'B', 'R', 'NM'] %}
+                                        <span class="conducta-badge conducta-{{ conducta|lower }}">{{ conducta }}</span>
+                                    {% else %}
+                                        <span class="conducta-numerica">{{ "%.1f"|format(conducta) }}</span>
+                                    {% endif %}
                                 {% else %}
                                 <span class="nota-vacia">—</span>
                                 {% endif %}

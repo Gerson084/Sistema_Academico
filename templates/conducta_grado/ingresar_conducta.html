@@ -1,0 +1,794 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --light-cream: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #f59e0b;
+    }
+    
+    /* Page header */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, #1a4080 100%);
+        color: var(--light-cream);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .breadcrumb-custom {
+        background: rgba(233, 226, 195, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .breadcrumb-custom a {
+        color: var(--light-cream);
+        text-decoration: none;
+        opacity: 0.9;
+    }
+    
+    .breadcrumb-custom a:hover {
+        opacity: 1;
+        text-decoration: underline;
+    }
+    
+    /* Info panel */
+    .info-panel {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .info-item i {
+        width: 35px;
+        height: 35px;
+        background: var(--primary-blue);
+        color: var(--light-cream);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .info-label {
+        font-size: 0.8rem;
+        color: #6b7280;
+        font-weight: 600;
+    }
+    
+    .info-value {
+        font-size: 1.1rem;
+        color: var(--primary-blue);
+        font-weight: 700;
+    }
+    
+    /* Búsqueda y filtros */
+    .filter-bar {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .search-box {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        transition: border-color 0.2s ease;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+    }
+    
+    /* Tabla responsive */
+    .table-card {
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .table-conducta {
+        width: 100%;
+        margin: 0;
+        font-size: 0.9rem;
+        min-width: 900px;
+    }
+    
+    .table-conducta thead th {
+        background: var(--primary-blue);
+        color: var(--light-cream);
+        font-weight: 700;
+        text-align: center;
+        padding: 1rem 0.75rem;
+        border: none;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        white-space: nowrap;
+    }
+    
+    .table-conducta tbody td {
+        vertical-align: middle;
+        padding: 0.85rem 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+        text-align: center;
+    }
+    
+    .table-conducta tbody tr:hover {
+        background: #f9fafb;
+    }
+    
+    .tabla-nie {
+        font-weight: 600;
+        color: var(--primary-blue);
+    }
+    
+    .tabla-nombre {
+        text-align: left !important;
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    /* Toggle conducta */
+    .tipo-conducta-container {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .tipo-conducta-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.3rem 0.6rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .tipo-conducta-label:hover {
+        border-color: var(--primary-blue);
+        background: #f0f9ff;
+    }
+    
+    .tipo-conducta:checked + .tipo-conducta-label {
+        background: var(--primary-blue);
+        color: var(--light-cream);
+        border-color: var(--primary-blue);
+    }
+    
+    .tipo-conducta {
+        display: none;
+    }
+    
+    /* Inputs */
+    .conducta-input {
+        width: 90px;
+        text-align: center;
+        padding: 0.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+    
+    .conducta-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+    }
+    
+    .conducta-select {
+        width: 90px;
+        text-align: center;
+        padding: 0.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .conducta-select:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+    }
+    
+    /* Conducta colores */
+    .conducta-select.conducta-e { background: #d4edda; color: #155724; }
+    .conducta-select.conducta-mb { background: #d1ecf1; color: #0c5460; }
+    .conducta-select.conducta-b { background: #fff3cd; color: #856404; }
+    .conducta-select.conducta-r { background: #f8d7da; color: #721c24; }
+    .conducta-select.conducta-nm { background: #f5c6cb; color: #721c24; }
+    
+    .observacion-textarea {
+        width: 100%;
+        min-width: 200px;
+        padding: 0.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 0.85rem;
+        resize: vertical;
+        min-height: 60px;
+    }
+    
+    .observacion-textarea:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+    }
+    
+    /* Leyenda */
+    .leyenda-box {
+        background: #f0f9ff;
+        border: 2px solid #bfdbfe;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .leyenda-title {
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+    }
+    
+    .leyenda-items {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .leyenda-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .leyenda-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 0.4rem;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+    
+    .leyenda-badge.e { background: #d4edda; color: #155724; }
+    .leyenda-badge.mb { background: #d1ecf1; color: #0c5460; }
+    .leyenda-badge.b { background: #fff3cd; color: #856404; }
+    .leyenda-badge.r { background: #f8d7da; color: #721c24; }
+    .leyenda-badge.nm { background: #f5c6cb; color: #721c24; }
+    
+    /* Botones */
+    .btn-guardar {
+        background: var(--success-green);
+        color: white;
+        padding: 0.85rem 2rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .btn-guardar:hover:not(:disabled) {
+        background: #047857;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    }
+    
+    .btn-guardar:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+    
+    .row-hidden {
+        display: none !important;
+    }
+    
+    /* Responsive */
+    @media (max-width: 992px) {
+        .table-conducta {
+            font-size: 0.85rem;
+            min-width: 800px;
+        }
+        
+        .conducta-input,
+        .conducta-select {
+            width: 75px;
+            padding: 0.4rem;
+            font-size: 0.85rem;
+        }
+        
+        .observacion-textarea {
+            min-width: 150px;
+            font-size: 0.8rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.3rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-bar {
+            flex-direction: column;
+        }
+        
+        .search-box {
+            min-width: 100%;
+        }
+        
+        .table-conducta {
+            font-size: 0.75rem;
+            min-width: 700px;
+        }
+        
+        .leyenda-items {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-guardar {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-star"></i>
+            Conducta Final Anual
+        </h1>
+        <div class="breadcrumb-custom">
+            <a href="{{ url_for('conducta_grado.listar_grados') }}">
+                <i class="fas fa-graduation-cap"></i> Grados
+            </a>
+            <span class="mx-2">/</span>
+            <a href="{{ url_for('conducta_grado.listar_secciones', id_grado=info_seccion.id_grado) }}">
+                Secciones
+            </a>
+            <span class="mx-2">/</span>
+            <strong>Sección {{ info_seccion.nombre_seccion }}</strong>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <div class="info-grid">
+                <div class="info-item">
+                    <i class="fas fa-layer-group"></i>
+                    <div>
+                        <div class="info-label">Grado</div>
+                        <div class="info-value">{{ info_seccion.grado }}</div>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-chalkboard"></i>
+                    <div>
+                        <div class="info-label">Sección</div>
+                        <div class="info-value">{{ info_seccion.nombre_seccion }}</div>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div>
+                        <div class="info-label">Año Lectivo</div>
+                        <div class="info-value">{{ info_seccion.ano_lectivo }}</div>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-user-graduate"></i>
+                    <div>
+                        <div class="info-label">Estudiantes</div>
+                        <div class="info-value">{{ estudiantes|length }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leyenda -->
+        <div class="leyenda-box">
+            <div class="leyenda-title">
+                <i class="fas fa-info-circle"></i> Escala de Conducta Literal
+            </div>
+            <div class="leyenda-items">
+                <div class="leyenda-item">
+                    <span class="leyenda-badge e">E</span>
+                    <span>Excelente (10-9)</span>
+                </div>
+                <div class="leyenda-item">
+                    <span class="leyenda-badge mb">MB</span>
+                    <span>Muy Bueno (8-7)</span>
+                </div>
+                <div class="leyenda-item">
+                    <span class="leyenda-badge b">B</span>
+                    <span>Bueno (6-5)</span>
+                </div>
+                <div class="leyenda-item">
+                    <span class="leyenda-badge r">R</span>
+                    <span>Regular (4-3)</span>
+                </div>
+                <div class="leyenda-item">
+                    <span class="leyenda-badge nm">NM</span>
+                    <span>Necesita Mejorar (2-1)</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Barra de búsqueda -->
+        <div class="filter-bar">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" 
+                       id="buscarEstudiante" 
+                       class="search-input" 
+                       placeholder="Buscar por NIE o nombre del estudiante...">
+            </div>
+        </div>
+        
+        <!-- Tabla -->
+        {% if estudiantes %}
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table table-conducta">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">N°</th>
+                            <th style="width: 100px;">NIE</th>
+                            <th style="min-width: 250px;">Estudiante</th>
+                            <th style="min-width: 180px;">Tipo de Conducta</th>
+                            <th style="min-width: 120px;">Conducta Final</th>
+                            <th style="min-width: 250px;">Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body">
+                        {% for est in estudiantes %}
+                        <tr class="fila-estudiante" 
+                            data-nie="{{ est.nie }}" 
+                            data-nombre="{{ est.nombre_completo|lower }}"
+                            data-estudiante="{{ est.id_estudiante }}">
+                            <td>{{ loop.index }}</td>
+                            <td class="tabla-nie">{{ est.nie }}</td>
+                            <td class="tabla-nombre">{{ est.nombre_completo }}</td>
+                            <td>
+                                <div class="tipo-conducta-container">
+                                    <input type="radio" 
+                                           class="tipo-conducta" 
+                                           name="tipo_{{ est.id_estudiante }}" 
+                                           id="tipo_num_{{ est.id_estudiante }}" 
+                                           value="numerica"
+                                           {% if est.nota_conducta is not none %}checked{% endif %}>
+                                    <label for="tipo_num_{{ est.id_estudiante }}" class="tipo-conducta-label">
+                                        <i class="fas fa-hashtag"></i> Numérica
+                                    </label>
+                                    
+                                    <input type="radio" 
+                                           class="tipo-conducta" 
+                                           name="tipo_{{ est.id_estudiante }}" 
+                                           id="tipo_lit_{{ est.id_estudiante }}" 
+                                           value="literal"
+                                           {% if est.conducta_literal is not none %}checked{% endif %}>
+                                    <label for="tipo_lit_{{ est.id_estudiante }}" class="tipo-conducta-label">
+                                        <i class="fas fa-font"></i> Literal
+                                    </label>
+                                </div>
+                            </td>
+                            <td>
+                                <!-- Input numérico -->
+                                <input type="number" 
+                                       class="conducta-input conducta-numerica"
+                                       data-estudiante="{{ est.id_estudiante }}"
+                                       min="0" 
+                                       max="10" 
+                                       step="0.1"
+                                       value="{{ est.nota_conducta if est.nota_conducta is not none else '' }}"
+                                       placeholder="0.0 - 10.0"
+                                       style="{% if est.conducta_literal is not none %}display: none;{% endif %}">
+                                
+                                <!-- Select literal -->
+                                <select class="conducta-select conducta-literal"
+                                        data-estudiante="{{ est.id_estudiante }}"
+                                        style="{% if est.nota_conducta is not none or est.conducta_literal is none %}display: none;{% endif %}">
+                                    <option value="">--</option>
+                                    <option value="E" {% if est.conducta_literal == 'E' %}selected{% endif %}>E</option>
+                                    <option value="MB" {% if est.conducta_literal == 'MB' %}selected{% endif %}>MB</option>
+                                    <option value="B" {% if est.conducta_literal == 'B' %}selected{% endif %}>B</option>
+                                    <option value="R" {% if est.conducta_literal == 'R' %}selected{% endif %}>R</option>
+                                    <option value="NM" {% if est.conducta_literal == 'NM' %}selected{% endif %}>NM</option>
+                                </select>
+                            </td>
+                            <td>
+                                <textarea class="observacion-textarea"
+                                          data-estudiante="{{ est.id_estudiante }}"
+                                          placeholder="Observaciones generales..."
+                                          rows="2">{{ est.observacion if est.observacion else '' }}</textarea>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Botones de acción -->
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
+            <a href="{{ url_for('conducta_grado.listar_secciones', id_grado=info_seccion.id_grado) }}" 
+               class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <button type="button" 
+                    id="btnGuardar" 
+                    onclick="guardarConductas()" 
+                    class="btn-guardar">
+                <i class="fas fa-save"></i> Guardar Conductas
+            </button>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            No hay estudiantes matriculados en esta sección.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Toggle entre numérica y literal
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar cambio de tipo de conducta
+    document.querySelectorAll('.tipo-conducta').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const idEstudiante = this.name.replace('tipo_', '');
+            const fila = this.closest('tr');
+            const inputNumerica = fila.querySelector('.conducta-numerica');
+            const selectLiteral = fila.querySelector('.conducta-literal');
+            
+            if (this.value === 'numerica') {
+                inputNumerica.style.display = 'block';
+                selectLiteral.style.display = 'none';
+                selectLiteral.value = '';
+                selectLiteral.className = 'conducta-select conducta-literal';
+            } else {
+                inputNumerica.style.display = 'none';
+                selectLiteral.style.display = 'block';
+                inputNumerica.value = '';
+            }
+        });
+    });
+    
+    // Cambiar color del select según valor
+    document.querySelectorAll('.conducta-literal').forEach(select => {
+        select.addEventListener('change', function() {
+            this.className = 'conducta-select conducta-literal';
+            if (this.value) {
+                this.classList.add('conducta-' + this.value.toLowerCase());
+            }
+        });
+        
+        // Aplicar color inicial
+        if (select.value) {
+            select.classList.add('conducta-' + select.value.toLowerCase());
+        }
+    });
+    
+    // Validación de conducta numérica
+    document.querySelectorAll('.conducta-numerica').forEach(input => {
+        input.addEventListener('input', function() {
+            let valor = parseFloat(this.value);
+            if (!isNaN(valor)) {
+                if (valor < 0) {
+                    this.value = 0;
+                } else if (valor > 10) {
+                    this.value = 10;
+                }
+            }
+        });
+    });
+});
+
+// Búsqueda en tiempo real
+document.getElementById('buscarEstudiante').addEventListener('input', function() {
+    const termino = this.value.toLowerCase().trim();
+    const filas = document.querySelectorAll('.fila-estudiante');
+    let contador = 0;
+    
+    filas.forEach(fila => {
+        const nie = fila.dataset.nie.toLowerCase();
+        const nombre = fila.dataset.nombre;
+        
+        if (nie.includes(termino) || nombre.includes(termino)) {
+            fila.classList.remove('row-hidden');
+            contador++;
+            fila.querySelector('td:first-child').textContent = contador;
+        } else {
+            fila.classList.add('row-hidden');
+        }
+    });
+});
+
+// Función para guardar conductas
+function guardarConductas() {
+    const btnGuardar = document.getElementById('btnGuardar');
+    const conductas = [];
+    
+    document.querySelectorAll('.fila-estudiante').forEach(fila => {
+        const idEstudiante = fila.dataset.estudiante;
+        const tipoSeleccionado = fila.querySelector('input[name="tipo_' + idEstudiante + '"]:checked');
+        
+        if (!tipoSeleccionado) return;
+        
+        const tipoConducta = tipoSeleccionado.value;
+        const notaNumerica = fila.querySelector('.conducta-numerica').value;
+        const conductaLiteral = fila.querySelector('.conducta-literal').value;
+        const observacion = fila.querySelector('.observacion-textarea').value;
+        
+        // Solo agregar si tiene alguna conducta
+        if ((tipoConducta === 'numerica' && notaNumerica) || 
+            (tipoConducta === 'literal' && conductaLiteral)) {
+            conductas.push({
+                id_estudiante: idEstudiante,
+                tipo_conducta: tipoConducta,
+                nota_numerica: notaNumerica ? parseFloat(notaNumerica) : null,
+                conducta_literal: conductaLiteral || null,
+                observacion: observacion
+            });
+        }
+    });
+    
+    if (conductas.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Sin conductas',
+            text: 'No hay conductas para guardar. Ingresa al menos una conducta.',
+            confirmButtonColor: '#f59e0b'
+        });
+        return;
+    }
+    
+    // Confirmar antes de guardar
+    Swal.fire({
+        title: '¿Guardar conductas?',
+        html: `Se guardarán <b>${conductas.length}</b> conducta(s) final(es).<br>¿Desea continuar?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: '<i class="fas fa-save"></i> Sí, guardar',
+        cancelButtonText: '<i class="fas fa-times"></i> Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            btnGuardar.disabled = true;
+            
+            Swal.fire({
+                title: 'Guardando...',
+                html: `Guardando <b>${conductas.length}</b> conducta(s)...<br>Por favor espere`,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            fetch('{{ url_for("conducta_grado.guardar_conducta") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id_seccion: {{ info_seccion.id_seccion }},
+                    id_ano_lectivo: {{ ano_lectivo.id_ano_lectivo }},
+                    conductas: conductas
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: data.mensaje,
+                        confirmButtonColor: '#059669'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.mensaje,
+                        confirmButtonColor: '#dc2626'
+                    });
+                    btnGuardar.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servidor: ' + error.message,
+                    confirmButtonColor: '#dc2626'
+                });
+                btnGuardar.disabled = false;
+            });
+        }
+    });
+}
+</script>
+{% endblock %}

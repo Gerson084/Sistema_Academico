@@ -130,15 +130,40 @@
     
     /* Estilos para el header de informaciÃ³n */
     .info-header {
-        position: sticky;
-        top: 8px;
-        z-index: 101;
+        position: relative;
         background: linear-gradient(135deg, #0D2C63 0%, #1a4080 100%);
         color: #E9E2C3;
         padding: 1.5rem;
         border-radius: 0.75rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    /* Estado colapsado del header en móviles */
+    .info-header.collapsed .info-grid {
+        display: none;
+    }
+    
+    .info-header.collapsed {
+        padding: 1rem 1.5rem;
+    }
+    
+    /* Botón para colapsar el header */
+    .toggle-header-btn {
+        display: none;
+        background: rgba(233, 226, 195, 0.2);
+        border: 1px solid rgba(233, 226, 195, 0.3);
+        color: #E9E2C3;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+    }
+    
+    .toggle-header-btn:hover {
+        background: rgba(233, 226, 195, 0.3);
     }
     
     .info-header h3 {
@@ -147,10 +172,23 @@
         font-weight: 700;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 0.75rem;
         padding-bottom: 1rem;
         border-bottom: 2px solid rgba(233, 226, 195, 0.3);
         color: #E9E2C3;
+    }
+    
+    .info-header.collapsed h3 {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .info-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
     }
     
     .info-grid {
@@ -225,15 +263,285 @@
         font-weight: 700;
         display: inline-block;
     }
+    
+    /* Estilos para conducta literal con colores */
+    .conducta-literal option[value="E"] {
+        background-color: #d4edda;
+        color: #155724;
+        font-weight: 600;
+    }
+    
+    .conducta-literal option[value="MB"] {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        font-weight: 600;
+    }
+    
+    .conducta-literal option[value="B"] {
+        background-color: #fff3cd;
+        color: #856404;
+        font-weight: 600;
+    }
+    
+    .conducta-literal option[value="R"] {
+        background-color: #f8d7da;
+        color: #721c24;
+        font-weight: 600;
+    }
+    
+    .conducta-literal option[value="NM"] {
+        background-color: #f5c6cb;
+        color: #721c24;
+        font-weight: 700;
+    }
+    
+    /* Cambiar color del select según valor seleccionado */
+    .conducta-literal[value="E"] {
+        background-color: #d4edda;
+        color: #155724;
+        font-weight: 600;
+    }
+    
+    .conducta-literal[value="MB"] {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        font-weight: 600;
+    }
+    
+    .conducta-literal[value="B"] {
+        background-color: #fff3cd;
+        color: #856404;
+        font-weight: 600;
+    }
+    
+    .conducta-literal[value="R"] {
+        background-color: #f8d7da;
+        color: #721c24;
+        font-weight: 600;
+    }
+    
+    .conducta-literal[value="NM"] {
+        background-color: #f5c6cb;
+        color: #721c24;
+        font-weight: 700;
+    }
+    
+    /* ========================================
+       ESTILOS RESPONSIVE PARA LA TABLA
+       ======================================== */
+    
+    /* Contenedor con scroll horizontal */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    /* Tabla con ancho mínimo */
+    .table-notas {
+        min-width: 1800px;
+        margin-bottom: 0;
+    }
+    
+    /* MEDIA QUERIES PARA RESPONSIVE */
+    
+    /* Pantallas grandes (>1400px) - Vista completa */
+    @media (min-width: 1401px) {
+        .table-notas {
+            font-size: 0.95rem;
+        }
+        
+        .nota-input {
+            width: 75px;
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* Pantallas medianas (≤1400px) - Tablets grandes */
+    @media (max-width: 1400px) {
+        .container-fluid {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        
+        .table-notas {
+            font-size: 0.8rem;
+            min-width: 1600px;
+        }
+        
+        .nota-input {
+            width: 65px;
+            padding: 0.3rem;
+            font-size: 0.8rem;
+        }
+        
+        .table-notas thead th {
+            padding: 0.6rem 0.4rem;
+            font-size: 0.75rem;
+        }
+        
+        .info-header {
+            padding: 1rem;
+        }
+        
+        .info-header h3 {
+            font-size: 1.3rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    /* Tablets (≤992px) */
+    @media (max-width: 992px) {
+        .table-notas {
+            font-size: 0.75rem;
+            min-width: 1400px;
+        }
+        
+        .nota-input {
+            width: 55px;
+            padding: 0.25rem;
+            font-size: 0.75rem;
+        }
+        
+        .table-notas thead th {
+            padding: 0.5rem 0.3rem;
+            font-size: 0.7rem;
+        }
+        
+        .info-header h3 {
+            font-size: 1.2rem;
+        }
+        
+        .toggle-header-btn {
+            display: inline-block;
+        }
+    }
+    
+    /* Móviles grandes (≤768px) */
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+        }
+        
+        .table-notas {
+            font-size: 0.7rem;
+            min-width: 1200px;
+        }
+        
+        .nota-input {
+            width: 50px;
+            padding: 0.2rem;
+            font-size: 0.7rem;
+        }
+        
+        .table-notas thead th {
+            padding: 0.4rem 0.25rem;
+            font-size: 0.65rem;
+        }
+        
+        .info-header {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .info-header h3 {
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+        
+        .info-item-header {
+            padding: 0.75rem;
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+        }
+        
+        .info-value {
+            font-size: 0.9rem;
+        }
+        
+        /* Mensaje de ayuda para móvil */
+        .mobile-scroll-hint {
+            display: block;
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+    }
+    
+    /* Móviles pequeños (≤576px) */
+    @media (max-width: 576px) {
+        .table-notas {
+            font-size: 0.65rem;
+            min-width: 1000px;
+        }
+        
+        .nota-input {
+            width: 45px;
+            padding: 0.15rem;
+            font-size: 0.65rem;
+        }
+        
+        .table-notas thead th {
+            padding: 0.3rem 0.2rem;
+            font-size: 0.6rem;
+        }
+        
+        .info-header h3 {
+            font-size: 0.9rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .toggle-header-btn {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+        }
+        
+        .btn-guardar-notas {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+        }
+    }
+    
+    /* Ocultar mensaje de scroll en pantallas grandes */
+    @media (min-width: 769px) {
+        .mobile-scroll-hint {
+            display: none;
+        }
+    }
 </style>
 
 <div class="container-fluid mt-4">
     <!-- Encabezado con informaciÃ³n -->
-    <div class="info-header">
+    <div class="info-header" id="infoHeader">
         <h3>
-            <i class="fas fa-clipboard-list"></i> Ingreso de Notas
+            <div class="info-title">
+                <i class="fas fa-clipboard-list"></i> Ingreso de Notas
+            </div>
+            <button type="button" class="toggle-header-btn" onclick="toggleHeader()">
+                <i class="fas fa-chevron-up" id="toggleIcon"></i>
+                <span id="toggleText">Ocultar</span>
+            </button>
         </h3>
-        <div class="info-grid">
+        <div class="info-grid" id="infoGrid">
             <div class="info-item-header">
                 <div class="info-label">
                     <i class="fas fa-book"></i> Materia
@@ -282,6 +590,11 @@
 
     <!-- Tabla de notas -->
     <form id="formNotas">
+        <!-- Mensaje de ayuda para dispositivos móviles -->
+        <div class="mobile-scroll-hint">
+            <i class="fas fa-hand-pointer"></i> Desliza horizontalmente para ver todas las columnas
+        </div>
+        
         <div class="card shadow-sm">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -300,7 +613,12 @@
                                 <th rowspan="2" class="header-bi"><i class="fas fa-chart-line"></i> BI 70%</th>
                                 <th rowspan="2">P.O 30%</th>
                                 <th rowspan="2" class="header-total"><i class="fas fa-award"></i> Total</th>
-                                <!-- Columna actitud eliminada -->
+                                <th rowspan="2" class="header-conducta" style="background-color: #e3f2fd;">
+                                    <i class="fas fa-user-check"></i> Conducta
+                                    <i class="fas fa-info-circle" 
+                                       style="font-size: 0.8rem; cursor: help; color: #0d6efd;" 
+                                       title="Escala literal: E (10-9), MB (8-7), B (6-5), R (4-3), NM (2-1)"></i>
+                                </th>
                             </tr>
                             <tr>
                                 <th class="header-actividades">Act 1</th>
@@ -366,7 +684,43 @@
                                     <input type="number" step="0.01" class="nota-input nota-calculada total-final" readonly />
                                 </td>
                                 
-                                <!-- Celda actitud eliminada -->
+                                <!-- Conducta: Switch entre numérica y literal -->
+                                <td class="celda-conducta" style="background-color: #f1f8ff; padding: 8px;">
+                                    <div class="d-flex flex-column align-items-center gap-2">
+                                        <!-- Toggle para tipo de conducta -->
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <input type="radio" class="btn-check tipo-conducta" name="tipo_conducta_{{ estudiante.id_estudiante }}" id="tipo_num_{{ estudiante.id_estudiante }}" value="numerica" checked autocomplete="off">
+                                            <label class="btn btn-outline-primary btn-sm" for="tipo_num_{{ estudiante.id_estudiante }}" style="font-size: 0.75rem; padding: 2px 8px;">
+                                                <i class="fas fa-hashtag"></i> 0-10
+                                            </label>
+                                            
+                                            <input type="radio" class="btn-check tipo-conducta" name="tipo_conducta_{{ estudiante.id_estudiante }}" id="tipo_lit_{{ estudiante.id_estudiante }}" value="literal" autocomplete="off">
+                                            <label class="btn btn-outline-info btn-sm" for="tipo_lit_{{ estudiante.id_estudiante }}" style="font-size: 0.75rem; padding: 2px 8px;" title="Excelente, Muy Bueno, Bueno, Regular, Necesita Mejorar">
+                                                <i class="fas fa-font"></i> E-NM
+                                            </label>
+                                        </div>
+                                        
+                                        <!-- Input numérico -->
+                                        <input type="number" step="0.01" min="0" max="10" 
+                                               class="nota-input conducta-numerica" 
+                                               data-estudiante="{{ estudiante.id_estudiante }}"
+                                               placeholder="0-10"
+                                               style="width: 80px; text-align: center;"
+                                               value="{% if estudiante.conducta_existente and estudiante.conducta_existente.nota_conducta %}{{ estudiante.conducta_existente.nota_conducta }}{% endif %}" />
+                                        
+                                        <!-- Select literal -->
+                                        <select class="form-select form-select-sm conducta-literal" 
+                                                data-estudiante="{{ estudiante.id_estudiante }}"
+                                                style="width: 90px; text-align: center; display: none;">
+                                            <option value="">-</option>
+                                            <option value="E" {% if estudiante.conducta_existente and estudiante.conducta_existente.conducta_literal == 'E' %}selected{% endif %} title="Excelente (10-9)">E</option>
+                                            <option value="MB" {% if estudiante.conducta_existente and estudiante.conducta_existente.conducta_literal == 'MB' %}selected{% endif %} title="Muy Bueno (8-7)">MB</option>
+                                            <option value="B" {% if estudiante.conducta_existente and estudiante.conducta_existente.conducta_literal == 'B' %}selected{% endif %} title="Bueno (6-5)">B</option>
+                                            <option value="R" {% if estudiante.conducta_existente and estudiante.conducta_existente.conducta_literal == 'R' %}selected{% endif %} title="Regular (4-3)">R</option>
+                                            <option value="NM" {% if estudiante.conducta_existente and estudiante.conducta_existente.conducta_literal == 'NM' %}selected{% endif %} title="Necesita Mejorar (2-1)">NM</option>
+                                        </select>
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -392,13 +746,32 @@
 </div>
 
 <script>
+// --- Función para colapsar/expandir el header ---
+function toggleHeader() {
+    const header = document.getElementById('infoHeader');
+    const icon = document.getElementById('toggleIcon');
+    const text = document.getElementById('toggleText');
+    
+    header.classList.toggle('collapsed');
+    
+    if (header.classList.contains('collapsed')) {
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+        text.textContent = 'Mostrar';
+    } else {
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+        text.textContent = 'Ocultar';
+    }
+}
+
 // --- Modo edición de notas ---
 let editMode = false;
 function setModoEdicion(enabled) {
     editMode = enabled;
     console.log('Modo edición:', enabled ? 'ACTIVADO' : 'DESACTIVADO');
     
-    const editables = document.querySelectorAll('.actividad, .nota-rc, .integradora, .prueba-obj');
+    const editables = document.querySelectorAll('.actividad, .nota-rc, .integradora, .prueba-obj, .conducta-numerica, .conducta-literal, .tipo-conducta');
     console.log('Total de campos editables:', editables.length);
     editables.forEach(inp => { inp.disabled = !enabled; });
     
@@ -430,6 +803,64 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 // --- Fin modo edición ---
+
+// --- Toggle conducta numérica / literal ---
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar el cambio entre numérica y literal
+    document.querySelectorAll('.tipo-conducta').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const idEstudiante = this.name.replace('tipo_conducta_', '');
+            const fila = this.closest('tr');
+            const inputNumerica = fila.querySelector('.conducta-numerica');
+            const selectLiteral = fila.querySelector('.conducta-literal');
+            
+            if (this.value === 'numerica') {
+                inputNumerica.style.display = 'block';
+                selectLiteral.style.display = 'none';
+                selectLiteral.value = ''; // Limpiar literal al cambiar a numérica
+            } else {
+                inputNumerica.style.display = 'none';
+                selectLiteral.style.display = 'block';
+                inputNumerica.value = ''; // Limpiar numérica al cambiar a literal
+            }
+        });
+    });
+    
+    // Inicializar el estado correcto basado en datos existentes
+    document.querySelectorAll('tbody tr').forEach(fila => {
+        const inputNumerica = fila.querySelector('.conducta-numerica');
+        const selectLiteral = fila.querySelector('.conducta-literal');
+        
+        // Si tiene conducta literal guardada, activar modo literal
+        if (selectLiteral && selectLiteral.value !== '') {
+            const radioLiteral = fila.querySelector('input[value="literal"]');
+            if (radioLiteral) {
+                radioLiteral.checked = true;
+                inputNumerica.style.display = 'none';
+                selectLiteral.style.display = 'block';
+            }
+        }
+        
+        // Evento para cambiar color del select según valor
+        if (selectLiteral) {
+            selectLiteral.addEventListener('change', function() {
+                // Remover todas las clases de color
+                this.classList.remove('conducta-e', 'conducta-mb', 'conducta-b', 'conducta-r', 'conducta-nm');
+                // Agregar clase según valor seleccionado
+                if (this.value) {
+                    this.classList.add('conducta-' + this.value.toLowerCase());
+                }
+            });
+            
+            // Aplicar color inicial si ya tiene valor
+            if (selectLiteral.value) {
+                selectLiteral.classList.add('conducta-' + selectLiteral.value.toLowerCase());
+            }
+        }
+    });
+});
+// --- Fin toggle conducta ---
+
 // Calcular promedios en tiempo real
 document.addEventListener('DOMContentLoaded', function() {
     // Calcular todas las filas al cargar (para notas existentes)
@@ -657,6 +1088,30 @@ function guardarNotas(event) {
         const totalBI = parseFloat(fila.querySelector('.total-bi').value) || 0;
         const totalFinal = parseFloat(fila.querySelector('.total-final').value) || 0;
         
+        // Obtener conducta (numérica o literal)
+        const tipoConducataRadio = fila.querySelector('.tipo-conducta:checked');
+        const tipoConducta = tipoConducataRadio ? tipoConducataRadio.value : 'numerica';
+        let conductaNumerica = null;
+        let conductaLiteral = null;
+        
+        if (tipoConducta === 'numerica') {
+            const inputNumerica = fila.querySelector('.conducta-numerica');
+            conductaNumerica = inputNumerica && inputNumerica.value ? parseFloat(inputNumerica.value) : null;
+            // Validar conducta numérica
+            if (conductaNumerica !== null && (conductaNumerica < 0 || conductaNumerica > 10)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Conducta inválida',
+                    text: `La conducta del estudiante ID ${idEstudiante} está fuera del rango (0-10): ${conductaNumerica}`,
+                    confirmButtonColor: '#dc2626'
+                });
+                throw new Error('Conducta fuera de rango');
+            }
+        } else {
+            const selectLiteral = fila.querySelector('.conducta-literal');
+            conductaLiteral = selectLiteral && selectLiteral.value !== '' ? selectLiteral.value : null;
+        }
+        
         // Solo agregar si hay al menos una nota ingresada
         const tieneNotas = actividades.length > 0 || notaRC !== null || integradoras.length > 0 || pruebaObj !== null;
         
@@ -668,6 +1123,9 @@ function guardarNotas(event) {
                 nota_rc: notaRC,
                 integradoras: integradoras,
                 prueba_objetiva: pruebaObj,
+                // Conducta
+                conducta_numerica: conductaNumerica,
+                conducta_literal: conductaLiteral,
                 // Resumen para notas_resumen_periodo
                 promedio_actividades: promedioActividades,
                 porcentaje_actividades: porcentajeActividades,
@@ -693,7 +1151,7 @@ function guardarNotas(event) {
     // Mostrar confirmación antes de guardar
     Swal.fire({
         title: '¿Guardar notas?',
-        text: `Se guardarán las notas de ${notas.length} estudiantes para este período`,
+        text: `Se guardarán las notas para este período`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#28a745',

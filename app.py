@@ -24,6 +24,7 @@ from routes.reportesC_bp import reportesC_bp
 from routes.mis_estudiantes_bp import mis_estudiantes_bp
 from routes.inasistencias_bp import inasistencias_bp
 from routes.incidentes_bp import incidentes_bp
+from routes.conducta_grado_route import conducta_grado_bp
 
 
 
@@ -78,6 +79,7 @@ app.register_blueprint(reportesC_bp, url_prefix='/reportesC')
 app.register_blueprint(mis_estudiantes_bp)
 app.register_blueprint(inasistencias_bp)
 app.register_blueprint(incidentes_bp)
+app.register_blueprint(conducta_grado_bp)
 
 # Rutas de compatibilidad: redirigen a los endpoints del blueprint con prefijo
 @app.route('/reporte_conducta_estudiante')
@@ -100,6 +102,11 @@ def redirect_reporte_conducta_periodo():
 def home():
     return render_template('auth/login.html')
 
+
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    """Dashboard principal para administradores"""
+    return render_template('dashboards/admin_dashboard.html')
 
 
 @app.route('/test-db')

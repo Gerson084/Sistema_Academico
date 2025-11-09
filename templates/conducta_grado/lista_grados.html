@@ -1,0 +1,475 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #0D2C63;
+        --light-cream: #E9E2C3;
+        --success-green: #059669;
+        --warning-orange: #f59e0b;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, #1a4080 100%);
+        color: var(--light-cream);
+        padding: 2rem;
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+    
+    .grado-item {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--primary-blue);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+    
+    .grado-item:hover {
+        box-shadow: 0 4px 12px rgba(13, 44, 99, 0.15);
+        transform: translateX(5px);
+        border-left-color: var(--success-green);
+    }
+    
+    .grado-main {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+    }
+    
+    .grado-icon {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, #1a4080 100%);
+        color: var(--light-cream);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+    
+    .grado-info {
+        flex: 1;
+    }
+    
+    .grado-nombre {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin: 0 0 0.15rem 0;
+        line-height: 1.3;
+    }
+    
+    .grado-nivel {
+        color: #6b7280;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin: 0;
+    }
+    
+    .grado-stats {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-right: 1rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+        background: #f3f4f6;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-blue);
+        font-size: 0.9rem;
+    }
+    
+    .stat-info {
+        text-align: left;
+    }
+    
+    .stat-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        display: block;
+        line-height: 1.2;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .grado-action {
+        flex-shrink: 0;
+    }
+    
+    .btn-ver {
+        background: var(--primary-blue);
+        color: var(--light-cream);
+        padding: 0.6rem 1.25rem;
+        border: none;
+        border-radius: 0.4rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-ver:hover {
+        background: #1a4080;
+        color: var(--light-cream);
+        text-decoration: none;
+        transform: translateX(3px);
+    }
+    
+    .grados-lista {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .btn-ver:hover {
+        background: #1a4080;
+        color: var(--light-cream);
+        text-decoration: none;
+        transform: translateX(3px);
+    }
+    
+    .grados-lista {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #e5e7eb;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: #6b7280;
+    }
+    
+    .ano-badge {
+        background: var(--light-cream);
+        color: var(--primary-blue);
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 700;
+        display: inline-block;
+    }
+    
+    .search-box {
+        background: white;
+        padding: 1rem 1.25rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+    }
+    
+    .search-input-group {
+        position: relative;
+        max-width: 500px;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(13, 44, 99, 0.1);
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+        font-size: 1rem;
+    }
+    
+    .grado-item.hidden {
+        display: none;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        display: none;
+    }
+    
+    .no-results.show {
+        display: block;
+    }
+    
+    .no-results i {
+        font-size: 3rem;
+        color: #e5e7eb;
+        margin-bottom: 1rem;
+    }
+    
+    .no-results h4 {
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .no-results p {
+        color: #6b7280;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .grado-item {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 1rem;
+        }
+        
+        .grado-main {
+            width: 100%;
+            margin-bottom: 0.75rem;
+        }
+        
+        .grado-stats {
+            width: 100%;
+            gap: 1rem;
+            margin-right: 0;
+            margin-bottom: 0.75rem;
+        }
+        
+        .stat-item {
+            flex: 1;
+        }
+        
+        .grado-action {
+            width: 100%;
+        }
+        
+        .btn-ver {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-user-graduate"></i>
+            Conducta Final por Grado
+        </h1>
+        <p class="page-subtitle">
+            Selecciona un grado para ingresar la conducta final anual
+            {% if ano_lectivo %}
+            - <span class="ano-badge">{{ ano_lectivo.ano }}</span>
+            {% endif %}
+        </p>
+    </div>
+    
+    <div class="container">
+        {% if mensaje %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> {{ mensaje }}
+        </div>
+        {% elif grados %}
+        
+        <!-- Buscador -->
+        <div class="search-box">
+            <div class="search-input-group">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" 
+                       id="searchGrado" 
+                       class="search-input" 
+                       placeholder="Buscar por nombre de grado o nivel..."
+                       autocomplete="off">
+            </div>
+        </div>
+        
+        <!-- Lista de grados -->
+        <ul class="grados-lista" id="gradosLista">
+            {% for grado in grados %}
+            <li class="grado-item" onclick="window.location.href='{{ url_for('conducta_grado.listar_secciones', id_grado=grado.id_grado) }}'">
+                <div class="grado-main">
+                    <div class="grado-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="grado-info">
+                        <h3 class="grado-nombre">{{ grado.nombre_grado }}</h3>
+                        <p class="grado-nivel">{{ grado.nivel }}</p>
+                    </div>
+                </div>
+                
+                <div class="grado-stats">
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-users-class"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value">{{ grado.total_secciones }}</span>
+                            <div class="stat-label">Secciones</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value">{{ grado.total_estudiantes }}</span>
+                            <div class="stat-label">Estudiantes</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grado-action">
+                    <a href="{{ url_for('conducta_grado.listar_secciones', id_grado=grado.id_grado) }}" 
+                       class="btn-ver" onclick="event.stopPropagation()">
+                        Ver Secciones <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        
+        <!-- Mensaje sin resultados -->
+        <div class="no-results" id="noResults">
+            <i class="fas fa-search"></i>
+            <h4>No se encontraron grados</h4>
+            <p>Intenta con otro término de búsqueda</p>
+        </div>
+        
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>No hay grados disponibles</h3>
+            <p>No se encontraron grados activos en el sistema.</p>
+        </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{{ url_for('coordinador.dashboard') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Buscador en tiempo real
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchGrado');
+    const gradosLista = document.getElementById('gradosLista');
+    const noResults = document.getElementById('noResults');
+    
+    if (searchInput && gradosLista) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const gradoItems = gradosLista.querySelectorAll('.grado-item');
+            let visibleCount = 0;
+            
+            gradoItems.forEach(function(item) {
+                const nombre = item.querySelector('.grado-nombre').textContent.toLowerCase();
+                const nivel = item.querySelector('.grado-nivel').textContent.toLowerCase();
+                
+                if (nombre.includes(searchTerm) || nivel.includes(searchTerm)) {
+                    item.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+            
+            // Mostrar/ocultar mensaje de sin resultados
+            if (noResults) {
+                if (visibleCount === 0 && searchTerm !== '') {
+                    noResults.classList.add('show');
+                    gradosLista.style.display = 'none';
+                } else {
+                    noResults.classList.remove('show');
+                    gradosLista.style.display = 'block';
+                }
+            }
+        });
+        
+        // Limpiar búsqueda al presionar Escape
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                this.value = '';
+                this.dispatchEvent(new Event('input'));
+                this.blur();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

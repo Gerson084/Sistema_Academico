@@ -2,193 +2,306 @@
 
 {% block content %}
 
-<div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="sa-page-title mb-0">Panel de Administración</h1>
-    <small class="text-muted">Sistema Académico</small>
-  </div>
-  
-  <div class="row g-4">
-    <!-- Estudiantes -->
-    <div class="col-12 col-md-6 col-xl-4">
-      <div class="card h-100 shadow-sm border-0">
-        <a href="{{ url_for('estudiantes.lista_estudiantes') }}" class="text-decoration-none">
-          <div class="card-body p-4">
-            <div class="d-flex align-items-center mb-3">
-              <div class="bg-primary bg-opacity-10 rounded-3 p-3 me-3">
-                <i class="bi bi-people fs-4 text-primary"></i>
-              </div>
-              <div>
-                <h5 class="card-title mb-1 text-dark">Estudiantes</h5>
-                <p class="card-text text-muted mb-0 small">Gestión de alumnos</p>
-              </div>
-            </div>
-            <div class="text-end">
-              <small class="text-muted">Administrar →</small>
-            </div>
-          </div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Docentes -->
-    <div class="col-12 col-md-6 col-xl-4">
-      <div class="card h-100 shadow-sm border-0">
-        <a href="#" class="text-decoration-none">
-          <div class="card-body p-4">
-            <div class="d-flex align-items-center mb-3">
-              <div class="bg-success bg-opacity-10 rounded-3 p-3 me-3">
-                <i class="bi bi-person-badge fs-4 text-success"></i>
-              </div>
-              <div>
-                <h5 class="card-title mb-1 text-dark">Docentes</h5>
-                <p class="card-text text-muted mb-0 small">Asignaciones y personal</p>
-              </div>
-            </div>
-            <div class="text-end">
-              <small class="text-muted">Gestionar →</small>
-            </div>
-          </div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Notas -->
-    <div class="col-12 col-md-6 col-xl-4">
-      <div class="card h-100 shadow-sm border-0">
-        <a href="#" class="text-decoration-none">
-          <div class="card-body p-4">
-            <div class="d-flex align-items-center mb-3">
-              <div class="bg-warning bg-opacity-10 rounded-3 p-3 me-3">
-                <i class="bi bi-journal-check fs-4 text-warning"></i>
-              </div>
-              <div>
-                <h5 class="card-title mb-1 text-dark">Notas</h5>
-                <p class="card-text text-muted mb-0 small">Ingreso y reportes</p>
-              </div>
-            </div>
-            <div class="text-end">
-              <small class="text-muted">Calificar →</small>
-            </div>
-          </div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Cursos -->
-    <div class="col-12 col-md-6 col-xl-4">
-      <div class="card h-100 shadow-sm border-0">
-        <a href="#" class="text-decoration-none">
-          <div class="card-body p-4">
-            <div class="d-flex align-items-center mb-3">
-              <div class="bg-info bg-opacity-10 rounded-3 p-3 me-3">
-                <i class="bi bi-building fs-4 text-info"></i>
-              </div>
-              <div>
-                <h5 class="card-title mb-1 text-dark">Cursos</h5>
-                <p class="card-text text-muted mb-0 small">Planificación académica</p>
-              </div>
-            </div>
-            <div class="text-end">
-              <small class="text-muted">Planificar →</small>
-            </div>
-          </div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Horarios -->
-    <div class="col-12 col-md-6 col-xl-4">
-      <div class="card h-100 shadow-sm border-0">
-        <a href="#" class="text-decoration-none">
-          <div class="card-body p-4">
-            <div class="d-flex align-items-center mb-3">
-              <div class="bg-purple bg-opacity-10 rounded-3 p-3 me-3">
-                <i class="bi bi-calendar3 fs-4 text-purple"></i>
-              </div>
-              <div>
-                <h5 class="card-title mb-1 text-dark">Horarios</h5>
-                <p class="card-text text-muted mb-0 small">Clases y exámenes</p>
-              </div>
-            </div>
-            <div class="text-end">
-              <small class="text-muted">Programar →</small>
-            </div>
-          </div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Backup & Restore -->
-    <div class="col-12 col-md-6 col-xl-4">
-      <div class="card h-100 shadow-sm border-0">
-        <a href="#" class="text-decoration-none">
-          <div class="card-body p-4">
-            <div class="d-flex align-items-center mb-3">
-              <div class="bg-secondary bg-opacity-10 rounded-3 p-3 me-3">
-                <i class="bi bi-cloud-arrow-down fs-4 text-secondary"></i>
-              </div>
-              <div>
-                <h5 class="card-title mb-1 text-dark">Backup</h5>
-                <p class="card-text text-muted mb-0 small">Respaldo de datos</p>
-              </div>
-            </div>
-            <div class="text-end">
-              <small class="text-muted">Configurar →</small>
-            </div>
-          </div>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Información adicional -->
-  <div class="row mt-5">
-    <div class="col-12">
-      <div class="card border-0 bg-light">
-        <div class="card-body p-4">
-          <div class="row align-items-center">
-            <div class="col-md-8">
-              <h6 class="mb-1">Sistema Académico</h6>
-              <p class="text-muted mb-0 small">Plataforma integral para la gestión educativa</p>
-            </div>
-            <div class="col-md-4 text-md-end">
-              <small class="text-muted">Versión 2.1.0</small>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <style>
-/* Colores personalizados para los iconos */
-.text-purple {
-  color: #6f42c1 !important;
-}
-.bg-purple {
-  background-color: #6f42c1 !important;
-}
+  :root {
+    --primary-blue: #0D2C63;
+    --light-cream: #E9E2C3;
+    --success-green: #059669;
+    --warning-orange: #f59e0b;
+    --danger-red: #dc2626;
+    --info-blue: #3b82f6;
+  }
 
-/* Hover efecto sutil para las cards */
-.card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+  .dashboard-header {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #1a4480 100%);
+    color: var(--light-cream);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-}
+  .dashboard-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
 
-/* Asegurar que los links mantengan el color */
-.card a:hover .text-dark {
-  color: #212529 !important;
-}
+  .dashboard-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0.5rem 0 0 0;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .dashboard-card {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    text-decoration: none;
+  }
+
+  .dashboard-card.primary { border-left-color: var(--primary-blue); }
+  .dashboard-card.success { border-left-color: var(--success-green); }
+  .dashboard-card.warning { border-left-color: var(--warning-orange); }
+  .dashboard-card.danger { border-left-color: var(--danger-red); }
+  .dashboard-card.info { border-left-color: var(--info-blue); }
+
+  .card-header-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .card-icon.primary { background: rgba(13, 44, 99, 0.1); color: var(--primary-blue); }
+  .card-icon.success { background: rgba(5, 150, 105, 0.1); color: var(--success-green); }
+  .card-icon.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning-orange); }
+  .card-icon.danger { background: rgba(220, 38, 38, 0.1); color: var(--danger-red); }
+  .card-icon.info { background: rgba(59, 130, 246, 0.1); color: var(--info-blue); }
+
+  .card-info h5 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .card-info p {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  .card-footer-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .card-action {
+    color: var(--primary-blue);
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .info-banner {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .dashboard-title {
+      font-size: 1.5rem;
+    }
+  }
 </style>
 
-<div class="container text-center mt-5">
-    <a href="{{ url_for('change_password.cambiar_contrasena') }}" class="btn btn-warning me-2">Cambiar Contraseña</a>
-    <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Cerrar Sesión</a>
+<div class="container-fluid mt-4">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">
+      <i class="bi bi-speedometer2"></i>
+      Panel de Administración
+    </h1>
+    <p class="dashboard-subtitle">
+      Gestión integral del sistema académico
+    </p>
+  </div>
+
+  <!-- Dashboard Cards -->
+  <div class="dashboard-grid">
+    
+    <!-- Estudiantes -->
+    <a href="{{ url_for('estudiantes.lista_estudiantes') }}" class="dashboard-card primary">
+      <div class="card-header-section">
+        <div class="card-icon primary">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="card-info">
+          <h5>Estudiantes</h5>
+          <p>Gestión de alumnos</p>
+        </div>
+      </div>
+      <div class="card-footer-section">
+        <span class="card-action">
+          Administrar <i class="bi bi-arrow-right"></i>
+        </span>
+      </div>
+    </a>
+
+    <!-- Usuarios -->
+    <a href="{{ url_for('user.user_index') }}" class="dashboard-card success">
+      <div class="card-header-section">
+        <div class="card-icon success">
+          <i class="bi bi-person-circle"></i>
+        </div>
+        <div class="card-info">
+          <h5>Usuarios</h5>
+          <p>Docentes y personal</p>
+        </div>
+      </div>
+      <div class="card-footer-section">
+        <span class="card-action">
+          Gestionar <i class="bi bi-arrow-right"></i>
+        </span>
+      </div>
+    </a>
+
+    <!-- Grados -->
+    <a href="{{ url_for('grados.lista_grados') }}" class="dashboard-card info">
+      <div class="card-header-section">
+        <div class="card-icon info">
+          <i class="bi bi-building"></i>
+        </div>
+        <div class="card-info">
+          <h5>Grados</h5>
+          <p>Configuración de niveles</p>
+        </div>
+      </div>
+      <div class="card-footer-section">
+        <span class="card-action">
+          Configurar <i class="bi bi-arrow-right"></i>
+        </span>
+      </div>
+    </a>
+
+    <!-- Materias -->
+    <a href="{{ url_for('materias.lista_materias') }}" class="dashboard-card warning">
+      <div class="card-header-section">
+        <div class="card-icon warning">
+          <i class="bi bi-journal-text"></i>
+        </div>
+        <div class="card-info">
+          <h5>Materias</h5>
+          <p>Asignaturas del sistema</p>
+        </div>
+      </div>
+      <div class="card-footer-section">
+        <span class="card-action">
+          Ver todas <i class="bi bi-arrow-right"></i>
+        </span>
+      </div>
+    </a>
+
+    <!-- Secciones -->
+    <a href="{{ url_for('secciones.lista_secciones') }}" class="dashboard-card primary">
+      <div class="card-header-section">
+        <div class="card-icon primary">
+          <i class="bi bi-layout-text-sidebar"></i>
+        </div>
+        <div class="card-info">
+          <h5>Secciones</h5>
+          <p>Grupos y divisiones</p>
+        </div>
+      </div>
+      <div class="card-footer-section">
+        <span class="card-action">
+          Administrar <i class="bi bi-arrow-right"></i>
+        </span>
+      </div>
+    </a>
+
+    <!-- Matrículas -->
+    <a href="{{ url_for('matricula.lista_matriculas') }}" class="dashboard-card success">
+      <div class="card-header-section">
+        <div class="card-icon success">
+          <i class="bi bi-card-checklist"></i>
+        </div>
+        <div class="card-info">
+          <h5>Matrículas</h5>
+          <p>Inscripciones de estudiantes</p>
+        </div>
+      </div>
+      <div class="card-footer-section">
+        <span class="card-action">
+          Ver matrículas <i class="bi bi-arrow-right"></i>
+        </span>
+      </div>
+    </a>
+
+    <!-- Asignaciones -->
+    <a href="{{ url_for('materia_seccion.lista_asignaciones') }}" class="dashboard-card info">
+      <div class="card-header-section">
+        <div class="card-icon info">
+          <i class="bi bi-diagram-3"></i>
+        </div>
+        <div class="card-info">
+          <h5>Asignaciones</h5>
+          <p>Materias por sección</p>
+        </div>
+      </div>
+      <div class="card-footer-section">
+        <span class="card-action">
+          Gestionar <i class="bi bi-arrow-right"></i>
+        </span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Banner informativo -->
+  <div class="info-banner">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h6 class="mb-1" style="color: var(--primary-blue); font-weight: 700;">
+          <i class="bi bi-info-circle"></i> Sistema Académico
+        </h6>
+        <p class="text-muted mb-0 small">
+          Plataforma integral para la gestión educativa - Todas las herramientas en un solo lugar
+        </p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <span class="badge" style="background: var(--primary-blue); font-size: 0.9rem;">
+          Versión 2.1.0
+        </span>
+      </div>
+    </div>
+  </div>
 </div>
+
 {% endblock %}

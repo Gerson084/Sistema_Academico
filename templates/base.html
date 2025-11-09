@@ -67,6 +67,11 @@
             <h6 class="nav-section-title">Gestión Académica</h6>
             <ul class="navbar-nav flex-column w-100">
               <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                  <i class="bi bi-house-door"></i><span>Dashboard</span>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('estudiantes.lista_estudiantes') }}">
                   <i class="bi bi-people"></i><span>Estudiantes</span>
                 </a>
@@ -100,6 +105,7 @@
                 <a class="nav-link" href="{{ url_for('materia_seccion.lista_asignaciones') }}">
                   <i class="bi bi-diagram-3"></i><span>Asignaciones</span>
                 </a>
+              </li>
             </ul>
           </div>
           {% elif current_role == 2 or current_role == 3 %}
@@ -119,6 +125,11 @@
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('incidentes_bp.grados') }}">
                   <i class="bi bi-exclamation-triangle"></i><span>Reporte de Incidentes</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('conducta_grado.listar_grados') }}">
+                  <i class="bi bi-star"></i><span>Conducta por Grado</span>
                 </a>
               </li>
             </ul>
