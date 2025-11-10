@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, render_template, redirect, url_for
+import os
 from db import DatabaseConfig, test_connection
 from appEstudiantes import estudiantes_bp
 
@@ -6,6 +7,22 @@ from routes.user_route import users
 #from routes.rol_route import rol
 from models import Estudiantes
 from routes.appSecciones import secciones_bp
+
+# Configuración de wkhtmltopdf - Ajusta esta ruta según tu instalación
+WKHTMLTOPDF_PATHS = [
+    r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe',
+    r'C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe',
+    '/usr/bin/wkhtmltopdf',
+    '/usr/local/bin/wkhtmltopdf'
+]
+
+# Buscar wkhtmltopdf en las rutas comunes
+for path in WKHTMLTOPDF_PATHS:
+    if os.path.exists(path):
+        WKHTMLTOPDF_PATH = path
+        break
+else:
+    WKHTMLTOPDF_PATH = None
 from dotenv import load_dotenv
 from routes.auth_route import auth_bp
 from routes.rol_route import rol
@@ -131,6 +148,13 @@ def show_routes():
     for rule in app.url_map.iter_rules():
         output.append(f"{rule.endpoint}: {rule}")
     return '<br>'.join(output)
+
+# Configuración de wkhtmltopdf con verificación de ruta
+if os.path.exists(WKHTMLTOPDF_PATH):
+    app.config['WKHTMLTOPDF_PATH'] = WKHTMLTOPDF_PATH
+else:
+    app.config['WKHTMLTOPDF_PATH'] = None
+    print("ADVERTENCIA: No se encontró wkhtmltopdf en la ruta configurada.")
 
 if __name__ == '__main__':
     with app.app_context():

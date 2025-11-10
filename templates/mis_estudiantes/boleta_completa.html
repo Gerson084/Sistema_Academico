@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<title>{{ titulo_boleta or 'Informe de Notas' }}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		:root { 
+			--primary: #0D2C63; 
+			--primary-2: #1a4480; 
+			--muted: #6c757d; 
+		}
+		body { 
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+			color: #222; 
+			margin: 0; 
+			padding: 18px; 
+			background: #fff;
+			font-size: 14px; 
+		}
+		.boleta-wrapper{ max-width:900px; margin:0 auto; border:1px solid #e7e9ee; padding:18px; border-radius:8px }
+		.header{ display:flex; gap:12px; align-items:center; border-bottom:4px solid var(--primary); padding-bottom:6px; margin-bottom:12px; justify-content:space-between }
+		.logo{ width:90px; height:90px; object-fit:cover; border-radius:6px; border:0; box-shadow:none }
+		.school-info{ flex:1; text-align:center }
+		.school-info h2{ margin:0; color:var(--primary); font-size:20px; letter-spacing:0.6px; font-weight:800 }
+		.school-info h3{ margin:0; font-size:14px; color:#000; font-weight:700 }
+		.school-info .motto{ font-size:12px; color:#000; margin-top:4px }
+		.report-title{ text-align:right; min-width:160px }
+		.report-title h3{ margin:0; color:#000; font-size:14px }
+		.meta{ display:flex; gap:12px; margin:14px 0 }
+		.meta .box{ flex:1; padding:10px; border:1px solid #e1e6ef; border-radius:6px; background:#fff }
+		.meta .box strong{ display:block; color:#000; margin-bottom:6px; font-weight:700 }
+		table.boleta-table{ width:100%; border-collapse:collapse; margin-top:6px }
+		table.boleta-table thead th{ background:#f2f4f7; color:#000; padding:10px; font-weight:700; font-size:13px; border:1px solid #cfd8e6 }
+		table.boleta-table tbody td{ padding:10px; border:1px solid #cfd8e6; font-size:13px; text-align:center }
+		table.boleta-table tbody tr:nth-child(even){ background:#ffffff }
+		table.boleta-table tbody td.subject { text-align:left; padding-left:14px; font-weight:600 }
+		.historial-header{ text-align:center; background:#f8f9fa; border:1px solid #dee2e6; padding:10px; font-weight:800; font-size:14px }
+		.faltas-asistencia{ margin-top:20px; border:1px solid #dee2e6; padding:10px }
+		.faltas-asistencia table{ width:100%; border-collapse:collapse }
+		.faltas-asistencia td{ border:1px solid #dee2e6; padding:5px; text-align:center; font-size:12px }
+		.faltas-asistencia th{ background:#f8f9fa; border:1px solid #dee2e6; padding:5px; font-size:12px }
+		.equivalencias{ margin-top:12px; display:flex; gap:12px }
+		.equivalencias .card{ flex:1; padding:10px; border:1px dashed #e6eefc; border-radius:6px; background:#fff }
+		.equivalencias small{ color:var(--muted) }
+		.footer{ margin-top:20px; display:flex; justify-content:space-between; align-items:center; color:#000; font-size:12px }
+		@media print{
+			body{ padding:0 }
+			.boleta-wrapper{ border:0; box-shadow:none; }
+			body, body * { color: #000 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+			table.boleta-table thead th { background: #f1f1f1 !important; color: #000 !important; }
+			.meta .box, .equivalencias .card { background: #fff !important; color: #000 !important; }
+		}
+	</style>
+	<style>
+	  .student-info { display:flex; justify-content:space-between; gap:12px; margin-top:4px; font-size:13px }
+	</style>
+	<style>
+	  h1,h2,h3,div { color: #000; }
+	</style>
+</head>
+<body>
+	<div class="boleta-wrapper">
+		<div class="header">
+			<h1>"AMADO SEA EN TODAS PARTES EL SAGRADO CORAZÓN DE JESÚS"</h1>
+			<h2>Colegio Santa María</h2>
+			<h3>Hijas de Santa María del Corazón de Jesús</h3>
+			<div>{{ titulo_boleta or 'Informe de Notas' }} • Año {{ ano_lectivo.ano }}</div>
+		</div>
+
+		<div class="student-info">
+			<div>ALUMNO/ALUMNA: {{ estudiante.apellidos }}, {{ estudiante.nombres }}</div>
+			<div>GRADO: {{ seccion.grado.nombre_grado }} SECCIÓN: {{ seccion.nombre_seccion }} NIVEL: {{ seccion.grado.nivel }} FECHA: {{ fecha_actual }}</div>
+		</div>
+
+		<div class="meta">
+			<div class="box">
+				<strong>Alumno/a</strong>
+				<div>{{ estudiante.nombres }} {{ estudiante.apellidos }}</div>
+				<small class="text-muted">NIE: {{ estudiante.nie }}</small>
+			</div>
+			<div class="box">
+				<strong>Grado / Sección</strong>
+				<div>{{ seccion.grado.nombre_grado }} - {{ seccion.nombre_seccion }}</div>
+			</div>
+			<div class="box">
+				<strong>Materia</strong>
+				<div>Todas</div>
+			</div>
+		</div>
+
+		<div class="historial-header">HISTORIAL DE LAS CALIFICACIONES</div>
+		<table class="boleta-table">
+			{% if esquema == 'periodos' %}
+			<thead>
+				<tr>
+					<th style="text-align:left">MATERIAS</th>
+					<th style="width:8%">ACTITUD</th>
+					<th style="width:8%">1°P</th>
+					<th style="width:8%">2°P</th>
+					<th style="width:8%">3°P</th>
+					<th style="width:8%">4°P</th>
+					<th style="width:8%">FINAL</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for materia in materias %}
+				<tr>
+					<td style="text-align:left">{{ materia.nombre_materia }}</td>
+					<td>{{ materia.actitud|default('--') }}</td>
+					<td>{{ materia.periodo1|default('--') }}</td>
+					<td>{{ materia.periodo2|default('--') }}</td>
+					<td>{{ materia.periodo3|default('--') }}</td>
+					<td>{{ materia.periodo4|default('--') }}</td>
+					<td>{{ materia.final|default('--') }}</td>
+				</tr>
+				{% endfor %}
+				<tr>
+					<td colspan="4" style="text-align:right"><strong>PROMEDIO GLOBAL:</strong></td>
+					<td colspan="3" style="text-align:left"><strong>{{ promedio_global|default('--') }}</strong></td>
+				</tr>
+			</tbody>
+			{% else %}
+			<thead>
+				<tr>
+					<th style="text-align:left">MATERIAS</th>
+					<th style="width:10%">ACTITUD</th>
+					<th style="width:10%">TRIM I</th>
+					<th style="width:10%">TRIM II</th>
+					<th style="width:10%">TRIM III</th>
+					<th style="width:10%">FINAL</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for materia in materias %}
+				<tr>
+					<td style="text-align:left">{{ materia.nombre_materia }}</td>
+					<td>{{ materia.actitud|default('--') }}</td>
+					<td>{{ materia.trimestre1|default('--') }}</td>
+					<td>{{ materia.trimestre2|default('--') }}</td>
+					<td>{{ materia.trimestre3|default('--') }}</td>
+					<td>{{ materia.final|default('--') }}</td>
+				</tr>
+				{% endfor %}
+				<tr>
+					<td colspan="5" style="text-align:right"><strong>PROMEDIO GLOBAL:</strong></td>
+					<td style="text-align:center"><strong>{{ promedio_global|default('--') }}</strong></td>
+				</tr>
+			</tbody>
+			{% endif %}
+		</table>
+
+		<div style="margin-top:8px; font-size:12px; color:#333;">
+			<strong>Leyenda:</strong>
+			{% if esquema == 'periodos' %}
+				<span style="margin-left:12px;"><strong>ACTITUD</strong>: Evaluación de actitud por materia</span>
+				<span style="margin-left:12px;"><strong>1°P - 4°P</strong>: Notas por cada período académico</span>
+				<span style="margin-left:12px;"><strong>FINAL</strong>: Promedio de los períodos</span>
+			{% else %}
+				<span style="margin-left:12px;"><strong>ACTITUD</strong>: Evaluación de actitud por materia</span>
+				<span style="margin-left:12px;"><strong>TRIM I - TRIM III</strong>: Notas de cada trimestre</span>
+				<span style="margin-left:12px;"><strong>FINAL</strong>: Promedio de los tres trimestres</span>
+			{% endif %}
+		</div>
+
+		<div class="faltas-asistencia">
+			<strong>FALTAS / ASISTENCIA</strong>
+			<table>
+				<tr>
+					<th>Ene</th>
+					<th>Feb</th>
+					<th>Mar</th>
+					<th>Abr</th>
+					<th>May</th>
+					<th>Jun</th>
+					<th>Jul</th>
+					<th>Ago</th>
+					<th>Sep</th>
+					<th>Oct</th>
+					<th>TOTAL</th>
+				</tr>
+				<tr>
+					<td>{{ faltas.ene|default('-') }}</td>
+					<td>{{ faltas.feb|default('-') }}</td>
+					<td>{{ faltas.mar|default('-') }}</td>
+					<td>{{ faltas.abr|default('-') }}</td>
+					<td>{{ faltas.may|default('-') }}</td>
+					<td>{{ faltas.jun|default('-') }}</td>
+					<td>{{ faltas.jul|default('-') }}</td>
+					<td>{{ faltas.ago|default('-') }}</td>
+					<td>{{ faltas.sep|default('-') }}</td>
+					<td>{{ faltas.oct|default('-') }}</td>
+					<td>{{ faltas.total|default('0') }}</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="equivalencias">
+			<div class="equivalencias-title">EQUIVALENCIAS</div>
+			<div>E: Excelente (10-9) • MB: Muy Bueno (8-7) • B: Bueno (6-5) • R: Regular (4-3) • NM: Necesita Mejorar (2-1)</div>
+		</div>
+
+		<div class="conducta" style="margin-top:12px; border:1px solid #dee2e6; padding:10px; border-radius:6px;">
+			<strong>CONDUCTA FINAL DEL ESTUDIANTE</strong>
+			{% if conducta %}
+				<div>Valor: {{ conducta.nota_conducta_final if conducta.nota_conducta_final is not none else '-' }} &nbsp; Literal: {{ conducta.conducta_literal or '-' }}</div>
+				{% if conducta.observacion_general %}
+					<div>Observación: {{ conducta.observacion_general }}</div>
+				{% endif %}
+			{% else %}
+				<div>-</div>
+			{% endif %}
+		</div>
+
+		<div class="nota-minima">* LA NOTA MÍNIMA DEL COLEGIO ES 7.0</div>
+
+		<div style="text-align: center; margin-top: 30px;">
+			<div>HNA. CORAZÓN DE MARÍA</div>
+			<div>H.SMCJ</div>
+		</div>
+
+		<div class="footer">
+			<div>Av. Independencia Sur y 37 Calle Oriente, Barrio Nuevo, Santa Ana, El Salvador</div>
+			<div>Email: colegiosantamaria@hotmail.es Tel.: 2440-1490 www.hscmj.org</div>
+		</div>
+	</div>
+</body>
+</html>

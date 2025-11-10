@@ -25,30 +25,37 @@
                     </div>
                 </div>
                 <div class="card-body" style="background: #fff; border-radius: 0 0 12px 12px;">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
+                    <div class="row g-2 mb-3">
+                        <div class="col-lg-4 col-md-6">
                             <div class="input-group">
                                 <span class="input-group-text" style="background:#0D2C63;color:#fff;border:0"><i class="bi bi-search"></i></span>
-                                <input id="search" class="form-control" placeholder="Buscar por nombre, grado o sección..." />
+                                <input id="search" class="form-control" placeholder="Buscar por nombre, NIE, grado o sección..." />
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-lg-2 col-md-3">
                             <select id="filter-seccion" class="form-select">
-                                <option value="">-- Filtrar por Sección --</option>
+                                <option value="">Sección (todas)</option>
                                 {% for s in secciones %}
                                     <option value="{{ s.id }}">{{ s.nombre }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-lg-2 col-md-3">
                             <select id="filter-materia" class="form-select">
-                                <option value="">-- Filtrar por Materia --</option>
+                                <option value="">Materia (todas)</option>
                                 {% for m in materias %}
                                     <option value="{{ m.id }}">{{ m.nombre }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-3 text-end d-none d-md-block">
+                        <div class="col-lg-2 col-md-4">
+                            <select id="filter-tipo" class="form-select">
+                                <option value="">Tipo de boleta (todas)</option>
+                                <option value="completa">Boleta completa</option>
+                                <option value="materia">Boleta por materia</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-4 text-lg-end">
                             <span id="total-badge" class="badge" style="background:#0D2C63;color:#fff;font-weight:600">Total: {{ estudiantes|length }}</span>
                         </div>
                     </div>
@@ -66,7 +73,8 @@
                             </thead>
                             <tbody>
                                 {% for item in estudiantes %}
-                                <tr class="estudiante-row" data-seccion-id="{{ item.id_seccion|default('') }}" data-materia-id="{{ item.id_materia|default('') }}">
+                                {# tipo: completa si id_asignacion == 0 (coordinador puro), materia si hay asignación #}
+                                <tr class="estudiante-row" data-seccion-id="{{ item.id_seccion|default('') }}" data-materia-id="{{ item.id_materia|default('') }}" data-tipo="{% if item.id_asignacion and item.id_asignacion != 0 %}materia{% else %}completa{% endif %}">
                                     <td>
                                         <div style="font-weight:600">{{ item.estudiante.nombres }} {{ item.estudiante.apellidos }}</div>
                                         <div class="text-muted" style="font-size:0.85rem">NIE: {{ item.estudiante.nie }}</div>
@@ -76,20 +84,30 @@
                                     <td>{{ item.materia if item.materia else '-' }}</td>
                                     <td class="text-center">
                                         {% if user_role == 1 %}
-                                            <!-- Coordinador ve boletas completas -->
-                                            <a href="{{ url_for('mis_estudiantes.descargar_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=0) }}" class="btn btn-sm btn-primary me-1" title="Descargar boleta completa PDF">
-                                                <i class="bi bi-file-earmark-pdf"></i> PDF
-                                            </a>
-                                            <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=0) }}" class="btn btn-sm btn-outline-primary" title="Ver boleta completa HTML">
-                                                <i class="bi bi-eye"></i> Ver
-                                            </a>
+                                            {% if item.id_asignacion and item.id_asignacion != 0 %}
+                                                <!-- Coordinador-docente: boleta por materia -->
+                                                <a href="{{ url_for('mis_estudiantes.descargar_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-primary me-1" title="Descargar boleta por materia (PDF)">
+                                                    <i class="bi bi-file-earmark-pdf"></i> PDF Materia
+                                                </a>
+                                                <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-outline-primary" title="Ver boleta por materia (HTML)">
+                                                    <i class="bi bi-eye"></i> Ver Materia
+                                                </a>
+                                            {% else %}
+                                                <!-- Coordinador: boleta completa -->
+                                                <a href="{{ url_for('mis_estudiantes.descargar_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=0) }}" class="btn btn-sm btn-primary me-1" title="Descargar boleta completa (PDF)">
+                                                    <i class="bi bi-file-earmark-pdf"></i> PDF Completa
+                                                </a>
+                                                <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=0) }}" class="btn btn-sm btn-outline-primary" title="Ver boleta completa (HTML)">
+                                                    <i class="bi bi-eye"></i> Ver Completa
+                                                </a>
+                                            {% endif %}
                                         {% else %}
                                             <!-- Docente ve solo sus materias -->
-                                            <a href="{{ url_for('mis_estudiantes.descargar_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-primary me-1" title="Descargar boleta de la materia PDF">
-                                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                                            <a href="{{ url_for('mis_estudiantes.descargar_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-primary me-1" title="Descargar boleta por materia (PDF)">
+                                                <i class="bi bi-file-earmark-pdf"></i> PDF Materia
                                             </a>
-                                            <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-outline-primary" title="Ver boleta de la materia HTML">
-                                                <i class="bi bi-eye"></i> Ver
+                                            <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-outline-primary" title="Ver boleta por materia (HTML)">
+                                                <i class="bi bi-eye"></i> Ver Materia
                                             </a>
                                         {% endif %}
                                     </td>
@@ -107,42 +125,50 @@
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const search = document.getElementById('search');
-        const filterSeccion = document.getElementById('filter-seccion');
-        const filterMateria = document.getElementById('filter-materia');
-        const totalBadge = document.getElementById('total-badge');
-    search.addEventListener('input', function(){
-        const q = this.value.toLowerCase().trim();
+    const filterSeccion = document.getElementById('filter-seccion');
+    const filterMateria = document.getElementById('filter-materia');
+    const filterTipo = document.getElementById('filter-tipo');
+    const totalBadge = document.getElementById('total-badge');
+
+    
+    // Establecer filtro por defecto para coordinador
+    if(filterTipo){
+        filterTipo.value = 'completa';
+    }
+    
+
+    function applyFilters(){
+        const q = search.value.toLowerCase().trim();
+        const sVal = filterSeccion ? filterSeccion.value : '';
+        const mVal = filterMateria ? filterMateria.value : '';
+        const tVal = filterTipo ? filterTipo.value : '';
+        let visible = 0;
         document.querySelectorAll('#tabla-estudiantes .estudiante-row').forEach(row => {
             const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(q) ? '' : 'none';
+            const matchSearch = text.includes(q);
+            const rowSeccion = row.getAttribute('data-seccion-id') || '';
+            const rowMateria = row.getAttribute('data-materia-id') || '';
+            const rowTipo = row.getAttribute('data-tipo') || '';
+            const matchSeccion = !sVal || rowSeccion === sVal;
+            const matchMateria = !mVal || rowMateria === mVal;
+            const matchTipo = !tVal || rowTipo === tVal;
+            if(matchSearch && matchSeccion && matchMateria && matchTipo){
+                row.style.display = '';
+                visible += 1;
+            } else {
+                row.style.display = 'none';
+            }
         });
+        if(totalBadge) totalBadge.innerText = 'Total: ' + visible;
+    }
+
+    [search, filterSeccion, filterMateria, filterTipo].forEach(function(el){
+        if(el) el.addEventListener('input', applyFilters);
+        if(el && el.tagName === 'SELECT') el.addEventListener('change', applyFilters);
     });
 
-        function applyFilters(){
-            const q = search.value.toLowerCase().trim();
-            const sVal = filterSeccion ? filterSeccion.value : '';
-            const mVal = filterMateria ? filterMateria.value : '';
-            let visible = 0;
-            document.querySelectorAll('#tabla-estudiantes .estudiante-row').forEach(row => {
-                const text = row.innerText.toLowerCase();
-                const matchSearch = text.includes(q);
-                const rowSeccion = row.getAttribute('data-seccion-id') || '';
-                const rowMateria = row.getAttribute('data-materia-id') || '';
-                const matchSeccion = !sVal || rowSeccion === sVal;
-                const matchMateria = !mVal || rowMateria === mVal;
-                if(matchSearch && matchSeccion && matchMateria){
-                    row.style.display = '';
-                    visible += 1;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-            if(totalBadge) totalBadge.innerText = 'Total: ' + visible;
-        }
-
-        if(filterSeccion) filterSeccion.addEventListener('change', applyFilters);
-        if(filterMateria) filterMateria.addEventListener('change', applyFilters);
-        search.addEventListener('input', applyFilters);
+    // Aplicar filtros al cargar para respetar valor por defecto
+    applyFilters();
 });
 </script>
 {% endblock %}

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Informe de Notas</title>
+    <title>{{ titulo_boleta or 'Informe de Notas' }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         :root { 
@@ -19,34 +19,44 @@
             font-size: 14px; 
         }
         .boleta-wrapper{ max-width:900px; margin:0 auto; border:1px solid #e7e9ee; padding:18px; border-radius:8px }
-        .header{ display:flex; gap:12px; align-items:center; border-bottom:4px solid var(--primary); padding-bottom:12px; margin-bottom:12px }
-        .logo{ width:84px; height:84px; object-fit:cover; border-radius:6px; border:2px solid #fff; box-shadow:0 2px 6px rgba(13,44,99,0.12) }
-        .school-info{ flex:1 }
-        .school-info h2{ margin:0; color:var(--primary); font-size:20px; letter-spacing:0.4px }
-        .school-info p{ margin:2px 0; color:var(--muted); font-size:13px }
-        .report-title{ text-align:right; min-width:180px }
-        .report-title h3{ margin:0; color:var(--primary-2); font-size:16px }
+        .header{ display:flex; gap:12px; align-items:center; border-bottom:4px solid var(--primary); padding-bottom:6px; margin-bottom:12px; justify-content:space-between }
+        .logo{ width:90px; height:90px; object-fit:cover; border-radius:6px; border:0; box-shadow:none }
+        .school-info{ flex:1; text-align:center }
+        .school-info h2{ margin:0; color:var(--primary); font-size:20px; letter-spacing:0.6px; font-weight:800 }
+        .school-info h3{ margin:0; font-size:14px; color:#000; font-weight:700 }
+        .school-info .motto{ font-size:12px; color:#000; margin-top:4px }
+        .report-title{ text-align:right; min-width:160px }
+        .report-title h3{ margin:0; color:#000; font-size:14px }
         .meta{ display:flex; gap:12px; margin:14px 0 }
-        .meta .box{ flex:1; padding:10px; border:1px solid #eef2fb; border-radius:6px; background:#fbfdff }
-        .meta .box strong{ display:block; color:var(--primary); margin-bottom:6px }
+        .meta .box{ flex:1; padding:10px; border:1px solid #e1e6ef; border-radius:6px; background:#fff }
+        .meta .box strong{ display:block; color:#000; margin-bottom:6px; font-weight:700 }
         table.boleta-table{ width:100%; border-collapse:collapse; margin-top:6px }
-        table.boleta-table thead th{ background:linear-gradient(90deg,var(--primary),var(--primary-2)); color:#fff; padding:10px; font-weight:700; font-size:13px; border:1px solid #dee2e6 }
-        table.boleta-table tbody td{ padding:9px; border:1px solid #dee2e6; font-size:13px; text-align:center }
-        table.boleta-table tbody tr:nth-child(even){ background:#fbfdff }
-        .historial-header{ text-align:center; background:#f8f9fa; border:1px solid #dee2e6; padding:8px; font-weight:bold }
+        table.boleta-table thead th{ background:#f2f4f7; color:#000; padding:10px; font-weight:700; font-size:13px; border:1px solid #cfd8e6 }
+        table.boleta-table tbody td{ padding:10px; border:1px solid #cfd8e6; font-size:13px; text-align:center }
+        table.boleta-table tbody tr:nth-child(even){ background:#ffffff }
+        table.boleta-table tbody td.subject { text-align:left; padding-left:14px; font-weight:600 }
+        .historial-header{ text-align:center; background:#f8f9fa; border:1px solid #dee2e6; padding:10px; font-weight:800; font-size:14px }
         .faltas-asistencia{ margin-top:20px; border:1px solid #dee2e6; padding:10px }
         .faltas-asistencia table{ width:100%; border-collapse:collapse }
         .faltas-asistencia td{ border:1px solid #dee2e6; padding:5px; text-align:center; font-size:12px }
         .faltas-asistencia th{ background:#f8f9fa; border:1px solid #dee2e6; padding:5px; font-size:12px }
-        .escuela-padres{ margin-top:10px; border:1px solid #dee2e6; padding:10px }
         .equivalencias{ margin-top:12px; display:flex; gap:12px }
         .equivalencias .card{ flex:1; padding:10px; border:1px dashed #e6eefc; border-radius:6px; background:#fff }
         .equivalencias small{ color:var(--muted) }
-        .footer{ margin-top:14px; display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:12px }
+        .footer{ margin-top:20px; display:flex; justify-content:space-between; align-items:center; color:#000; font-size:12px }
         @media print{
             body{ padding:0 }
             .boleta-wrapper{ border:0; box-shadow:none; }
+            body, body * { color: #000 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            table.boleta-table thead th { background: #f1f1f1 !important; color: #000 !important; }
+            .meta .box, .equivalencias .card { background: #fff !important; color: #000 !important; }
         }
+    </style>
+    <style>
+      .student-info { display:flex; justify-content:space-between; gap:12px; margin-top:4px; font-size:13px }
+    </style>
+    <style>
+      h1,h2,h3,div { color: #000; }
     </style>
 </head>
 <body>
@@ -55,7 +65,7 @@
             <h1>"AMADO SEA EN TODAS PARTES EL SAGRADO CORAZÓN DE JESÚS"</h1>
             <h2>Colegio Santa María</h2>
             <h3>Hijas de Santa María del Corazón de Jesús</h3>
-            <div>INFORME DE NOTAS AÑO {{ ano_lectivo.ano }}</div>
+            <div>{{ titulo_boleta or 'Informe de Notas' }} • Año {{ ano_lectivo.ano }}</div>
         </div>
 
         <div class="student-info">
@@ -82,19 +92,18 @@
                 {% if asignacion %}
                     <div>{{ asignacion.materia.nombre_materia }}</div>
                 {% else %}
-                    <div>Todas las materias</div>
+                    <div>-</div>
                 {% endif %}
             </div>
         </div>
 
         <div class="historial-header">HISTORIAL DE LAS CALIFICACIONES</div>
         <table class="boleta-table">
+            {% if esquema == 'periodos' %}
             <thead>
                 <tr>
                     <th style="text-align:left">MATERIAS</th>
-                    <th style="width:10%">TRIM</th>
-                    <th style="width:10%">EXAMEN</th>
-                    <!-- Columna actitud eliminada -->
+                    <th style="width:8%">ACTITUD</th>
                     <th style="width:8%">1°P</th>
                     <th style="width:8%">2°P</th>
                     <th style="width:8%">3°P</th>
@@ -106,9 +115,7 @@
                 {% for materia in materias %}
                 <tr>
                     <td style="text-align:left">{{ materia.nombre_materia }}</td>
-                    <td>{{ materia.trimestre|default('--') }}</td>
-                    <td>{{ materia.examen|default('--') }}</td>
-                    <!-- Celda actitud eliminada -->
+                    <td>{{ materia.actitud|default('--') }}</td>
                     <td>{{ materia.periodo1|default('--') }}</td>
                     <td>{{ materia.periodo2|default('--') }}</td>
                     <td>{{ materia.periodo3|default('--') }}</td>
@@ -117,13 +124,56 @@
                 </tr>
                 {% endfor %}
                 <tr>
-                    <td colspan="3" style="text-align:right"><strong>PROMEDIO GLOBAL:</strong></td>
-                    <td colspan="6" style="text-align:left"><strong>{{ promedio_global|default('--') }}</strong></td>
+                    <td colspan="7" style="text-align:left"><strong>Nota final de la materia:</strong> {{ materias[0].final|default('--') }}</td>
                 </tr>
             </tbody>
+            {% else %}
+            <thead>
+                <tr>
+                    <th style="text-align:left">MATERIAS</th>
+                    <th style="width:10%">ACTITUD</th>
+                    <th style="width:10%">TRIM I</th>
+                    <th style="width:10%">TRIM II</th>
+                    <th style="width:10%">TRIM III</th>
+                    <th style="width:10%">FINAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for materia in materias %}
+                <tr>
+                    <td style="text-align:left">{{ materia.nombre_materia }}</td>
+                    <td>{{ materia.actitud|default('--') }}</td>
+                    <td>{{ materia.trimestre1|default('--') }}</td>
+                    <td>{{ materia.trimestre2|default('--') }}</td>
+                    <td>{{ materia.trimestre3|default('--') }}</td>
+                    <td>{{ materia.final|default('--') }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="6" style="text-align:left"><strong>Nota final de la materia:</strong> {{ materias[0].final|default('--') }}</td>
+                </tr>
+            </tbody>
+            {% endif %}
         </table>
-        
-        <!-- Sección de faltas de asistencia eliminada -->
+
+        <div style="margin-top:8px; font-size:12px; color:#333;">
+            <strong>Leyenda:</strong>
+            {% if esquema == 'periodos' %}
+                <span style="margin-left:12px;"><strong>ACTITUD</strong>: Evaluación de actitud en esta materia</span>
+                <span style="margin-left:12px;"><strong>1°P - 4°P</strong>: Notas por cada período académico</span>
+                <span style="margin-left:12px;"><strong>FINAL</strong>: Promedio de los períodos</span>
+            {% else %}
+                <span style="margin-left:12px;"><strong>ACTITUD</strong>: Evaluación de actitud en esta materia</span>
+                <span style="margin-left:12px;"><strong>TRIM I - TRIM III</strong>: Notas de cada trimestre</span>
+                <span style="margin-left:12px;"><strong>FINAL</strong>: Promedio de los tres trimestres</span>
+            {% endif %}
+        </div>
+
+        <div class="faltas-asistencia">
+            <strong>FALTAS / ASISTENCIA</strong>
+            <table>
+                <tr>
+                    <th>Ene</th>
                     <th>Feb</th>
                     <th>Mar</th>
                     <th>Abr</th>
@@ -150,28 +200,22 @@
                 </tr>
             </table>
         </div>
-        
-        <div class="escuela-padres">
-            <strong>ESC. DE PADRES</strong>
-            <table>
-                <tr>
-                    <th>01</th>
-                    <th>02</th>
-                    <th>03</th>
-                    <th>04</th>
-                </tr>
-                <tr>
-                    <td>{{ esc_padres.p1|default('SI') }}</td>
-                    <td>{{ esc_padres.p2|default('SI') }}</td>
-                    <td>{{ esc_padres.p3|default('-') }}</td>
-                    <td>{{ esc_padres.p4|default('-') }}</td>
-                </tr>
-            </table>
-        </div>
 
         <div class="equivalencias">
             <div class="equivalencias-title">EQUIVALENCIAS</div>
             <div>E: Excelente (10-9) • MB: Muy Bueno (8-7) • B: Bueno (6-5) • R: Regular (4-3) • NM: Necesita Mejorar (2-1)</div>
+        </div>
+
+        <div class="conducta" style="margin-top:12px; border:1px solid #dee2e6; padding:10px; border-radius:6px;">
+            <strong>CONDUCTA FINAL DEL ESTUDIANTE</strong>
+            {% if conducta %}
+                <div>Valor: {{ conducta.nota_conducta_final if conducta.nota_conducta_final is not none else '-' }} &nbsp; Literal: {{ conducta.conducta_literal or '-' }}</div>
+                {% if conducta.observacion_general %}
+                    <div>Observación: {{ conducta.observacion_general }}</div>
+                {% endif %}
+            {% else %}
+                <div>-</div>
+            {% endif %}
         </div>
 
         <div class="nota-minima">* LA NOTA MÍNIMA DEL COLEGIO ES 7.0</div>
