@@ -157,6 +157,11 @@
                 <i class="bi bi-check-circle-fill"></i>
                 Este año tiene {{ total_periodos }} períodos configurados
             </p>
+            {% if not ano.activo %}
+            <button class="btn btn-secondary" onclick="editarPeriodos()" style="margin-top: 0.5rem;">
+                <i class="bi bi-pencil"></i> Editar Períodos
+            </button>
+            {% endif %}
         {% endif %}
     </div>
 
@@ -179,7 +184,7 @@
         {% if not tiene_secciones %}
             <div class="info-box">
                 <i class="bi bi-info-circle"></i>
-                Crea las secciones académicas para este año lectivo. Necesitas tener al menos una sección para poder activar el año.
+                Crea las secciones académicas para este año lectivo. Las secciones son necesarias para matricular estudiantes.
             </div>
 
             <a href="{{ url_for('secciones.nueva_seccion') }}" class="btn btn-primary">
@@ -211,18 +216,18 @@
         {% else %}
             <div class="info-box">
                 <i class="bi bi-info-circle"></i>
-                Una vez configurados los períodos y secciones, puedes activar este año. 
+                Una vez configurados los períodos, puedes activar este año. 
                 Esto desactivará automáticamente los demás años.
             </div>
 
-            {% if tiene_periodos and tiene_secciones %}
+            {% if tiene_periodos %}
                 <button class="btn btn-primary" onclick="activarAno()">
                     <i class="bi bi-check-circle"></i> Activar Año {{ ano.ano }}
                 </button>
             {% else %}
                 <p style="color: #6b7280;">
                     <i class="bi bi-info-circle"></i>
-                    Completa la configuración de períodos y secciones antes de activar
+                    Completa la configuración de períodos antes de activar
                 </p>
             {% endif %}
         {% endif %}
@@ -319,6 +324,114 @@ function crearPeriodos() {
                     Swal.fire({
                         icon: 'success',
                         title: '¡Creado!',
+                        text: data.mensaje,
+                        confirmButtonColor: '#0D2C63'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.mensaje,
+                        confirmButtonColor: '#0D2C63'
+                    });
+                }
+            });
+        }
+    });
+}
+
+async function editarPeriodos() {
+    // Obtener períodos actuales
+    const response = await fetch('/anos-lectivos/obtener-periodos/{{ ano.id_ano_lectivo }}');
+    const data = await response.json();
+    
+    if (!data.success) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: data.mensaje,
+            confirmButtonColor: '#0D2C63'
+        });
+        return;
+    }
+    
+    const periodos = data.periodos;
+    
+    // Crear HTML con inputs para cada período
+    let periodosHTML = '<div style="text-align: left;">';
+    periodos.forEach((p, index) => {
+        periodosHTML += `
+            <div style="margin-bottom: 1rem; padding: 1rem; background: #f9fafb; border-radius: 0.5rem;">
+                <label style="font-weight: 600; color: #374151; display: block; margin-bottom: 0.5rem;">
+                    ${p.nombre_periodo}
+                </label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: #6b7280;">Fecha Inicio:</label>
+                        <input type="date" id="fecha_inicio_${p.id_periodo}" value="${p.fecha_inicio}" 
+                               class="swal2-input" style="margin: 0.25rem 0 0 0;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #6b7280;">Fecha Fin:</label>
+                        <input type="date" id="fecha_fin_${p.id_periodo}" value="${p.fecha_fin}" 
+                               class="swal2-input" style="margin: 0.25rem 0 0 0;">
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    periodosHTML += '</div>';
+    
+    Swal.fire({
+        title: 'Editar Períodos',
+        html: periodosHTML,
+        width: '600px',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Guardar Cambios',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            const periodosActualizados = [];
+            
+            periodos.forEach(p => {
+                const fechaInicio = document.getElementById(`fecha_inicio_${p.id_periodo}`).value;
+                const fechaFin = document.getElementById(`fecha_fin_${p.id_periodo}`).value;
+                
+                if (!fechaInicio || !fechaFin) {
+                    Swal.showValidationMessage('Completa todas las fechas');
+                    return false;
+                }
+                
+                if (new Date(fechaFin) <= new Date(fechaInicio)) {
+                    Swal.showValidationMessage(`La fecha fin de ${p.nombre_periodo} debe ser posterior a la de inicio`);
+                    return false;
+                }
+                
+                periodosActualizados.push({
+                    id_periodo: p.id_periodo,
+                    fecha_inicio: fechaInicio,
+                    fecha_fin: fechaFin
+                });
+            });
+            
+            return periodosActualizados;
+        }
+    }).then((result) => {
+        if (result.isConfirmed && result.value) {
+            fetch('/anos-lectivos/actualizar-periodos/{{ ano.id_ano_lectivo }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ periodos: result.value })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Actualizado!',
                         text: data.mensaje,
                         confirmButtonColor: '#0D2C63'
                     }).then(() => {

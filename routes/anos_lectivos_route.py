@@ -326,16 +326,6 @@ def activar_ano(id_ano):
                 'mensaje': f'El año {ano.ano} solo tiene {total_periodos} períodos. Se requieren 4 períodos académicos.'
             })
         
-        # 2. Verificar que tenga secciones
-        query_secciones = text("SELECT COUNT(*) FROM secciones WHERE id_ano_lectivo = :id_ano")
-        total_secciones = db.session.execute(query_secciones, {'id_ano': id_ano}).scalar()
-        
-        if total_secciones == 0:
-            return jsonify({
-                'success': False,
-                'mensaje': f'No se puede activar el año {ano.ano} porque no tiene secciones. Duplica la estructura o créalas manualmente.'
-            })
-        
         # ===== ACTIVAR AÑO =====
         
         # Desactivar todos
@@ -429,82 +419,80 @@ def crear_periodos(id_ano):
         return jsonify({'success': False, 'mensaje': f'Error: {str(e)}'})
 
 
-# FUNCIÓN DESHABILITADA - Ahora se crean secciones manualmente
-# @anos_lectivos_bp.route('/duplicar-estructura/<int:id_ano>', methods=['POST'])
-# def duplicar_estructura(id_ano):
-#     """Duplicar secciones y asignaciones del año anterior"""
-#     user_id = session.get('user_id')
-#     user_role = session.get('user_role')
-#     
-#     if not user_id or user_role != 1:
-#         return jsonify({'success': False, 'mensaje': 'Acceso denegado'}), 403
-#     
-#     try:
-#         ano = AnoLectivo.query.get(id_ano)
-#         
-#         # Encontrar año anterior
-#         ano_anterior = AnoLectivo.query.filter(AnoLectivo.ano < ano.ano).order_by(AnoLectivo.ano.desc()).first()
-#         
-#         if not ano_anterior:
-#             return jsonify({'success': False, 'mensaje': 'No hay año anterior para duplicar'})
-#         
-#         # Duplicar secciones
-#         query_duplicar_secciones = text("""
-#             INSERT INTO secciones (id_grado, nombre_seccion, id_ano_lectivo, id_coordinador)
-#             SELECT id_grado, nombre_seccion, :id_ano_nuevo, id_coordinador
-#             FROM secciones 
-#             WHERE id_ano_lectivo = :id_ano_anterior
-#         """)
-#         
-#         db.session.execute(query_duplicar_secciones, {
-#             'id_ano_nuevo': id_ano,
-#             'id_ano_anterior': ano_anterior.id_ano_lectivo
-#         })
-#         
-#         # Mapear secciones antiguas a nuevas
-#         query_mapeo = text("""
-#             SELECT 
-#                 s_vieja.id_seccion as id_viejo,
-#                 s_nueva.id_seccion as id_nuevo
-#             FROM secciones s_vieja
-#             INNER JOIN secciones s_nueva 
-#                 ON s_vieja.id_grado = s_nueva.id_grado 
-#                 AND s_vieja.nombre_seccion = s_nueva.nombre_seccion
-#             WHERE s_vieja.id_ano_lectivo = :id_ano_anterior
-#             AND s_nueva.id_ano_lectivo = :id_ano_nuevo
-#         """)
-#         
-#         mapeo = db.session.execute(query_mapeo, {
-#             'id_ano_anterior': ano_anterior.id_ano_lectivo,
-#             'id_ano_nuevo': id_ano
-#         }).fetchall()
-#         
-#         # Duplicar asignaciones
-#         total_asignaciones = 0
-#         for vieja_id, nueva_id in mapeo:
-#             query_duplicar_asignaciones = text("""
-#                 INSERT INTO materia_seccion (id_materia, id_seccion, id_docente)
-#                 SELECT id_materia, :id_seccion_nueva, id_docente
-#                 FROM materia_seccion
-#                 WHERE id_seccion = :id_seccion_vieja
-#             """)
-#             
-#             result = db.session.execute(query_duplicar_asignaciones, {
-#                 'id_seccion_nueva': nueva_id,
-#                 'id_seccion_vieja': vieja_id
-#             })
-#             total_asignaciones += result.rowcount
-#         
-#         db.session.commit()
-#         
-#         return jsonify({
-#             'success': True,
-#             'mensaje': f'Estructura duplicada: {len(mapeo)} secciones y {total_asignaciones} asignaciones creadas'
-#         })
-#         
-#     except Exception as e:
-#         db.session.rollback()
-#         return jsonify({'success': False, 'mensaje': f'Error: {str(e)}'})
+@anos_lectivos_bp.route('/obtener-periodos/<int:id_ano>', methods=['GET'])
+def obtener_periodos(id_ano):
+    """Obtener los períodos de un año lectivo"""
+    user_id = session.get('user_id')
+    user_role = session.get('user_role')
+    
+    if not user_id or user_role != 1:
+        return jsonify({'success': False, 'mensaje': 'Acceso denegado'}), 403
+    
+    try:
+        query = text("""
+            SELECT id_periodo, numero_periodo, nombre_periodo, fecha_inicio, fecha_fin
+            FROM periodos
+            WHERE id_ano_lectivo = :id_ano
+            ORDER BY numero_periodo
+        """)
+        
+        result = db.session.execute(query, {'id_ano': id_ano})
+        periodos = []
+        
+        for row in result:
+            periodos.append({
+                'id_periodo': row.id_periodo,
+                'numero_periodo': row.numero_periodo,
+                'nombre_periodo': row.nombre_periodo,
+                'fecha_inicio': str(row.fecha_inicio),
+                'fecha_fin': str(row.fecha_fin)
+            })
+        
+        return jsonify({
+            'success': True,
+            'periodos': periodos
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'mensaje': f'Error: {str(e)}'})
+
+
+@anos_lectivos_bp.route('/actualizar-periodos/<int:id_ano>', methods=['POST'])
+def actualizar_periodos(id_ano):
+    """Actualizar los períodos de un año lectivo"""
+    user_id = session.get('user_id')
+    user_role = session.get('user_role')
+    
+    if not user_id or user_role != 1:
+        return jsonify({'success': False, 'mensaje': 'Acceso denegado'}), 403
+    
+    try:
+        data = request.get_json()
+        periodos = data.get('periodos', [])
+        
+        for periodo in periodos:
+            query = text("""
+                UPDATE periodos 
+                SET fecha_inicio = :fecha_inicio, fecha_fin = :fecha_fin
+                WHERE id_periodo = :id_periodo
+            """)
+            
+            db.session.execute(query, {
+                'id_periodo': periodo['id_periodo'],
+                'fecha_inicio': periodo['fecha_inicio'],
+                'fecha_fin': periodo['fecha_fin']
+            })
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'mensaje': 'Períodos actualizados exitosamente'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'mensaje': f'Error: {str(e)}'})
 
 
 @anos_lectivos_bp.route('/cerrar-ano/<int:id_ano>', methods=['POST'])
