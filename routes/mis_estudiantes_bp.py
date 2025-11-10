@@ -533,10 +533,10 @@ def _preparar_contexto_boleta(id_estudiante, id_asignacion):
             materia_info = {
                 'nombre_materia': asig.materia.nombre_materia,
                 'actitud': format(notas_info['actitud'], '.1f') if isinstance(notas_info.get('actitud'), float) else (notas_info.get('actitud') or '--'),
-                'periodo1': format(notas_info['notas_periodos'][0], '.1f') if isinstance(notas_info['notas_periodos'][0], float) else '--',
-                'periodo2': format(notas_info['notas_periodos'][1], '.1f') if isinstance(notas_info['notas_periodos'][1], float) else '--',
-                'periodo3': format(notas_info['notas_periodos'][2], '.1f') if isinstance(notas_info['notas_periodos'][2], float) else '--',
-                'periodo4': format(notas_info['notas_periodos'][3], '.1f') if isinstance(notas_info['notas_periodos'][3], float) else '--',
+                'periodo1': format(notas_info['notas_periodos'][0], '.1f') if isinstance(notas_info['notas_periodos'][0], (int, float)) else '--',
+                'periodo2': format(notas_info['notas_periodos'][1], '.1f') if isinstance(notas_info['notas_periodos'][1], (int, float)) else '--',
+                'periodo3': format(notas_info['notas_periodos'][2], '.1f') if isinstance(notas_info['notas_periodos'][2], (int, float)) else '--',
+                'periodo4': format(notas_info['notas_periodos'][3], '.1f') if isinstance(notas_info['notas_periodos'][3], (int, float)) else '--',
                 'final': format(final_calc, '.1f') if isinstance(final_calc, (int, float)) else '--'
             }
         else:  # esquema == 'trimestres'
@@ -548,16 +548,16 @@ def _preparar_contexto_boleta(id_estudiante, id_asignacion):
             # Calcular final como PROMEDIO de los 3 trimestres válidos
             trimestres_validos = []
             for v in [t1_raw, t2_raw, t3_raw]:
-                if isinstance(v, float):
+                if isinstance(v, (int, float)):
                     trimestres_validos.append(v)
             final_calc = (sum(trimestres_validos) / len(trimestres_validos)) if trimestres_validos else '--'
 
             materia_info = {
                 'nombre_materia': asig.materia.nombre_materia,
                 'actitud': format(notas_info['actitud'], '.1f') if isinstance(notas_info.get('actitud'), float) else (notas_info.get('actitud') or '--'),
-                'trimestre1': format(t1_raw, '.1f') if isinstance(t1_raw, float) else '--',
-                'trimestre2': format(t2_raw, '.1f') if isinstance(t2_raw, float) else '--',
-                'trimestre3': format(t3_raw, '.1f') if isinstance(t3_raw, float) else '--',
+                'trimestre1': format(t1_raw, '.1f') if isinstance(t1_raw, (int, float)) else '--',
+                'trimestre2': format(t2_raw, '.1f') if isinstance(t2_raw, (int, float)) else '--',
+                'trimestre3': format(t3_raw, '.1f') if isinstance(t3_raw, (int, float)) else '--',
                 'final': format(final_calc, '.1f') if isinstance(final_calc, (int, float)) else '--'
             }
         materias_data.append(materia_info)
