@@ -1,12 +1,63 @@
+
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-  <h2>Grados - Reporte de incidentes</h2>
-  <div class="list-group">
+<style>
+  .incidentes-grados-wrapper {
+    max-width: 600px;
+    margin: 32px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(13,44,99,0.08);
+    padding: 32px 24px 24px 24px;
+    border: 1px solid #e7e9ee;
+  }
+  .incidentes-grados-title {
+    color: #0D2C63;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 18px;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  .grado-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .grado-item {
+    display: block;
+    background: linear-gradient(90deg, #e6eefc 0%, #f8f9fa 100%);
+    color: #0D2C63;
+    font-weight: 600;
+    padding: 14px 18px;
+    border-radius: 7px;
+    border: 1px solid #cfd8e6;
+    text-decoration: none;
+    transition: box-shadow 0.2s, background 0.2s;
+    box-shadow: 0 1px 4px rgba(13,44,99,0.04);
+    font-size: 16px;
+  }
+  .grado-item:hover {
+    background: linear-gradient(90deg, #dbeafe 0%, #e0e7ef 100%);
+    box-shadow: 0 2px 8px rgba(13,44,99,0.10);
+    color: #1a4480;
+    text-decoration: none;
+  }
+  .no-grados {
+    color: #6c757d;
+    text-align: center;
+    margin-top: 24px;
+    font-size: 15px;
+  }
+</style>
+<div class="incidentes-grados-wrapper">
+  <div class="incidentes-grados-title">Grados - Reporte de incidentes</div>
+  <div class="grado-list">
     {% for grado in grados %}
-      <a class="list-group-item list-group-item-action" href="{{ url_for('incidentes_bp.estudiantes_grado', id_grado=grado.id_grado) }}">{{ grado.nombre_grado|default(grado.id_grado) }}</a>
+      <a class="grado-item" href="{{ url_for('incidentes_bp.estudiantes_grado', id_grado=grado.id_grado) }}">{{ grado.nombre_grado|default(grado.id_grado) }}</a>
     {% else %}
-      <p>No hay grados.</p>
+      <div class="no-grados">No hay grados.</div>
     {% endfor %}
   </div>
 </div>
