@@ -37,7 +37,7 @@ def estudiantes_grado(id_grado):
 def inasistencias_estudiante(id_estudiante):
     import calendar
     meses = list(range(1, 11))  # Enero a Octubre
-    mes = int(request.args.get('mes', date.today().month))
+    mes = int(request.args.get('mes', 1))  # Por defecto, mostrar enero
     ano_actual = date.today().year
     estudiante = Estudiante.query.get(id_estudiante)
     ano_lectivo = AnoLectivo.query.filter_by(activo=True).first()
