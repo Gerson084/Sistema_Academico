@@ -1,62 +1,87 @@
+
 {% extends 'base.html' %}
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
-<div class="container">
-  <h2>Reportar incidente - {{ estudiante.nombres }} {{ estudiante.apellidos }}</h2>
-  <form method="post" class="card p-3">
-    <div class="row mb-2">
-      <div class="col-md-4">
-        <label class="form-label">Fecha</label>
-        <input type="date" name="fecha_incidente" class="form-control" required>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Hora</label>
-        <input type="time" name="hora" class="form-control">
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Lugar</label>
-        <input type="text" name="lugar" class="form-control">
-      </div>
+<style>
+  .card-agregar {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(13,44,99,0.08);
+    border: none;
+    margin-bottom: 2rem;
+  }
+  .card-header {
+    background: linear-gradient(135deg, #0D2C63 0%, #1a4480 100%);
+    color: #fff;
+    border-radius: 0.75rem 0.75rem 0 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+  }
+  .card-body {
+    padding: 1.5rem;
+  }
+  .btn {
+    font-weight: 500;
+  }
+</style>
+<div class="container mt-4">
+  <div class="card card-agregar">
+    <div class="card-header">
+      Reportar incidente - {{ estudiante.nombres }} {{ estudiante.apellidos }}
     </div>
-    <div class="mb-2">
-      <label class="form-label">Tipo de incidente</label>
-      <select name="tipo_incidente" class="form-select" required>
-        <option>Agresión Física</option>
-        <option>Agresión Verbal</option>
-        <option>Bullying</option>
-        <option>Vandalismo</option>
-        <option>Indisciplina</option>
-        <option>Otro</option>
-      </select>
+    <div class="card-body">
+      <form method="post">
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <label class="form-label">Fecha</label>
+            <input type="date" name="fecha_incidente" class="form-control" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Hora</label>
+            <input type="time" name="hora" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Lugar</label>
+            <input type="text" name="lugar" class="form-control">
+          </div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Tipo de incidente</label>
+          <select name="tipo_incidente" class="form-select" required>
+            <option>Agresión Física</option>
+            <option>Agresión Verbal</option>
+            <option>Bullying</option>
+            <option>Vandalismo</option>
+            <option>Indisciplina</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Descripción</label>
+          <textarea name="descripcion" class="form-control" rows="4"></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Medidas tomadas</label>
+          <textarea name="medidas_tomadas" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Testigos</label>
+          <input type="text" name="testigos" class="form-control">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Período</label>
+          <select name="id_periodo" class="form-select">
+            {% for p in periodos %}
+              <option value="{{ p.id_periodo }}">{{ p.nombre_periodo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-success">Guardar</button>
+          <a class="btn btn-secondary" href="{{ url_for('incidentes_bp.incidentes_estudiante', id_estudiante=estudiante.id_estudiante) }}">Cancelar</a>
+        </div>
+      </form>
     </div>
-    <div class="mb-2">
-      <label class="form-label">Descripción</label>
-      <textarea name="descripcion" class="form-control" rows="4"></textarea>
-    </div>
-    <div class="mb-2">
-      <label class="form-label">Medidas tomadas</label>
-      <textarea name="medidas_tomadas" class="form-control" rows="3"></textarea>
-    </div>
-    <div class="mb-2">
-      <label class="form-label">Testigos</label>
-      <input type="text" name="testigos" class="form-control">
-    </div>
-    <div class="mb-2">
-      <label class="form-label">Período</label>
-      <select name="id_periodo" class="form-select">
-        {% for p in periodos %}
-          <option value="{{ p.id_periodo }}">{{ p.nombre_periodo }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="d-flex" style="gap:1rem;">
-        
-        <button class="btn btn-success">Guardar</button>
-        <a class="btn btn-secondary ms-2" href="{{ url_for('incidentes_bp.incidentes_estudiante', id_estudiante=estudiante.id_estudiante) }}">Cancelar</a>
-
-
-    </div>
-   
-  </form>
+  </div>
 </div>
 {% endblock %}

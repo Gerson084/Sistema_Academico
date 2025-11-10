@@ -1,25 +1,53 @@
+
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-  <h2>Detalle del incidente</h2>
-  <div class="card p-3">
-      <p><strong>Estudiante:</strong> {{ incidente.id_estudiante }}</p>
-      <p><strong>Reportado por:</strong>
+<style>
+  .card-detalle {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(13,44,99,0.08);
+    border: none;
+    margin-bottom: 2rem;
+  }
+  .card-header {
+    background: linear-gradient(135deg, #0D2C63 0%, #1a4480 100%);
+    color: #fff;
+    border-radius: 0.75rem 0.75rem 0 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+  }
+  .card-body {
+    padding: 1.5rem;
+  }
+  .btn {
+    font-weight: 500;
+  }
+</style>
+<div class="container mt-4">
+  <div class="card card-detalle">
+    <div class="card-header">
+      Detalle del incidente
+    </div>
+    <div class="card-body">
+      <div class="mb-3"><strong>Estudiante:</strong> {{ incidente.id_estudiante }}</div>
+      <div class="mb-3"><strong>Reportado por:</strong>
         {% if reportado_por %}
           {{ reportado_por.nombres }} {{ reportado_por.apellidos }}
         {% else %}
           (No disponible)
         {% endif %}
-      </p>
-      <p><strong>Fecha:</strong> {{ incidente.fecha_incidente }}</p>
-    <p><strong>Tipo:</strong> {{ incidente.tipo_incidente }}</p>
-    <p><strong>Lugar:</strong> {{ incidente.lugar }}</p>
-    <p><strong>Testigos:</strong> {{ incidente.testigos }}</p>
-    <p><strong>Descripción:</strong><br>{{ incidente.descripcion }}</p>
-    <p><strong>Medidas tomadas:</strong><br>{{ incidente.medidas_tomadas }}</p>
-    <div class="d-flex" style="gap:1rem;">
-      <a class="btn btn-primary" target="_blank" href="{{ url_for('incidentes_bp.imprimir_incidente', id_incidente=incidente.id_incidente) }}">Imprimir</a>
-      <a class="btn btn-secondary" href="{{ url_for('incidentes_bp.incidentes_estudiante', id_estudiante=incidente.id_estudiante) }}">Volver</a>
+      </div>
+      <div class="mb-3"><strong>Fecha:</strong> {{ incidente.fecha_incidente }}</div>
+      <div class="mb-3"><strong>Tipo:</strong> {{ incidente.tipo_incidente }}</div>
+      <div class="mb-3"><strong>Lugar:</strong> {{ incidente.lugar }}</div>
+      <div class="mb-3"><strong>Testigos:</strong> {{ incidente.testigos }}</div>
+      <div class="mb-3"><strong>Descripción:</strong><br>{{ incidente.descripcion }}</div>
+      <div class="mb-3"><strong>Medidas tomadas:</strong><br>{{ incidente.medidas_tomadas }}</div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-primary" target="_blank" href="{{ url_for('incidentes_bp.imprimir_incidente', id_incidente=incidente.id_incidente) }}">Imprimir</a>
+        <a class="btn btn-secondary" href="{{ url_for('incidentes_bp.incidentes_estudiante', id_estudiante=incidente.id_estudiante) }}">Volver</a>
+      </div>
     </div>
   </div>
 </div>

@@ -1,31 +1,65 @@
+
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-  <h2>Incidentes - {{ estudiante.nombres }} {{ estudiante.apellidos }}</h2>
-  <a class="btn btn-success mb-3" href="{{ url_for('incidentes_bp.agregar_incidente', id_estudiante=estudiante.id_estudiante) }}">Reportar nuevo incidente</a>
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Tipo</th>
-        <th>Lugar</th>
-        <th>Testigos</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for i in incidentes %}
-        <tr>
-          <td>{{ i.fecha_incidente }}</td>
-          <td>{{ i.tipo_incidente }}</td>
-          <td>{{ i.lugar }}</td>
-          <td>{{ i.testigos }}</td>
-          <td><a class="btn btn-sm btn-primary" href="{{ url_for('incidentes_bp.detalle_incidente', id_incidente=i.id_incidente) }}">Ver</a></td>
-        </tr>
-      {% else %}
-        <tr><td colspan="5">No hay incidentes registrados.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<style>
+  .card-incidentes {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(13,44,99,0.08);
+    border: none;
+    margin-bottom: 2rem;
+  }
+  .card-header {
+    background: linear-gradient(135deg, #0D2C63 0%, #1a4480 100%);
+    color: #fff;
+    border-radius: 0.75rem 0.75rem 0 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+  }
+  .card-body {
+    padding: 1.5rem;
+  }
+  .table-incidentes th, .table-incidentes td {
+    vertical-align: middle;
+    font-size: 1rem;
+  }
+  .btn {
+    font-weight: 500;
+  }
+</style>
+<div class="container mt-4">
+  <div class="card card-incidentes">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+      <span>Incidentes de {{ estudiante.nombres }} {{ estudiante.apellidos }}</span>
+      <a class="btn btn-success btn-sm" href="{{ url_for('incidentes_bp.agregar_incidente', id_estudiante=estudiante.id_estudiante) }}">Reportar nuevo incidente</a>
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered table-incidentes mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Lugar</th>
+            <th>Testigos</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in incidentes %}
+            <tr>
+              <td>{{ i.fecha_incidente }}</td>
+              <td>{{ i.tipo_incidente }}</td>
+              <td>{{ i.lugar }}</td>
+              <td>{{ i.testigos }}</td>
+              <td><a class="btn btn-sm btn-primary" href="{{ url_for('incidentes_bp.detalle_incidente', id_incidente=i.id_incidente) }}">Ver</a></td>
+            </tr>
+          {% else %}
+            <tr><td colspan="5" class="text-center text-muted">No hay incidentes registrados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 {% endblock %}
