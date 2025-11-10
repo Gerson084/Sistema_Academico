@@ -30,12 +30,16 @@ Una aplicación Flask para gestionar un sistema académico con base de datos MyS
    
    Edita el archivo `.env` con tus credenciales de base de datos:
    ```env
-   DB_HOST=tu_host_aqui
-   DB_PORT=tu_puerto_aqui
-   DB_USER=tu_usuario_aqui
-   DB_PASSWORD=tu_password_aqui
-   DB_NAME=tu_base_de_datos_aqui
+   # Para desarrollo local
+   DATABASE_URI=mysql+pymysql://root:@localhost/sistema_academico
+   
+   # Para producción (Railway u otro hosting)
+   DATABASE_URI=mysql+pymysql://usuario:password@host:puerto/nombre_db
+   
+   # Otras configuraciones
    SECRET_KEY=genera_una_clave_secreta_aleatoria
+   FLASK_ENV=development
+   FLASK_DEBUG=True
    ```
 
 4. **Ejecuta la aplicación:**
@@ -65,13 +69,27 @@ Sistema_Academico/
 
 El proyecto utiliza MySQL como base de datos. La configuración se maneja a través de variables de entorno para mayor seguridad.
 
-### Variables de Entorno Requeridas:
-- `DB_HOST`: Host de la base de datos
-- `DB_PORT`: Puerto de la base de datos  
-- `DB_USER`: Usuario de la base de datos
-- `DB_PASSWORD`: Contraseña de la base de datos
-- `DB_NAME`: Nombre de la base de datos
-- `SECRET_KEY`: Clave secreta de Flask
+### Variable de Entorno Principal:
+- `DATABASE_URI`: URI completa de conexión a la base de datos
+  - **Formato**: `mysql+pymysql://usuario:password@host:puerto/nombre_db`
+  - **Desarrollo local**: `mysql+pymysql://root:@localhost/sistema_academico`
+  - **Producción (Railway)**: `mysql+pymysql://root:password@host.railway.app:puerto/sistema_academico`
+
+### Otras Variables Requeridas:
+- `SECRET_KEY`: Clave secreta de Flask (genera una aleatoria y segura)
+- `FLASK_ENV`: Entorno de ejecución (`development` o `production`)
+- `FLASK_DEBUG`: Modo debug (`True` o `False`)
+
+### Ejemplo de Configuración en Railway:
+
+Cuando despliegues en Railway, agrega la variable de entorno en el dashboard:
+
+```
+DATABASE_URI=mysql+pymysql://root:TU_PASSWORD@host.railway.app:PUERTO/sistema_academico
+SECRET_KEY=tu_clave_secreta_super_segura_aqui
+FLASK_ENV=production
+FLASK_DEBUG=False
+```
 
 ## 📦 Dependencias Principales
 

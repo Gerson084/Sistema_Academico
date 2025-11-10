@@ -2,6 +2,11 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 import pymysql
 from flask import Flask
+import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 # Instalar PyMySQL como driver
 pymysql.install_as_MySQLdb()
@@ -10,7 +15,7 @@ pymysql.install_as_MySQLdb()
 db = SQLAlchemy()
 
 class DatabaseConfig:
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:CdrTCbYUUVATqZYVyCWgWEidiaCssEwu@crossover.proxy.rlwy.net:26214/sistema_academico"
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI', 'mysql+pymysql://root:@localhost/sistema_academico')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     @staticmethod
