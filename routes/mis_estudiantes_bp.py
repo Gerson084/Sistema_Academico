@@ -433,22 +433,47 @@ def _preparar_contexto_boleta(id_estudiante, id_asignacion):
             id_seccion=matricula.id_seccion
         ).order_by(MateriaSeccion.id_asignacion).all()
 
+    # Determinar esquema de columnas dinámico según el grado
+    # Regla propuesta: si el nivel o nombre del grado contiene 'bachiller' => usar periodos (1°P..4°P)
+    # Caso contrario (Parvularia a 9°) => usar esquema trimestre/examen (TRIM + EXAMEN)
+    nombre_grado_lower = matricula.seccion.grado.nombre_grado.lower()
+    nivel_lower = (matricula.seccion.grado.nivel or '').lower()
+    # Si no es bachillerato, consideramos "nivel básico" (Parvularia a 9°) => trimestres
+    esquema = 'periodos' if ('bachiller' in nombre_grado_lower or 'bachiller' in nivel_lower) else 'trimestres'
+
     # Procesar cada materia
     materias_data = []
     for asig in asignaciones:
         notas_info = _obtener_notas_materia(id_estudiante, asig.id_asignacion, periodos)
         
-        materia_info = {
-            'nombre_materia': asig.materia.nombre_materia,
-            'trimestre': format(notas_info['trimestre'], '.1f') if isinstance(notas_info['trimestre'], float) else '--',
-            'examen': format(notas_info['examen'], '.1f') if isinstance(notas_info['examen'], float) else '--',
-            'actitud': format(notas_info['actitud'], '.1f') if isinstance(notas_info.get('actitud'), float) else (notas_info.get('actitud') or '--'),
-            'periodo1': format(notas_info['notas_periodos'][0], '.1f') if isinstance(notas_info['notas_periodos'][0], float) else '--',
-            'periodo2': format(notas_info['notas_periodos'][1], '.1f') if isinstance(notas_info['notas_periodos'][1], float) else '--',
-            'periodo3': format(notas_info['notas_periodos'][2], '.1f') if isinstance(notas_info['notas_periodos'][2], float) else '--',
-            'periodo4': format(notas_info['notas_periodos'][3], '.1f') if isinstance(notas_info['notas_periodos'][3], float) else '--',
-            'final': format(notas_info['promedio'], '.1f') if isinstance(notas_info['promedio'], float) else '--'
-        }
+        if esquema == 'periodos':
+            # Bachillerato: mostrar los 4 periodos tal cual
+            final_calc = notas_info['promedio']
+            materia_info = {
+                'nombre_materia': asig.materia.nombre_materia,
+                'actitud': format(notas_info['actitud'], '.1f') if isinstance(notas_info.get('actitud'), float) else (notas_info.get('actitud') or '--'),
+                'periodo1': format(notas_info['notas_periodos'][0], '.1f') if isinstance(notas_info['notas_periodos'][0], float) else '--',
+                'periodo2': format(notas_info['notas_periodos'][1], '.1f') if isinstance(notas_info['notas_periodos'][1], float) else '--',
+                'periodo3': format(notas_info['notas_periodos'][2], '.1f') if isinstance(notas_info['notas_periodos'][2], float) else '--',
+                'periodo4': format(notas_info['notas_periodos'][3], '.1f') if isinstance(notas_info['notas_periodos'][3], float) else '--',
+                'final': format(final_calc, '.1f') if isinstance(final_calc, float) else '--'
+            }
+        else:
+            # Nivel básico: 3 trimestres (sin columna de examen)
+            tri_vals = []
+            campos = {}
+            for i in range(3):
+                val = notas_info['notas_periodos'][i] if i < len(notas_info['notas_periodos']) else '--'
+                campos[f'trim{i+1}'] = format(val, '.1f') if isinstance(val, float) else '--'
+                if isinstance(val, float):
+                    tri_vals.append(val)
+            final_tri = sum(tri_vals)/len(tri_vals) if tri_vals else '--'
+            materia_info = {
+                'nombre_materia': asig.materia.nombre_materia,
+                'actitud': format(notas_info['actitud'], '.1f') if isinstance(notas_info.get('actitud'), float) else (notas_info.get('actitud') or '--'),
+                **campos,
+                'final': format(final_tri, '.1f') if isinstance(final_tri, float) else '--'
+            }
         materias_data.append(materia_info)
 
     # Calcular promedio global
@@ -483,5 +508,6 @@ def _preparar_contexto_boleta(id_estudiante, id_asignacion):
         'ano_lectivo': matricula.seccion.ano_lectivo,
         'fecha_actual': datetime.datetime.now().strftime('%d/%m/%Y'),
         'conducta': conducta,
-        'periodos': periodos
+        'periodos': periodos,
+        'esquema': esquema
     }
