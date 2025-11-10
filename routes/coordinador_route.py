@@ -86,7 +86,8 @@ def dashboard():
         WHERE ms.id_maestro = :id_docente
         AND m.activa = 1
         AND s.activo = 1
-        AND (:ano_lectivo IS NULL OR al.id_ano_lectivo = :ano_lectivo)
+        AND (:ano_lectivo IS NOT NULL AND al.id_ano_lectivo = :ano_lectivo 
+             OR :ano_lectivo IS NULL AND al.activo = 1)
         ORDER BY al.ano DESC, g.nombre_grado, s.nombre_seccion, m.nombre_materia
     """)
     
@@ -113,8 +114,8 @@ def dashboard():
             'total_estudiantes': row.total_estudiantes
         })
     
-    # Obtener años lectivos para el filtro
-    anos_lectivos = AnoLectivo.query.order_by(AnoLectivo.ano.desc()).all()
+    # Obtener años lectivos activos para el filtro
+    anos_lectivos = AnoLectivo.query.filter_by(activo=True).order_by(AnoLectivo.ano.desc()).all()
     
     # Determinar qué mostrar
     es_coordinador = len(secciones_info) > 0
