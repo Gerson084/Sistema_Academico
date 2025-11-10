@@ -16,8 +16,9 @@
       <div class="col-auto">
         <select name="mes" id="mes" class="form-select" onchange="this.form.submit()">
           {% set meses_nombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre'] %}
+          {% set mes_default = mes if mes is defined and mes else 1 %}
           {% for m in meses %}
-            <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ meses_nombres[m-1] }}</option>
+            <option value="{{ m }}" {% if m == mes_default %}selected{% endif %}>{{ meses_nombres[m-1] }}</option>
           {% endfor %}
         </select>
       </div>
