@@ -516,13 +516,11 @@
             <div class="section-title mb-4">
                 <i class="fas fa-user-tie"></i> Secciones Coordinadas
             </div>
-            {% if session.get('es_coordinador') %}
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('mis_estudiantes.mis_estudiantes') }}">
-                  <i class="bi bi-people"></i><span>Mis Estudiantes y Boletas</span>
+            <div class="mb-4 d-flex flex-wrap gap-3">
+                <a href="{{ url_for('mis_estudiantes.mis_estudiantes') }}" class="btn btn-success" style="font-weight:600;font-size:1.1rem;padding:0.75rem 2rem;">
+                    <i class="fas fa-users"></i> Estudiantes y Boletas de Notas
                 </a>
-              </li>
-              {% endif %}
+            </div>
             {% if secciones_info %}
             <div class="row">
                 {% for item in secciones_info %}
