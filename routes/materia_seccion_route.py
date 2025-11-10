@@ -321,23 +321,67 @@ def editar_asignacion(id):
                          secciones=secciones_data,
                          docentes=docentes)
 
-# ELIMINAR ASIGNACIÓN - SIN CAMBIOS
+# ELIMINAR ASIGNACIÓN - CON VALIDACIÓN
 @materia_seccion_bp.route("/asignacion/delete/<int:id>", methods=['POST'])
 def eliminar_asignacion(id):
     asignacion = MateriaSeccion.query.get_or_404(id)
     
     try:
+        # Validar si la asignación tiene calificaciones registradas
+        query_calificaciones = text("""
+            SELECT COUNT(*) as total
+            FROM calificaciones
+            WHERE id_asignacion = :id_asignacion
+        """)
+        
+        total_calificaciones = db.session.execute(query_calificaciones, {'id_asignacion': id}).scalar()
+        
+        if total_calificaciones and total_calificaciones > 0:
+            # Obtener información detallada para el mensaje
+            query_info = text("""
+                SELECT 
+                    m.nombre_materia,
+                    m.codigo_materia,
+                    g.nombre_grado,
+                    g.nivel,
+                    s.nombre_seccion,
+                    al.ano
+                FROM materia_seccion ms
+                JOIN materias m ON ms.id_materia = m.id_materia
+                JOIN secciones sec ON ms.id_seccion = sec.id_seccion
+                JOIN grados g ON sec.id_grado = g.id_grado
+                JOIN secciones s ON ms.id_seccion = s.id_seccion
+                JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
+                WHERE ms.id_asignacion = :id_asignacion
+            """)
+            
+            info = db.session.execute(query_info, {'id_asignacion': id}).fetchone()
+            
+            return jsonify({
+                "success": False,
+                "icon": "warning",
+                "mensaje": f"No se puede eliminar esta asignación porque ya tiene {total_calificaciones} calificación(es) registrada(s).\n\n" +
+                          f"Asignación: {info.nombre_materia} ({info.codigo_materia})\n" +
+                          f"Grado: {info.nombre_grado} {info.nivel} - Sección {info.nombre_seccion}\n" +
+                          f"Año: {info.ano}\n\n" +
+                          f"Las calificaciones deben ser eliminadas primero antes de poder eliminar la asignación."
+            })
+        
+        # Si no hay calificaciones, proceder a eliminar
         db.session.delete(asignacion)
         db.session.commit()
 
         return jsonify({
             "success": True,
+            "icon": "success",
             "mensaje": "Asignación eliminada correctamente.",
             "redirect": url_for('materia_seccion.lista_asignaciones')
         })
+        
     except Exception as e:
         db.session.rollback()
         return jsonify({
-            "success": False, 
+            "success": False,
+            "icon": "error", 
             "mensaje": f"Error al eliminar la asignación: {str(e)}"
         })

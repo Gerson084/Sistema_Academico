@@ -538,7 +538,7 @@
                 </div>
             </div>
             <div>
-                <a href="{{ url_for('docente_notas.mis_materias') }}" class="btn-volver">
+                <a href="{{ url_for('coordinador.dashboard') }}" class="btn-volver">
                     <i class="fas fa-arrow-left"></i> Volver a Mis Materias
                 </a>
             </div>
@@ -562,10 +562,6 @@
                     <option value="sin-datos">Sin datos</option>
                 </select>
             </div>
-
-            <button class="btn-export" onclick="imprimirTabla()">
-                <i class="fas fa-print"></i> Imprimir
-            </button>
         </div>
 
         <!-- Estadísticas rápidas -->
@@ -801,36 +797,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('total-reprobados').textContent = reprobados;
     }
 });
-
-function imprimirTabla() {
-    window.print();
-}
-
-// Estilos para impresión
-const estilosImpresion = document.createElement('style');
-estilosImpresion.textContent = `
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        .table-card, .table-card * {
-            visibility: visible;
-        }
-        .table-card {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-        }
-        .filter-bar, .btn-export, .btn-volver, .stats-card {
-            display: none !important;
-        }
-        .row-hidden {
-            display: none !important;
-        }
-    }
-`;
-document.head.appendChild(estilosImpresion);
 </script>
 
 {% endblock %}

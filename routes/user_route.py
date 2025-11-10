@@ -1,6 +1,10 @@
 from flask import Blueprint, render_template, request, jsonify, url_for
 from models.usuarios import Usuario
 from models.roles import Rol  # Importa el modelo de roles
+from models.MateriaSeccion import MateriaSeccion
+from models.Secciones import Seccion
+from models.AnosLectivos import AnoLectivo
+from sqlalchemy import text
 from db import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash
@@ -131,6 +135,35 @@ def deactivate_user(id):
             "mensaje": "El usuario ya está inactivo."
         })
     
+    # Verificar si el docente tiene asignaciones activas (en años lectivos activos)
+    query_asignaciones = text("""
+        SELECT COUNT(*) as total,
+               GROUP_CONCAT(DISTINCT CONCAT(m.nombre_materia, ' - ', g.nombre_grado, ' ', g.nivel, ' Sección ', s.nombre_seccion) SEPARATOR ', ') as asignaciones
+        FROM materia_seccion ms
+        INNER JOIN materias m ON ms.id_materia = m.id_materia
+        INNER JOIN secciones s ON ms.id_seccion = s.id_seccion
+        INNER JOIN grados g ON s.id_grado = g.id_grado
+        INNER JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
+        WHERE ms.id_maestro = :id_usuario
+        AND al.activo = 1
+    """)
+    
+    resultado = db.session.execute(query_asignaciones, {'id_usuario': id}).fetchone()
+    total_asignaciones = resultado.total if resultado and resultado.total else 0
+    
+    if total_asignaciones > 0:
+        asignaciones_info = resultado.asignaciones if resultado and resultado.asignaciones else ""
+        return jsonify({
+            "success": False,
+            "icon": "warning",
+            "mensaje": f"⚠️ No se puede desactivar al usuario <strong>{user.usuario}</strong>.<br><br>"
+                      f"Tiene <strong>{total_asignaciones} asignación(es) activa(s)</strong> en el año lectivo actual:<br><br>"
+                      f"<div style='text-align: left; padding: 0.5rem; background: #fef3c7; border-radius: 0.25rem; margin: 0.5rem 0;'>"
+                      f"{asignaciones_info}"
+                      f"</div><br>"
+                      f"<span style='color: #dc2626;'>Para desactivar este docente, primero debe eliminar o reasignar sus materias activas.</span>"
+        })
+    
     # Desactivar el usuario en lugar de eliminarlo
     user.activo = False
     user.ultimo_acceso = datetime.utcnow()
@@ -139,7 +172,8 @@ def deactivate_user(id):
 
     return jsonify({
         "success": True,
-        "mensaje": "Usuario desactivado correctamente.",
+        "icon": "success",
+        "mensaje": f"✅ Usuario <strong>{user.usuario}</strong> desactivado correctamente.",
         "redirect": url_for('user.user_index')
     })
 # ACTIVAR (nuevo método para reactivar)

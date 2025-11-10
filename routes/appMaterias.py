@@ -132,31 +132,94 @@ def editar_materia(id):
 # Eliminar materia
 @materias_bp.route('/eliminar/<int:id>', methods=['POST'])
 def eliminar_materia(id):
-    materia = Materia.query.get_or_404(id)
-    db.session.delete(materia)
-    db.session.commit()
-    return redirect(url_for('materias.lista_materias', success='true', action='deleted'))
+    try:
+        # Verificar si la materia tiene asignaciones
+        asignacion = MateriaSeccion.query.filter_by(id_materia=id).first()
+        
+        if asignacion:
+            return jsonify({
+                "success": False,
+                "icon": "warning",
+                "title": "No se puede eliminar",
+                "mensaje": "No se puede eliminar esta materia porque tiene asignaciones activas. Elimina las asignaciones primero."
+            })
+        
+        # Si no tiene asignaciones, eliminar
+        materia = Materia.query.get_or_404(id)
+        db.session.delete(materia)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "icon": "success",
+            "mensaje": "Materia eliminada correctamente",
+            "redirect": url_for('materias.lista_materias')
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "success": False,
+            "icon": "error",
+            "mensaje": f"Error al eliminar la materia: {str(e)}"
+        })
 
 # Deshabilitar materia
 @materias_bp.route('/deshabilitar/<int:id>', methods=['POST'])
 def deshabilitar_materia(id):
-    # asignacion = Grado.query.join(MateriaSeccion).select_from(MateriaSeccion.id_materia == id).first()
-
-    asignacion = MateriaSeccion.query.filter_by(id_materia=id).first()
-    if asignacion:
-        return jsonify({
+    try:
+        # Verificar si la materia tiene asignaciones activas
+        asignacion = MateriaSeccion.query.filter_by(id_materia=id).first()
+        
+        if asignacion:
+            # Obtener información de la asignación para el mensaje
+            from models.Secciones import Seccion
+            from models.Grados import Grado
+            from sqlalchemy import text
+            
+            query = text("""
+                SELECT g.nombre_grado, g.nivel, s.nombre_seccion, al.ano
+                FROM materia_seccion ms
+                JOIN secciones s ON ms.id_seccion = s.id_seccion
+                JOIN grados g ON s.id_grado = g.id_grado
+                JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
+                WHERE ms.id_materia = :id_materia
+                LIMIT 1
+            """)
+            
+            result = db.session.execute(query, {'id_materia': id}).first()
+            
+            if result:
+                mensaje = f"No se puede desactivar esta materia porque está asignada a {result.nombre_grado} {result.nivel} - Sección {result.nombre_seccion} (Año {result.ano}). Elimina las asignaciones primero."
+            else:
+                mensaje = "No se puede desactivar esta materia porque tiene asignaciones activas. Elimina las asignaciones primero."
+            
+            return jsonify({
                 "success": False,
-                "title": "Error al desactivar",
-                "mensaje": "Materia asignada a un grado.",
-                "redirect": url_for('materias.lista_materias')
-
+                "icon": "warning",
+                "title": "No se puede desactivar",
+                "mensaje": mensaje
             })
-        return redirect(url_for('materias.lista_materias', success='false'))
 
-    materia = Materia.query.get_or_404(id)
-    materia.activa = False
-    db.session.commit()
-    return redirect(url_for('materias.lista_materias', success='true', action='disabled'))
+        # Si no tiene asignaciones, desactivar
+        materia = Materia.query.get_or_404(id)
+        materia.activa = False
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "icon": "success",
+            "mensaje": "Materia desactivada correctamente",
+            "redirect": url_for('materias.lista_materias')
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "success": False,
+            "icon": "error",
+            "mensaje": f"Error al desactivar la materia: {str(e)}"
+        })
 
 # Habilitar materia
 @materias_bp.route('/habilitar/<int:id>', methods=['POST'])

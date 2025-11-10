@@ -210,28 +210,36 @@ def crear_matricula(id_estudiante=None):
             # Validar estado final del año lectivo anterior
             ano_lectivo_actual = AnoLectivo.query.get(seccion.id_ano_lectivo)
             if ano_lectivo_actual:
-                # Buscar la ÚLTIMA matrícula del estudiante (año más reciente)
+                # Buscar la ÚLTIMA matrícula del estudiante con estado final
                 query_ano_anterior = text("""
-                    SELECT pa.estado_final, al.ano, g.id_grado, g.nombre_grado, g.nivel
+                    SELECT 
+                        pa.estado_final, 
+                        al.ano, 
+                        g.id_grado, 
+                        g.nombre_grado, 
+                        g.nivel,
+                        al.id_ano_lectivo
                     FROM matriculas m
                     INNER JOIN secciones s ON m.id_seccion = s.id_seccion
                     INNER JOIN grados g ON s.id_grado = g.id_grado
                     INNER JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
-                    LEFT JOIN calificaciones c ON c.id_estudiante = m.id_estudiante
-                    LEFT JOIN promedios_periodo pp ON pp.id_calificacion = c.id_calificacion
-                    LEFT JOIN promedios_anuales pa ON pa.id_promedio_periodo = pp.id_promedio_periodo
+                    LEFT JOIN (
+                        SELECT DISTINCT c.id_estudiante, pa.estado_final, p.id_ano_lectivo
+                        FROM calificaciones c
+                        INNER JOIN periodos p ON c.id_periodo = p.id_periodo
+                        INNER JOIN promedios_periodo pp ON pp.id_calificacion = c.id_calificacion
+                        INNER JOIN promedios_anuales pa ON pa.id_promedio_periodo = pp.id_promedio_periodo
+                    ) pa ON pa.id_estudiante = m.id_estudiante AND pa.id_ano_lectivo = al.id_ano_lectivo
                     WHERE m.id_estudiante = :id_estudiante
-                    AND (al.ano < :ano_actual OR (al.ano = :ano_actual AND al.id_ano_lectivo != :id_ano_actual))
-                    AND m.activa = 1
-                    ORDER BY al.ano DESC, g.id_grado DESC
+                    AND al.ano < :ano_actual
+                    ORDER BY al.ano DESC, m.fecha_matricula DESC
                     LIMIT 1
                 """)
                 
                 resultado_ano_anterior = db.session.execute(query_ano_anterior, {
                     'id_estudiante': id_estudiante,
-                    'ano_actual': ano_lectivo_actual.ano,
-                    'id_ano_actual': seccion.id_ano_lectivo
-                }).first()
+                    'ano_actual': ano_lectivo_actual.ano
+                }).fetchone()
                 
                 # Si tiene matrícula anterior, verificar el estado
                 if resultado_ano_anterior:
@@ -244,32 +252,29 @@ def crear_matricula(id_estudiante=None):
                     grado_nuevo = Grado.query.get(seccion.id_grado)
                     
                     # Si no tiene estado final, no puede matricularse en un nuevo año
-                    if not estado:
+                    if not estado or estado == 'Pendiente':
                         return jsonify({
                             "success": False, 
-                            "mensaje": f"El estudiante tiene matrícula en {grado_anterior_nombre} ({ano_anterior}) pero no tiene evaluación final. El coordinador debe asignar el estado (Aprobado/Reprobado) antes de poder matricularse en un nuevo período."
+                            "mensaje": f"El estudiante tiene matrícula en {grado_anterior_nombre} ({ano_anterior}) sin evaluación final completa. El coordinador debe asignar el estado final (Aprobado/Reprobado) antes de matricularse en un nuevo año."
                         })
                     
-                    if estado == 'Pendiente':
-                        return jsonify({
-                            "success": False, 
-                            "mensaje": f"El estudiante tiene el estado 'Pendiente' del año {ano_anterior} en {grado_anterior_nombre}. El coordinador debe actualizar el estado a 'Aprobado' o 'Reprobado' primero."
-                        })
                     elif estado == 'Reprobado':
-                        # Si reprobó, solo puede matricularse en el MISMO grado
-                        if grado_nuevo.id_grado != grado_anterior_id:
+                        # Si reprobó, solo puede matricularse en el MISMO grado o en uno INFERIOR
+                        if grado_nuevo.id_grado > grado_anterior_id:
                             return jsonify({
                                 "success": False, 
-                                "mensaje": f"El estudiante reprobó el año {ano_anterior} en {grado_anterior_nombre}. Solo puede matricularse nuevamente en {grado_anterior_nombre}, no en un grado diferente."
+                                "mensaje": f"El estudiante reprobó {grado_anterior_nombre} en el año {ano_anterior}. Solo puede matricularse nuevamente en {grado_anterior_nombre} o en un grado inferior para repetir."
                             })
-                        # Si es el mismo grado, puede continuar (está repitiendo)
+                        # Si es el mismo grado o inferior, puede continuar (está repitiendo)
+                        
                     elif estado == 'Aprobado':
-                        # Si aprobó, NO puede matricularse en el mismo grado (ya lo pasó)
-                        if grado_nuevo.id_grado == grado_anterior_id:
+                        # Si aprobó, NO puede matricularse en el mismo grado o inferior
+                        if grado_nuevo.id_grado <= grado_anterior_id:
                             return jsonify({
                                 "success": False, 
-                                "mensaje": f"El estudiante ya aprobó {grado_anterior_nombre} en el año {ano_anterior}. Debe matricularse en un grado superior."
+                                "mensaje": f"El estudiante ya aprobó {grado_anterior_nombre} en el año {ano_anterior}. Debe matricularse en un grado superior, no puede repetir un grado ya aprobado."
                             })
+                        # Si es un grado superior, puede continuar
 
             # Validar que el estudiante no esté inscrito ya en ese año lectivo
             existente = (
@@ -751,4 +756,64 @@ def verificar_estado_estudiante(id_estudiante):
         return jsonify({
             "success": False,
             "mensaje": f"Error al verificar estado: {str(e)}"
+        })
+
+
+@matriculas_bp.route('/matricula/delete/<int:id>', methods=['POST'])
+def eliminar_matricula(id):
+    try:
+        # Obtener la matrícula
+        matricula = Matricula.query.get_or_404(id)
+        
+        # Obtener información del estudiante para el mensaje
+        estudiante = Estudiante.query.get(matricula.id_estudiante)
+        seccion = Seccion.query.get(matricula.id_seccion)
+        grado = Grado.query.get(seccion.id_grado)
+        ano_lectivo = AnoLectivo.query.get(seccion.id_ano_lectivo)
+        
+        estudiante_nombre = f"{estudiante.nombres} {estudiante.apellidos}"
+        seccion_info = f"{grado.nombre_grado} {grado.nivel} Sección {seccion.nombre_seccion} ({ano_lectivo.ano})"
+        
+        # Verificar si el estudiante tiene calificaciones asociadas a esta matrícula
+        query_calificaciones = text("""
+            SELECT COUNT(*) 
+            FROM calificaciones c
+            INNER JOIN matriculas m ON c.id_estudiante = m.id_estudiante
+            INNER JOIN periodos p ON c.id_periodo = p.id_periodo
+            INNER JOIN secciones s ON m.id_seccion = s.id_seccion
+            WHERE m.id_matricula = :id_matricula
+            AND p.id_ano_lectivo = s.id_ano_lectivo
+        """)
+        
+        total_calificaciones = db.session.execute(
+            query_calificaciones,
+            {'id_matricula': id}
+        ).scalar()
+        
+        if total_calificaciones > 0:
+            return jsonify({
+                "success": False,
+                "icon": "warning",
+                "mensaje": f"⚠️ No se puede eliminar la matrícula de <strong>{estudiante_nombre}</strong> en {seccion_info}.<br><br>"
+                          f"El estudiante tiene <strong>{total_calificaciones} calificación(es)</strong> registrada(s) en este año lectivo.<br><br>"
+                          f"<span style='color: #dc2626;'>Para eliminar esta matrícula, primero debe eliminar todas las calificaciones del estudiante.</span>"
+            })
+        
+        # Si no hay calificaciones, proceder con la eliminación
+        db.session.delete(matricula)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "icon": "success",
+            "mensaje": f"✅ Matrícula de <strong>{estudiante_nombre}</strong> en {seccion_info} eliminada exitosamente.",
+            "redirect": url_for('matricula.lista_matriculas')
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "success": False,
+            "icon": "error",
+            "mensaje": f"❌ Error al eliminar la matrícula: {str(e)}"
         })

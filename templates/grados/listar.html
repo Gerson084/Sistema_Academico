@@ -262,18 +262,19 @@
                     <td>
                         <a href="{{ url_for('grados.editar_grado', id=grado.id_grado) }}" class="btn-edit"><i class="fas fa-edit"></i> Editar</a>
 
-                        <form action="{{ url_for('grados.eliminar_grado', id=grado.id_grado) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar este grado?');">
-                            <button type="submit" class="btn-delete"><i class="fas fa-trash"></i> Eliminar</button>
-                        </form>
+                        <button type="button" class="btn-delete" onclick="eliminarGrado({{ grado.id_grado }}, '{{ grado.nombre_grado }}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
 
-
-                        <form action="{{ url_for('grados.toggle_grado', id=grado.id_grado) }}" method="GET" style="display:inline;">
-                            {% if grado.activo %}
-                                <button type="submit" class="btn-delete" style="background:#6b7280;"><i class="fas fa-toggle-on"></i> Desactivar</button>
-                            {% else %}
-                                <button type="submit" class="btn-delete inactive" style="background:#059669;"><i class="fas fa-toggle-off"></i> Activar</button>
-                            {% endif %}
-                        </form>
+                        {% if grado.activo %}
+                            <button type="button" class="btn-delete" style="background:#6b7280;" onclick="toggleGrado({{ grado.id_grado }}, '{{ grado.nombre_grado }}', false)">
+                                <i class="fas fa-toggle-on"></i> Desactivar
+                            </button>
+                        {% else %}
+                            <button type="button" class="btn-delete inactive" style="background:#059669;" onclick="toggleGrado({{ grado.id_grado }}, '{{ grado.nombre_grado }}', true)">
+                                <i class="fas fa-toggle-off"></i> Activar
+                            </button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -290,10 +291,95 @@ document.addEventListener("DOMContentLoaded", function() {
     if(alert) {
         setTimeout(() => {
             alert.classList.add("hiding");
-            setTimeout(() => alert.remove(), 300); // coincide con la animación slideUp
-        }, 3000); // se oculta después de 3 segundos
+            setTimeout(() => alert.remove(), 300);
+        }, 3000);
     }
 });
+
+function eliminarGrado(id, nombre) {
+    Swal.fire({
+        title: '¿Eliminar grado?',
+        html: `¿Estás seguro de que deseas eliminar el grado:<br><strong>${nombre}</strong>?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/grados/eliminar/${id}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    icon: data.icon || (data.success ? 'success' : 'error'),
+                    title: data.title || (data.success ? '¡Eliminado!' : 'Error'),
+                    text: data.mensaje,
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    if (data.success && data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                });
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al eliminar el grado',
+                    confirmButtonColor: '#0D2C63'
+                });
+            });
+        }
+    });
+}
+
+function toggleGrado(id, nombre, activar) {
+    const action = activar ? 'activar' : 'desactivar';
+    const actionCap = activar ? 'Activar' : 'Desactivar';
+    
+    Swal.fire({
+        title: `¿${actionCap} grado?`,
+        html: `¿Estás seguro de que deseas ${action} el grado:<br><strong>${nombre}</strong>?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: activar ? '#059669' : '#6b7280',
+        cancelButtonColor: '#0D2C63',
+        confirmButtonText: `Sí, ${action}`,
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/grados/toggle/${id}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    icon: data.icon || (data.success ? 'success' : 'error'),
+                    title: data.title || (data.success ? `¡${actionCap}!` : 'Error'),
+                    text: data.mensaje,
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    if (data.success && data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                });
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: `Error al ${action} el grado`,
+                    confirmButtonColor: '#0D2C63'
+                });
+            });
+        }
+    });
+}
 </script>
 
 

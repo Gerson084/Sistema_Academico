@@ -175,7 +175,7 @@
               data-ano="{{ m.ano_lectivo if is_dict else (m.seccion.ano_lectivo.ano if m.seccion and m.seccion.ano_lectivo else 'N/A') }}"
               data-grado="{{ m.nombre_grado if is_dict else (m.seccion.grado.nombre_grado if m.seccion and m.seccion.grado else 'N/A') }}"
               data-seccion="{{ m.nombre_seccion if is_dict else (m.seccion.nombre_seccion if m.seccion else 'N/A') }}"
-              data-estado="{{ 'activa' if m.activa else 'inactiva' }}"
+              data-estado="{{ 'activa' if (m.matricula_activa if is_dict else m.activa) else 'inactiva' }}"
               data-search="{{ ((m.estudiante_nombres if is_dict else m.estudiante.nombres) + ' ' + (m.estudiante_apellidos if is_dict else m.estudiante.apellidos) + ' ' + (m.nombre_seccion if is_dict else (m.seccion.nombre_seccion if m.seccion else '')) + ' ' + (m.nombre_grado if is_dict else (m.seccion.grado.nombre_grado if m.seccion and m.seccion.grado else '')) + ' ' + (m.ano_lectivo|string if is_dict else (m.seccion.ano_lectivo.ano|string if m.seccion and m.seccion.ano_lectivo else '')))|lower }}">
             <td>
                 <strong>#{{ m.id_matricula }}</strong>
@@ -272,14 +272,32 @@
                 <a href="{{ url_for('matricula.editar_matricula', id=m.id_matricula) }}" class="btn-edit" title="Editar matrícula">
                   <i class="fas fa-edit"></i> Editar
                 </a>
-                {% if m.activa %}
-                <button type="button" class="btn-deactivate" onclick="deactivateMatricula({{ m.id_matricula }}, '{{ (m.estudiante_nombres if is_dict else m.estudiante.nombres) }} {{ (m.estudiante_apellidos if is_dict else m.estudiante.apellidos) }}')" title="Desactivar matrícula">
-                  <i class="fas fa-ban"></i> Desac.
-                </button>
+                {% if is_dict %}
+                  {% if m.matricula_activa %}
+                  <button type="button" class="btn-deactivate" onclick="deactivateMatricula({{ m.id_matricula }}, '{{ m.estudiante_nombres }} {{ m.estudiante_apellidos }}')" title="Desactivar matrícula">
+                    <i class="fas fa-ban"></i> Desac.
+                  </button>
+                  {% else %}
+                  <button type="button" class="btn-activate" onclick="activateMatricula({{ m.id_matricula }}, '{{ m.estudiante_nombres }} {{ m.estudiante_apellidos }}')" title="Activar matrícula">
+                    <i class="fas fa-check"></i> Activar
+                  </button>
+                  {% endif %}
+                  <button type="button" class="btn-delete" onclick="deleteMatricula({{ m.id_matricula }}, '{{ m.estudiante_nombres }} {{ m.estudiante_apellidos }}')" title="Eliminar matrícula">
+                    <i class="fas fa-trash"></i> Eliminar
+                  </button>
                 {% else %}
-                <button type="button" class="btn-activate" onclick="activateMatricula({{ m.id_matricula }}, '{{ (m.estudiante_nombres if is_dict else m.estudiante.nombres) }} {{ (m.estudiante_apellidos if is_dict else m.estudiante.apellidos) }}')" title="Activar matrícula">
-                  <i class="fas fa-check"></i> Activar
-                </button>
+                  {% if m.activa %}
+                  <button type="button" class="btn-deactivate" onclick="deactivateMatricula({{ m.id_matricula }}, '{{ m.estudiante.nombres }} {{ m.estudiante.apellidos }}')" title="Desactivar matrícula">
+                    <i class="fas fa-ban"></i> Desac.
+                  </button>
+                  {% else %}
+                  <button type="button" class="btn-activate" onclick="activateMatricula({{ m.id_matricula }}, '{{ m.estudiante.nombres }} {{ m.estudiante.apellidos }}')" title="Activar matrícula">
+                    <i class="fas fa-check"></i> Activar
+                  </button>
+                  {% endif %}
+                  <button type="button" class="btn-delete" onclick="deleteMatricula({{ m.id_matricula }}, '{{ m.estudiante.nombres }} {{ m.estudiante.apellidos }}')" title="Eliminar matrícula">
+                    <i class="fas fa-trash"></i> Eliminar
+                  </button>
                 {% endif %}
               </div>
             </td>
@@ -665,6 +683,63 @@
                     title: 'Error',
                     text: data.mensaje,
                     icon: 'error',
+                    confirmButtonColor: '#0D2C63'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Error de conexión. Por favor, intente nuevamente.',
+                icon: 'error',
+                confirmButtonColor: '#0D2C63'
+            });
+        }
+    }
+  }
+
+  async function deleteMatricula(matriculaId, estudianteNombre) {
+    const result = await Swal.fire({
+        title: '¿Eliminar matrícula?',
+        html: `¿Estás seguro de que deseas eliminar la matrícula de <strong>${estudianteNombre}</strong>?<br><br>
+               <span style="color: #dc2626;">⚠️ Esta acción no se puede deshacer.</span>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`/matriculas/matricula/delete/${matriculaId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    title: '¡Eliminada!',
+                    html: data.mensaje,
+                    icon: data.icon || 'success',
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        window.location.reload();
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'No se puede eliminar',
+                    html: data.mensaje,
+                    icon: data.icon || 'error',
                     confirmButtonColor: '#0D2C63'
                 });
             }

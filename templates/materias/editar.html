@@ -64,11 +64,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
     // validaciones
     form.addEventListener('submit', function(e){
+        e.preventDefault(); // Prevenir envío normal del formulario
+        
         let valid = true;
 
         const nombre = document.getElementById('nombre_materia');
         const codigo = document.getElementById('codigo_materia');
-        const grado = document.getElementById('id_grado');
 
         if(nombre.value.trim()===""){
             document.getElementById('nombreError').textContent="Este campo es obligatorio";
@@ -86,15 +87,45 @@ document.addEventListener('DOMContentLoaded', function(){
             codigo.classList.remove('is-invalid');
         }
 
-        if(grado.value===""){
-            document.getElementById('gradoError').textContent="Seleccione un grado";
-            grado.classList.add('is-invalid');
-            valid=false;
-        } else {
-            grado.classList.remove('is-invalid');
-        }
+        if(!valid) return;
 
-        if(!valid) e.preventDefault();
+        // Enviar formulario con AJAX
+        const formData = new FormData(form);
+        
+        fetch(form.action || window.location.href, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success){
+                Swal.fire({
+                    icon: data.icon || 'success',
+                    title: '¡Actualizado!',
+                    text: data.mensaje,
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    if(data.redirect){
+                        window.location.href = data.redirect;
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.mensaje || 'No se pudo actualizar la materia',
+                    confirmButtonColor: '#0D2C63'
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al procesar la solicitud',
+                confirmButtonColor: '#0D2C63'
+            });
+        });
     });
 });
 </script>

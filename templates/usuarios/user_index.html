@@ -461,8 +461,8 @@
             if (data.success) {
                 Swal.fire({
                     title: '¡Desactivado!',
-                    text: data.mensaje,
-                    icon: 'success',
+                    html: data.mensaje,
+                    icon: data.icon || 'success',
                     confirmButtonColor: '#0D2C63'
                 }).then(() => {
                     if (data.redirect) {
@@ -472,8 +472,8 @@
             } else {
                 Swal.fire({
                     title: 'Error',
-                    text: data.mensaje,
-                    icon: 'error',
+                    html: data.mensaje,
+                    icon: data.icon || 'error',
                     confirmButtonColor: '#0D2C63'
                 });
             }

@@ -28,7 +28,12 @@
                     <label for="nivel" class="form-label required-field">Nivel</label>
                     <div class="input-icon">
                         <i class="fas fa-layer-group"></i>
-                        <input type="text" name="nivel" id="nivel" class="form-control" required maxlength="30">
+                        <select name="nivel" id="nivel" class="form-control" required>
+                            <option value="">Seleccione un nivel</option>
+                            <option value="Parvularia">Parvularia</option>
+                            <option value="Básico">Básico</option>
+                            <option value="Bachillerato">Bachillerato</option>
+                        </select>
                     </div>
                     <div class="invalid-feedback" id="nivelError"></div>
                 </div>

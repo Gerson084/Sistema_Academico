@@ -400,6 +400,22 @@
 }
 .btn-activate:hover { background: #047857; transform: translateY(-1px); }
 
+.btn-delete {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: .5rem .8rem;
+    border-radius: .375rem;
+    font-size: .8rem;
+    transition: all .2s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    cursor: pointer;
+}
+.btn-delete:hover { background: #991b1b; transform: translateY(-1px); }
+
 .empty-state {
     text-align: center;
     padding: 3rem;
@@ -504,7 +520,7 @@
         min-width: auto;
     }
     
-    .btn-edit, .btn-deactivate, .btn-activate {
+    .btn-edit, .btn-deactivate, .btn-activate, .btn-delete {
         padding: .4rem .6rem;
         font-size: .75rem;
     }

@@ -480,24 +480,19 @@
                                 <a href="{{ url_for('materias.editar_materia', id=materia.id_materia) }}" class="btn-edit">
                                     <i class="fas fa-edit"></i> Editar
                                 </a>
-                                <form action="{{ url_for('materias.eliminar_materia', id=materia.id_materia) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete('{{ materia.nombre_materia }}');">
-                                    <button type="submit" class="btn-delete">
-                                        <i class="fas fa-trash"></i>
-                                        Eliminar
-                                    </button>
-                                </form>
+                                <button onclick="eliminarMateria({{ materia.id_materia }}, '{{ materia.nombre_materia }}')" class="btn-delete">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
                                 {% if materia.activa %}
-                                    <form id="formDesactivar" action="{{ url_for('materias.deshabilitar_materia', id=materia.id_materia) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Deshabilitar esta materia?');">
-                                        <button type="submit" id="btnDesactivar" class="btn-delete" style="background:#6b7280;" title="Deshabilitar materia">
-                                            <i class="fas fa-toggle-on"></i> Desactivar
-                                        </button>
-                                    </form>
+                                    <button onclick="desactivarMateria({{ materia.id_materia }}, '{{ materia.nombre_materia }}')" 
+                                            class="btn-delete" style="background:#6b7280;" title="Deshabilitar materia">
+                                        <i class="fas fa-toggle-on"></i> Desactivar
+                                    </button>
                                 {% else %}
-                                    <form action="{{ url_for('materias.habilitar_materia', id=materia.id_materia) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Habilitar esta materia?');">
-                                        <button type="submit" class="btn-delete" style="background:#059669;" title="Habilitar materia">
-                                            <i class="fas fa-toggle-off"></i> Activar
-                                        </button>
-                                    </form>
+                                    <button onclick="activarMateria({{ materia.id_materia }}, '{{ materia.nombre_materia }}')" 
+                                            class="btn-delete" style="background:#059669;" title="Habilitar materia">
+                                        <i class="fas fa-toggle-off"></i> Activar
+                                    </button>
                                 {% endif %}
                             </div>
                         </td>
@@ -519,64 +514,6 @@
 </div>
 
 <script>
-
-
-// document.getElementById('btnDesactivar').addEventListener('click', function(e) {
-//     e.preventDefault();
-//     Swal.fire({
-//         title: '¿Deshabilitar esta materia?',
-//         text: "La materia no estará disponible para asignaciones futuras.",
-//         icon: 'warning',
-//         showCancelButton: true,
-//         confirmButtonColor: '#0D2C63',
-//         cancelButtonColor: '#d33',
-//         confirmButtonText: 'Sí, deshabilitar',
-//         cancelButtonText: 'Cancelar'
-//     }).then((result) => {
-//         if (result.isConfirmed) {
-//             e.target.closest('form').submit();
-//         }
-//     });
-// });
-
-document.getElementById('formDesactivar').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const formData = new FormData(this);
-
-        fetch(this.action, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-             if (data.success) {
-                Swal.fire({
-                title: '¡Éxito!',
-                text: data.mensaje,
-                icon: 'success',
-                confirmButtonColor: '#0D2C63'
-                }).then(() => {
-                if (data.redirect) {
-                    window.location.href = data.redirect;
-                }
-                });
-            } else {
-                Swal.fire({
-                title: 'Error',
-                text: data.mensaje,
-                icon: 'error',
-                confirmButtonColor: '#0D2C63'
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("❌ Ocurrió un error al guardar la materia.");
-        });
-});
-
-
 document.getElementById('searchInput').addEventListener('input', function() {
     const searchTerm = this.value.toLowerCase();
     const rows = document.querySelectorAll('.subject-row');
@@ -586,8 +523,127 @@ document.getElementById('searchInput').addEventListener('input', function() {
     });
 });
 
-function confirmDelete(name) {
-    return confirm(`¿Eliminar la materia "${name}"?`);
+function eliminarMateria(id, nombre) {
+    Swal.fire({
+        title: '¿Eliminar materia?',
+        html: `¿Estás seguro de que deseas eliminar la materia:<br><strong>${nombre}</strong>?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/materias/eliminar/${id}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    icon: data.icon || (data.success ? 'success' : 'error'),
+                    title: data.title || (data.success ? '¡Eliminado!' : 'Error'),
+                    text: data.mensaje,
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    if (data.success && data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                });
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al eliminar la materia',
+                    confirmButtonColor: '#0D2C63'
+                });
+            });
+        }
+    });
+}
+
+function desactivarMateria(id, nombre) {
+    Swal.fire({
+        title: '¿Desactivar materia?',
+        html: `¿Estás seguro de que deseas desactivar la materia:<br><strong>${nombre}</strong>?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#6b7280',
+        cancelButtonColor: '#0D2C63',
+        confirmButtonText: 'Sí, desactivar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/materias/deshabilitar/${id}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    icon: data.icon || (data.success ? 'success' : 'error'),
+                    title: data.title || (data.success ? '¡Desactivado!' : 'Error'),
+                    text: data.mensaje,
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    if (data.success && data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                });
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al desactivar la materia',
+                    confirmButtonColor: '#0D2C63'
+                });
+            });
+        }
+    });
+}
+
+function activarMateria(id, nombre) {
+    Swal.fire({
+        title: '¿Activar materia?',
+        html: `¿Estás seguro de que deseas activar la materia:<br><strong>${nombre}</strong>?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, activar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/materias/habilitar/${id}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    icon: data.icon || (data.success ? 'success' : 'error'),
+                    title: data.title || (data.success ? '¡Activado!' : 'Error'),
+                    text: data.mensaje,
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    if (data.success && data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                });
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al activar la materia',
+                    confirmButtonColor: '#0D2C63'
+                });
+            });
+        }
+    });
 }
 </script>
 

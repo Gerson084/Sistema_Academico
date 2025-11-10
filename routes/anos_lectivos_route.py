@@ -328,16 +328,29 @@ def activar_ano(id_ano):
         
         # ===== ACTIVAR AÑO =====
         
-        # Desactivar todos
+        # Desactivar todos los años
         AnoLectivo.query.update({'activo': False})
         
-        # Activar el seleccionado
+        # Desactivar todos los períodos de todos los años
+        query_desactivar_periodos = text("UPDATE periodos SET activo = 0")
+        db.session.execute(query_desactivar_periodos)
+        
+        # Activar el año seleccionado
         ano.activo = True
+        
+        # Activar los períodos del año seleccionado
+        query_activar_periodos = text("""
+            UPDATE periodos 
+            SET activo = 1 
+            WHERE id_ano_lectivo = :id_ano
+        """)
+        db.session.execute(query_activar_periodos, {'id_ano': id_ano})
+        
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'mensaje': f'Año lectivo {ano.ano} activado correctamente',
+            'mensaje': f'Año lectivo {ano.ano} activado correctamente. Se activaron {total_periodos} períodos.',
             'redirect': url_for('anos_lectivos.listar_anos')
         })
         
@@ -395,8 +408,8 @@ def crear_periodos(id_ano):
         
         for periodo in periodos:
             query = text("""
-                INSERT INTO periodos (id_ano_lectivo, numero_periodo, nombre_periodo, fecha_inicio, fecha_fin)
-                VALUES (:id_ano, :numero, :nombre, :fecha_inicio, :fecha_fin)
+                INSERT INTO periodos (id_ano_lectivo, numero_periodo, nombre_periodo, fecha_inicio, fecha_fin, activo)
+                VALUES (:id_ano, :numero, :nombre, :fecha_inicio, :fecha_fin, 0)
             """)
             
             db.session.execute(query, {
@@ -579,7 +592,16 @@ def cerrar_ano(id_ano):
         
         db.session.execute(query_desactivar_matriculas, {'id_ano': id_ano})
         
-        # 2. Desactivar el año lectivo
+        # 2. Desactivar los períodos del año
+        query_desactivar_periodos = text("""
+            UPDATE periodos 
+            SET activo = 0 
+            WHERE id_ano_lectivo = :id_ano
+        """)
+        
+        db.session.execute(query_desactivar_periodos, {'id_ano': id_ano})
+        
+        # 3. Desactivar el año lectivo
         ano_actual.activo = False
         
         db.session.commit()

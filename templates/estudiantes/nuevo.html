@@ -746,11 +746,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     const birthDate = new Date(value);
                     const today = new Date();
                     const minAge = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
-                    const maxAge = new Date(today.getFullYear() - 3, today.getMonth(), today.getDate());
+                    const maxAge = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
                     
                     if (birthDate > maxAge) {
                         isValid = false;
-                        errorMessage = 'La edad mínima es de 3 años';
+                        errorMessage = 'La edad mínima es de 1 año';
                     }
                     if (birthDate < minAge) {
                         isValid = false;
@@ -846,7 +846,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updateValidationSummary();
 
     // Validación antes de enviar
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault(); // Siempre prevenir el envío por defecto
+        
         let isValid = true;
         const allFields = form.querySelectorAll('input, select, textarea');
         let firstInvalidField = null;
@@ -870,8 +872,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         if (!isValid) {
-            e.preventDefault();
-            
             // Crear mensaje de error detallado
             let alertMessage = '⚠️ Por favor, corrija los siguientes errores:\n\n';
             errorMessages.forEach((msg, index) => {
@@ -890,37 +890,67 @@ document.addEventListener('DOMContentLoaded', function() {
                     firstInvalidField.focus();
                 }, 500);
             }
-        } else {
-            // Validación final adicional
-            const finalValidation = performFinalValidation();
-            if (!finalValidation.isValid) {
-                e.preventDefault();
-                alert('⚠️ Validación final:\n\n' + finalValidation.message);
+            return;
+        }
+        
+        // Validación final adicional
+        const finalValidation = performFinalValidation();
+        if (!finalValidation.isValid) {
+            alert('⚠️ Validación final:\n\n' + finalValidation.message);
+            return;
+        }
+
+        // Client-side NIE uniqueness check
+        const submittedNIE = (form.nie.value || '').trim();
+        if (submittedNIE) {
+            const dup = existingNies.find(s => String(s.nie) === String(submittedNIE));
+            if (dup) {
+                alert('⚠️ Ya existe un estudiante con ese NIE. Verifique y vuelva a intentarlo.');
+                document.getElementById('nie').classList.add('is-invalid');
                 return;
             }
-
-            // Client-side NIE uniqueness check
-            const submittedNIE = (form.nie.value || '').trim();
-            if (submittedNIE) {
-                const dup = existingNies.find(s => String(s.nie) === String(submittedNIE));
-                if (dup) {
-                    e.preventDefault();
-                    alert('⚠️ Ya existe un estudiante con ese NIE. Verifique y vuelva a intentarlo.');
-                    document.getElementById('nie').classList.add('is-invalid');
-                    return;
+        }
+        
+        // Mostrar confirmación antes de enviar
+        const confirmMessage = '✅ ¿Está seguro que desea guardar este estudiante?\n\n' +
+                             `NIE: ${form.nie.value}\n` +
+                             `Nombre: ${form.nombres.value} ${form.apellidos.value}\n` +
+                             `Fecha de Nacimiento: ${form.fecha_nacimiento.value || 'No especificada'}\n` +
+                             `Género: ${form.genero.options[form.genero.selectedIndex]?.text || 'No especificado'}`;
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+        
+        // Enviar formulario con AJAX
+        try {
+            const formData = new FormData(form);
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(data.mensaje.replace(/<[^>]*>/g, '')); // Eliminar tags HTML para alert simple
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                }
+            } else {
+                // Mostrar error con HTML si está disponible
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: data.icon || 'error',
+                        html: data.mensaje,
+                        confirmButtonColor: '#0D2C63'
+                    });
+                } else {
+                    alert(data.mensaje.replace(/<[^>]*>/g, ''));
                 }
             }
-            
-            // Mostrar confirmación antes de enviar
-            const confirmMessage = '✅ ¿Está seguro que desea guardar este estudiante?\n\n' +
-                                 `NIE: ${form.nie.value}\n` +
-                                 `Nombre: ${form.nombres.value} ${form.apellidos.value}\n` +
-                                 `Fecha de Nacimiento: ${form.fecha_nacimiento.value || 'No especificada'}\n` +
-                                 `Género: ${form.genero.options[form.genero.selectedIndex]?.text || 'No especificado'}`;
-            
-            if (!confirm(confirmMessage)) {
-                e.preventDefault();
-            }
+        } catch (error) {
+            alert('❌ Error de conexión. Por favor, intente nuevamente.');
         }
     });
 
@@ -943,7 +973,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             const age = Math.floor((today - birthDate) / (365.25 * 24 * 60 * 60 * 1000));
             
-            if (age < 5) {
+            if (age < 1) {
                 warnings.push('- La edad del estudiante parece muy joven para el sistema');
             }
             if (age > 25) {
