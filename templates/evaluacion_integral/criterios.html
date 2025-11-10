@@ -1,0 +1,168 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .card-criterios {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(13,44,99,0.08);
+    border: none;
+    margin-bottom: 2rem;
+  }
+  .card-header {
+    background: linear-gradient(135deg, #0D2C63 0%, #1a4480 100%);
+    color: #fff;
+    border-radius: 0.75rem 0.75rem 0 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+  }
+  .card-body {
+    padding: 1.5rem;
+  }
+  .select-filtros {
+    min-width: 180px;
+    margin-right: 1rem;
+  }
+  .table-criterios th, .table-criterios td {
+    vertical-align: middle;
+    font-size: 1rem;
+  }
+  .btn {
+    font-weight: 500;
+  }
+</style>
+<div class="container mt-4">
+  <div class="card card-criterios">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+      <span>Gestión de Criterios de Evaluación Integral</span>
+      <div class="d-flex gap-2">
+        {% set role = session.get('user_role') %}
+        {% if role == 1 %}
+          <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light btn-sm">Regresar al dashboard</a>
+        {% else %}
+          <a href="{{ url_for('coordinador.dashboard') }}" class="btn btn-outline-light btn-sm">Regresar al dashboard</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card-body">
+  <form method="post" class="row g-2 mb-4 align-items-end">
+        <div class="col-md-4">
+          <label for="grado" class="form-label">Grado:</label>
+          <select name="id_grado" id="grado" class="form-select select-filtros" onchange="this.form.submit()" required>
+            <option value="">Seleccione grado...</option>
+            {% for grado in grados %}
+              {% if grado.nombre_grado in ['Inicial','PreKinder','Kinder','Preparatoria','Primer Grado'] %}
+                <option value="{{ grado.id_grado }}" {% if grado.id_grado == id_grado %}selected{% endif %}>{{ grado.nombre_grado }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="ambito" class="form-label">Ámbito:</label>
+          <select name="id_ambito" id="ambito" class="form-select select-filtros" onchange="this.form.submit()" required>
+            <option value="">Seleccione ámbito...</option>
+            {% for ambito in ambitos %}
+              <option value="{{ ambito.id_ambito }}" {% if ambito.id_ambito == id_ambito %}selected{% endif %}>{{ ambito.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="apartado" class="form-label">Apartado:</label>
+          <select name="id_apartado" id="apartado" class="form-select select-filtros" onchange="this.form.submit()" required>
+            <option value="">Seleccione apartado...</option>
+            {% for apartado in apartados if apartado.id_ambito == id_ambito %}
+              <option value="{{ apartado.id_apartado }}" {% if apartado.id_apartado == id_apartado %}selected{% endif %}>{{ apartado.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </form>
+      <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold">Criterios existentes</span>
+          {% if criterios|length < 10 and id_grado and id_apartado %}
+            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCriterioModal">Agregar criterio</button>
+          {% endif %}
+        </div>
+        <table class="table table-bordered table-criterios mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width:5%">#</th>
+              <th>Descripción</th>
+              <th style="width:20%">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for criterio in criterios %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ criterio.descripcion }}</td>
+              <td>
+                <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editCriterioModal{{ criterio.id_criterio }}">Editar</button>
+                <form method="post" action="?delete={{ criterio.id_criterio }}&id_grado={{ id_grado }}&id_ambito={{ id_ambito }}&id_apartado={{ id_apartado }}" class="d-inline">
+                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este criterio?')">Eliminar</button>
+                </form>
+              </td>
+            </tr>
+            <!-- Modal editar criterio -->
+            <div class="modal fade" id="editCriterioModal{{ criterio.id_criterio }}" tabindex="-1" aria-labelledby="editCriterioModalLabel{{ criterio.id_criterio }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form method="post" action="?edit={{ criterio.id_criterio }}&id_grado={{ id_grado }}&id_ambito={{ id_ambito }}&id_apartado={{ id_apartado }}">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="editCriterioModalLabel{{ criterio.id_criterio }}">Editar Criterio</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                      <input type="hidden" name="id_criterio" value="{{ criterio.id_criterio }}">
+                      <div class="mb-3">
+                        <label for="descripcionEdit{{ criterio.id_criterio }}" class="form-label">Descripción</label>
+                        <input type="text" class="form-control" name="descripcion_criterio" id="descripcionEdit{{ criterio.id_criterio }}" value="{{ criterio.descripcion }}" maxlength="255" required>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-success">Guardar cambios</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+            {% if criterios|length == 0 %}
+            <tr>
+              <td colspan="3" class="text-center text-muted">No hay criterios definidos para este apartado y grado.</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+      <!-- Modal agregar criterio -->
+      <div class="modal fade" id="addCriterioModal" tabindex="-1" aria-labelledby="addCriterioModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="?add=1&id_grado={{ id_grado }}&id_ambito={{ id_ambito }}&id_apartado={{ id_apartado }}">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addCriterioModalLabel">Agregar Criterio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+              </div>
+              <div class="modal-body">
+                <input type="hidden" name="id_apartado" value="{{ id_apartado }}">
+                <input type="hidden" name="id_grado" value="{{ id_grado }}">
+                <div class="mb-3">
+                  <label for="descripcionCriterio" class="form-label">Descripción del criterio</label>
+                  <input type="text" class="form-control" name="descripcion_criterio" id="descripcionCriterio" maxlength="255" required>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-success">Agregar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
