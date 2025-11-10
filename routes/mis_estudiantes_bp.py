@@ -416,12 +416,12 @@ def _obtener_notas_materia(id_estudiante, id_asignacion, periodos):
         else:
             notas_periodos.append('--')
 
-    # Calcular promedios
+    # Calcular promedios (suma dividida entre cantidad de períodos/trimestres)
     while len(notas_periodos) < 4:  # Asegurar 4 períodos
         notas_periodos.append('--')
 
-    promedio = sum(notas_validas) / len(notas_validas) if notas_validas else '--'
-    trimestre = sum(notas_validas[:3]) / len(notas_validas[:3]) if len(notas_validas) >= 3 else '--'
+    total = (sum(notas_validas) / len(notas_validas)) if notas_validas else '--'
+    trimestre_total = (sum(notas_validas[:3]) / 3) if len(notas_validas) >= 3 else '--'
     examen = notas_validas[3] if len(notas_validas) > 3 else '--'
 
     # Intentar obtener 'actitud'/aptitud desde la tabla conducta_materia_periodo si existe
@@ -457,8 +457,8 @@ def _obtener_notas_materia(id_estudiante, id_asignacion, periodos):
 
     return {
         'notas_periodos': notas_periodos,
-        'promedio': promedio,
-        'trimestre': trimestre,
+        'total': total,
+        'trimestre_total': trimestre_total,
         'examen': examen,
         'actitud': actitud_val if actitud_val is not None else '--'
     }
@@ -528,8 +528,8 @@ def _preparar_contexto_boleta(id_estudiante, id_asignacion):
         notas_info = _obtener_notas_materia(id_estudiante, asig.id_asignacion, periodos)
         
         if esquema == 'periodos':
-            # Bachillerato: mostrar los 4 periodos tal cual
-            final_calc = notas_info['promedio']
+            # Bachillerato: mostrar los 4 periodos tal cual, FINAL es promedio de los 4 períodos
+            final_calc = notas_info['total']
             materia_info = {
                 'nombre_materia': asig.materia.nombre_materia,
                 'actitud': format(notas_info['actitud'], '.1f') if isinstance(notas_info.get('actitud'), float) else (notas_info.get('actitud') or '--'),
@@ -537,16 +537,15 @@ def _preparar_contexto_boleta(id_estudiante, id_asignacion):
                 'periodo2': format(notas_info['notas_periodos'][1], '.1f') if isinstance(notas_info['notas_periodos'][1], float) else '--',
                 'periodo3': format(notas_info['notas_periodos'][2], '.1f') if isinstance(notas_info['notas_periodos'][2], float) else '--',
                 'periodo4': format(notas_info['notas_periodos'][3], '.1f') if isinstance(notas_info['notas_periodos'][3], float) else '--',
-                'final': format(final_calc, '.1f') if isinstance(final_calc, float) else '--'
+                'final': format(final_calc, '.1f') if isinstance(final_calc, (int, float)) else '--'
             }
         else:  # esquema == 'trimestres'
-            # Nivel básico: 3 trimestres individuales (mapeados a los primeros 3 periodos) y nota final = promedio de esos 3.
-            # NOTA: ignoramos un posible cuarto periodo/examen para este esquema.
+            # Nivel básico: 3 trimestres individuales, FINAL es promedio de los 3 trimestres
             t1_raw = notas_info['notas_periodos'][0] if len(notas_info['notas_periodos']) > 0 else '--'
             t2_raw = notas_info['notas_periodos'][1] if len(notas_info['notas_periodos']) > 1 else '--'
             t3_raw = notas_info['notas_periodos'][2] if len(notas_info['notas_periodos']) > 2 else '--'
 
-            # Calcular final como promedio de los 3 trimestres válidos.
+            # Calcular final como PROMEDIO de los 3 trimestres válidos
             trimestres_validos = []
             for v in [t1_raw, t2_raw, t3_raw]:
                 if isinstance(v, float):
@@ -559,7 +558,7 @@ def _preparar_contexto_boleta(id_estudiante, id_asignacion):
                 'trimestre1': format(t1_raw, '.1f') if isinstance(t1_raw, float) else '--',
                 'trimestre2': format(t2_raw, '.1f') if isinstance(t2_raw, float) else '--',
                 'trimestre3': format(t3_raw, '.1f') if isinstance(t3_raw, float) else '--',
-                'final': format(final_calc, '.1f') if isinstance(final_calc, float) else '--'
+                'final': format(final_calc, '.1f') if isinstance(final_calc, (int, float)) else '--'
             }
         materias_data.append(materia_info)
 

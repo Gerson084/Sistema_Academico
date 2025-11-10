@@ -86,10 +86,15 @@
 	<button class="print-btn" onclick="window.print()">🖨️ Imprimir</button>
 	<div class="boleta-wrapper">
 		<div class="header">
-			<h1>"AMADO SEA EN TODAS PARTES EL SAGRADO CORAZÓN DE JESÚS"</h1>
-			<h2>Colegio Santa María</h2>
-			<h3>Hijas de Santa María del Corazón de Jesús</h3>
-			<div>{{ titulo_boleta or 'Informe de Notas' }} • Año {{ ano_lectivo.ano }}</div>
+			<div style="flex:1">
+				<h1>"AMADO SEA EN TODAS PARTES EL SAGRADO CORAZÓN DE JESÚS"</h1>
+				<h2>Colegio Santa María</h2>
+				<h3>Hijas de Santa María del Corazón de Jesús</h3>
+				<div>{{ titulo_boleta or 'Informe de Notas' }} • Año {{ ano_lectivo.ano }}</div>
+			</div>
+			<div class="logo-container" style="flex-shrink:0">
+				<img src="{{ url_for('static', filename='img/Logo.jpg') }}" alt="Logo del Colegio" class="logo" style="width:90px;height:90px;object-fit:contain;display:block" />
+			</div>
 		</div>
 
 		<div class="student-info">
@@ -124,7 +129,7 @@
 					<th style="width:8%">2°P</th>
 					<th style="width:8%">3°P</th>
 					<th style="width:8%">4°P</th>
-					<th style="width:8%">FINAL</th>
+					<th style="width:8%">TOTAL</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -152,7 +157,7 @@
 					<th style="width:10%">TRIM I</th>
 					<th style="width:10%">TRIM II</th>
 					<th style="width:10%">TRIM III</th>
-					<th style="width:10%">FINAL</th>
+					<th style="width:10%">TOTAL</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -179,11 +184,11 @@
 			{% if esquema == 'periodos' %}
 				<span style="margin-left:12px;"><strong>ACTITUD</strong>: Evaluación de actitud por materia</span>
 				<span style="margin-left:12px;"><strong>1°P - 4°P</strong>: Notas por cada período académico</span>
-				<span style="margin-left:12px;"><strong>FINAL</strong>: Promedio de los períodos</span>
+				<span style="margin-left:12px;"><strong>TOTAL</strong>: Promedio de los 4 períodos</span>
 			{% else %}
 				<span style="margin-left:12px;"><strong>ACTITUD</strong>: Evaluación de actitud por materia</span>
 				<span style="margin-left:12px;"><strong>TRIM I - TRIM III</strong>: Notas de cada trimestre</span>
-				<span style="margin-left:12px;"><strong>FINAL</strong>: Promedio de los tres trimestres</span>
+				<span style="margin-left:12px;"><strong>TOTAL</strong>: Promedio de los 3 trimestres</span>
 			{% endif %}
 		</div>
 

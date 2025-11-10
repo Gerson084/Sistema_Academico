@@ -86,28 +86,19 @@
                                         {% if user_role == 1 %}
                                             {% if item.id_asignacion and item.id_asignacion != 0 %}
                                                 <!-- Coordinador-docente: boleta por materia -->
-                                                <a href="{{ url_for('mis_estudiantes.descargar_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-primary me-1" title="Descargar boleta por materia (PDF)">
-                                                    <i class="bi bi-file-earmark-pdf"></i> PDF Materia
-                                                </a>
-                                                <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-outline-primary" title="Ver boleta por materia (HTML)">
-                                                    <i class="bi bi-eye"></i> Ver Materia
+                                                <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-primary" title="Ver boleta por materia (HTML)">
+                                                    <i class="bi bi-eye"></i> Ver Boleta - {{ item.materia }}
                                                 </a>
                                             {% else %}
                                                 <!-- Coordinador: boleta completa -->
-                                                <a href="{{ url_for('mis_estudiantes.descargar_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=0) }}" class="btn btn-sm btn-primary me-1" title="Descargar boleta completa (PDF)">
-                                                    <i class="bi bi-file-earmark-pdf"></i> PDF Completa
-                                                </a>
-                                                <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=0) }}" class="btn btn-sm btn-outline-primary" title="Ver boleta completa (HTML)">
-                                                    <i class="bi bi-eye"></i> Ver Completa
+                                                <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=0) }}" class="btn btn-sm btn-primary" title="Ver boleta completa (HTML)">
+                                                    <i class="bi bi-eye"></i> Ver Boleta Completa
                                                 </a>
                                             {% endif %}
                                         {% else %}
                                             <!-- Docente ve solo sus materias -->
-                                            <a href="{{ url_for('mis_estudiantes.descargar_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-primary me-1" title="Descargar boleta por materia (PDF)">
-                                                <i class="bi bi-file-earmark-pdf"></i> PDF Materia
-                                            </a>
-                                            <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-outline-primary" title="Ver boleta por materia (HTML)">
-                                                <i class="bi bi-eye"></i> Ver Materia
+                                            <a href="{{ url_for('mis_estudiantes.ver_boleta', id_estudiante=item.estudiante.id_estudiante, id_asignacion=item.id_asignacion) }}" class="btn btn-sm btn-primary" title="Ver boleta por materia (HTML)">
+                                                <i class="bi bi-eye"></i> Ver Boleta - {{ item.materia }}
                                             </a>
                                         {% endif %}
                                     </td>
