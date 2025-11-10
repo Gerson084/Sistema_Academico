@@ -50,6 +50,10 @@
             body, body * { color: #000 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             table.boleta-table thead th { background: #f1f1f1 !important; color: #000 !important; }
             .meta .box, .equivalencias .card { background: #fff !important; color: #000 !important; }
+            @page {
+                margin: 0;
+                size: auto;
+            }
         }
     </style>
     <style>
@@ -57,9 +61,29 @@
     </style>
     <style>
       h1,h2,h3,div { color: #000; }
+      .print-btn { 
+        position: fixed; 
+        top: 20px; 
+        right: 20px; 
+        padding: 12px 24px; 
+        background: #0D2C63; 
+        color: white; 
+        border: none; 
+        border-radius: 6px; 
+        cursor: pointer; 
+        font-size: 14px; 
+        font-weight: 600; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 1000;
+      }
+      .print-btn:hover { background: #1a4480; }
+      @media print {
+        .print-btn { display: none; }
+      }
     </style>
 </head>
 <body>
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir</button>
     <div class="boleta-wrapper">
         <div class="header">
             <h1>"AMADO SEA EN TODAS PARTES EL SAGRADO CORAZÓN DE JESÚS"</h1>

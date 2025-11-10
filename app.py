@@ -150,7 +150,8 @@ def show_routes():
     return '<br>'.join(output)
 
 # Configuración de wkhtmltopdf con verificación de ruta
-if os.path.exists(WKHTMLTOPDF_PATH):
+#if os.path.exists(WKHTMLTOPDF_PATH):
+if WKHTMLTOPDF_PATH and os.path.exists(WKHTMLTOPDF_PATH):
     app.config['WKHTMLTOPDF_PATH'] = WKHTMLTOPDF_PATH
 else:
     app.config['WKHTMLTOPDF_PATH'] = None
