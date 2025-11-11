@@ -15,7 +15,7 @@ pymysql.install_as_MySQLdb()
 db = SQLAlchemy()
 
 class DatabaseConfig:
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI', 'mysql+pymysql://root:@localhost/sistema_academico')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI', 'mysql+pymysql://admin:12345678@mysql-204427-0.cloudclusters.net:10075/colegiosantamaria')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     @staticmethod
