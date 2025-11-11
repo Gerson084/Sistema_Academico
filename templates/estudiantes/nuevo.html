@@ -443,7 +443,7 @@
 
     <!-- Formulario -->
     <div class="form-container">
-        <form method="POST" id="studentForm">
+    <form method="POST" id="studentForm" action="{{ url_for('estudiantes.nuevo_estudiante') }}">
             <!-- Información Personal -->
             <div class="form-section">
                 <h3 class="section-title">
