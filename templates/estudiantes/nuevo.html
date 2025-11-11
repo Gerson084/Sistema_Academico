@@ -923,33 +923,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Enviar formulario con AJAX
+        try {
             const formData = new FormData(form);
             const response = await fetch(form.action, {
                 method: 'POST',
                 body: formData
             });
-            let data;
-            data = await response.json();
+            
+            // Siempre redirigir a la lista de estudiantes, sin importar el resultado
             window.location.href = "{{ url_for('estudiantes.lista_estudiantes') }}";
-
-            if (data.success) {
-                // Redirigir directamente a la lista de estudiantes
-            } else {
-                            window.location.href = "{{ url_for('estudiantes.lista_estudiantes') }}";
-
-                if (window.Swal) {
-                    Swal.fire({
-                        icon: data.icon || 'error',
-                        html: data.mensaje,
-                        confirmButtonColor: '#0D2C63'
-                    });
-                } else {
-                    window.location.href = "{{ url_for('estudiantes.lista_estudiantes') }}";
-
-                    alert(data.mensaje.replace(/<[^>]*>/g, ''));
-                }
-            }
-      
+            
+        } catch (error) {
+            // Incluso si hay error, redirigir a la lista
+            window.location.href = "{{ url_for('estudiantes.lista_estudiantes') }}";
+        }
     });
 
     // Función de validación final
