@@ -49,69 +49,69 @@ def lista_estudiantes():
 @estudiantes_bp.route('/nuevo', methods=['GET', 'POST'])
 def nuevo_estudiante():
     if request.method == 'POST':
-        fecha_nacimiento_str = request.form.get('fecha_nacimiento')
-        
-        # Validar fecha de nacimiento
-        if fecha_nacimiento_str:
-            try:
-                fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, '%Y-%m-%d').date()
-                fecha_actual = date.today()
-                
-                # Validar que no sea fecha futura
-                if fecha_nacimiento > fecha_actual:
+        try:
+            fecha_nacimiento_str = request.form.get('fecha_nacimiento')
+            # Validar fecha de nacimiento
+            if fecha_nacimiento_str:
+                try:
+                    fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, '%Y-%m-%d').date()
+                    fecha_actual = date.today()
+                    # Validar que no sea fecha futura
+                    if fecha_nacimiento > fecha_actual:
+                        return jsonify({
+                            "success": False,
+                            "icon": "error",
+                            "mensaje": "❌ La fecha de nacimiento no puede ser una fecha futura."
+                        })
+                    # Calcular edad
+                    años, meses = calcular_edad(fecha_nacimiento)
+                    # Validar edad mínima de 1 año
+                    if años < 1:
+                        return jsonify({
+                            "success": False,
+                            "icon": "warning",
+                            "mensaje": f"⚠️ El estudiante debe tener al menos <strong>1 año de edad</strong>.<br><br>"
+                                      f"Fecha de nacimiento ingresada: <strong>{fecha_nacimiento.strftime('%d/%m/%Y')}</strong><br>"
+                                      f"Edad actual: <strong>{años} año(s) y {meses} mes(es)</strong><br><br>"
+                                      f"<span style='color: #dc2626;'>Por favor, verifique la fecha de nacimiento.</span>"
+                        })
+                except ValueError:
                     return jsonify({
                         "success": False,
                         "icon": "error",
-                        "mensaje": "❌ La fecha de nacimiento no puede ser una fecha futura."
+                        "mensaje": "❌ Formato de fecha inválido."
                     })
-                
-                # Calcular edad
-                años, meses = calcular_edad(fecha_nacimiento)
-                
-                # Validar edad mínima de 1 año
-                if años < 1:
-                    return jsonify({
-                        "success": False,
-                        "icon": "warning",
-                        "mensaje": f"⚠️ El estudiante debe tener al menos <strong>1 año de edad</strong>.<br><br>"
-                                  f"Fecha de nacimiento ingresada: <strong>{fecha_nacimiento.strftime('%d/%m/%Y')}</strong><br>"
-                                  f"Edad actual: <strong>{años} año(s) y {meses} mes(es)</strong><br><br>"
-                                  f"<span style='color: #dc2626;'>Por favor, verifique la fecha de nacimiento.</span>"
-                    })
-                    
-            except ValueError:
-                return jsonify({
-                    "success": False,
-                    "icon": "error",
-                    "mensaje": "❌ Formato de fecha inválido."
-                })
-        
-        nuevo = Estudiante(
-            nie=request.form.get('nie'),
-            nombres=request.form.get('nombres'),
-            apellidos=request.form.get('apellidos'),
-            fecha_nacimiento=fecha_nacimiento_str,
-            genero=request.form.get('genero'),
-            direccion=request.form.get('direccion'),
-            telefono=request.form.get('telefono'),
-            email=request.form.get('email'),
-            nombre_padre=request.form.get('nombre_padre'),
-            nombre_madre=request.form.get('nombre_madre'),
-            telefono_emergencia=request.form.get('telefono_emergencia'),
-            fecha_ingreso=request.form.get('fecha_ingreso'),
-            activo=request.form.get('activo', '1') == '1',
-            fecha_creacion=datetime.utcnow()
-        )
-        db.session.add(nuevo)
-        db.session.commit()
-        
-        return jsonify({
-            "success": True,
-            "icon": "success",
-            "mensaje": f"✅ Estudiante <strong>{nuevo.nombres} {nuevo.apellidos}</strong> creado exitosamente.",
-            "redirect": url_for('estudiantes.lista_estudiantes')
-        })
-        
+            nuevo = Estudiante(
+                nie=request.form.get('nie'),
+                nombres=request.form.get('nombres'),
+                apellidos=request.form.get('apellidos'),
+                fecha_nacimiento=fecha_nacimiento_str,
+                genero=request.form.get('genero'),
+                direccion=request.form.get('direccion'),
+                telefono=request.form.get('telefono'),
+                email=request.form.get('email'),
+                nombre_padre=request.form.get('nombre_padre'),
+                nombre_madre=request.form.get('nombre_madre'),
+                telefono_emergencia=request.form.get('telefono_emergencia'),
+                fecha_ingreso=request.form.get('fecha_ingreso'),
+                activo=request.form.get('activo', '1') == '1',
+                fecha_creacion=datetime.utcnow()
+            )
+            db.session.add(nuevo)
+            db.session.commit()
+            return jsonify({
+                "success": True,
+                "icon": "success",
+                "mensaje": f"✅ Estudiante <strong>{nuevo.nombres} {nuevo.apellidos}</strong> creado exitosamente.",
+                "redirect": url_for('estudiantes.lista_estudiantes')
+            })
+        except Exception as e:
+            # Captura cualquier error inesperado y responde en JSON
+            return jsonify({
+                "success": False,
+                "icon": "error",
+                "mensaje": f"❌ Error inesperado: {str(e)}"
+            })
     return render_template("estudiantes/nuevo.html")
 
 # Editar estudiante
