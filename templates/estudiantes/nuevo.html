@@ -929,16 +929,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData
             });
             let data;
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                // Si no es JSON, muestra el texto plano (puede ser HTML de error)
-                const text = await response.text();
-                return;
-            }
+            data = await response.json();
+            window.location.href = "{{ url_for('estudiantes.lista_estudiantes') }}";
+
             if (data.success) {
                 // Redirigir directamente a la lista de estudiantes
-                window.location.href = "{{ url_for('estudiantes.lista_estudiantes') }}";
             } else {
                 if (window.Swal) {
                     Swal.fire({
