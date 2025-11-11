@@ -937,10 +937,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             if (data.success) {
-                alert(data.mensaje.replace(/<[^>]*>/g, ''));
-                if (data.redirect) {
-                    window.location.href = data.redirect;
-                }
+                // Redirigir directamente a la lista de estudiantes
+                window.location.href = "{{ url_for('estudiantes.lista_estudiantes') }}";
             } else {
                 if (window.Swal) {
                     Swal.fire({
