@@ -1017,7 +1017,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Enviar formulario con AJAX
-        try {
+  
             const formData = new FormData(form);
             const response = await fetch(form.action, {
                 method: 'POST',
@@ -1043,9 +1043,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert(data.mensaje.replace(/<[^>]*>/g, ''));
                 }
             }
-        } catch (error) {
-            alert('❌ Error de conexión. Por favor, intente nuevamente.');
-        }
     });
 
     // Función de validación final
