@@ -935,7 +935,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (jsonError) {
                 // Si no es JSON, muestra el texto plano (puede ser HTML de error)
                 const text = await response.text();
-                alert('❌ Error del servidor:\n\n' + text.replace(/<[^>]*>/g, ''));
                 return;
             }
             if (data.success) {
