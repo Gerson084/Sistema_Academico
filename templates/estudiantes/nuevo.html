@@ -935,6 +935,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // Redirigir directamente a la lista de estudiantes
             } else {
+                            window.location.href = "{{ url_for('estudiantes.lista_estudiantes') }}";
+
                 if (window.Swal) {
                     Swal.fire({
                         icon: data.icon || 'error',
@@ -942,6 +944,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         confirmButtonColor: '#0D2C63'
                     });
                 } else {
+                                window.location.href = "{{ url_for('estudiantes.lista_estudiantes') }}";
+
                     alert(data.mensaje.replace(/<[^>]*>/g, ''));
                 }
             }
