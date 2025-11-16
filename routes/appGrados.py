@@ -20,7 +20,7 @@ def solo_admin():
 def lista_grados():
     r = solo_admin()
     if r: return r
-    grados = Grado.query.all()
+    grados = Grado.query.order_by(Grado.orden, Grado.nombre_grado).all()
     return render_template("grados/listar.html", grados=grados)
 
 
@@ -30,9 +30,18 @@ def nuevo_grado():
     r = solo_admin()
     if r: return r
     if request.method == 'POST':
+        orden = int(request.form.get('orden', 0))
+        
+        # Validar que el orden no esté duplicado
+        grado_existente = Grado.query.filter_by(orden=orden).first()
+        if grado_existente:
+            flash(f'Ya existe un grado con el orden {orden}: {grado_existente.nombre_grado}. Por favor, elige un orden diferente.', 'danger')
+            return render_template("grados/nuevo.html")
+        
         nuevo = Grado(
             nombre_grado=request.form.get('nombre_grado'),
             nivel=request.form.get('nivel'),
+            orden=orden,
             activo=True
         )
         db.session.add(nuevo)
@@ -48,8 +57,17 @@ def editar_grado(id):
     if r: return r
     grado = Grado.query.get_or_404(id)
     if request.method == 'POST':
+        orden = int(request.form.get('orden', 0))
+        
+        # Validar que el orden no esté duplicado (excepto si es el mismo grado)
+        grado_existente = Grado.query.filter_by(orden=orden).first()
+        if grado_existente and grado_existente.id_grado != id:
+            flash(f'Ya existe un grado con el orden {orden}: {grado_existente.nombre_grado}. Por favor, elige un orden diferente.', 'danger')
+            return render_template("grados/editar.html", grado=grado)
+        
         grado.nombre_grado = request.form.get('nombre_grado')
         grado.nivel = request.form.get('nivel')
+        grado.orden = orden
         db.session.commit()
         return redirect(url_for('grados.lista_grados', success='true', action='updated'))
     return render_template("grados/editar.html", grado=grado)
@@ -148,4 +166,67 @@ def toggle_grado(id):
             "success": False,
             "icon": "error",
             "mensaje": f"Error al cambiar el estado del grado: {str(e)}"
+        })
+
+
+# Reordenar grados automáticamente
+@grados_bp.route('/reordenar', methods=['POST'])
+def reordenar_grados():
+    r = solo_admin()
+    if r: return r
+    
+    try:
+        # Definir el orden correcto por nivel
+        orden_niveles = {
+            'Parvularia': 1,
+            'Básico': 5,
+            'Bachillerato': 14
+        }
+        
+        # Nombres de grados en orden dentro de cada nivel
+        nombres_parvularia = ['Inicial', 'PreKinder', 'Kinder', 'Preparatoria']
+        nombres_basico = ['Primer', 'Segundo', 'Tercer', 'Cuarto', 'Quinto', 'Sexto', 'Séptimo', 'Octavo', 'Noveno']
+        nombres_bachillerato = ['Primer', 'Segundo', 'Tercer']
+        
+        # Obtener todos los grados
+        grados = Grado.query.all()
+        
+        for grado in grados:
+            nivel = grado.nivel
+            nombre = grado.nombre_grado
+            
+            orden_base = orden_niveles.get(nivel, 0)
+            
+            # Determinar el orden según el nombre
+            if nivel == 'Parvularia':
+                for i, n in enumerate(nombres_parvularia):
+                    if n.lower() in nombre.lower():
+                        grado.orden = orden_base + i
+                        break
+            elif nivel == 'Básico':
+                for i, n in enumerate(nombres_basico):
+                    if n.lower() in nombre.lower():
+                        grado.orden = orden_base + i
+                        break
+            elif nivel == 'Bachillerato':
+                for i, n in enumerate(nombres_bachillerato):
+                    if n.lower() in nombre.lower():
+                        grado.orden = orden_base + i
+                        break
+        
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "icon": "success",
+            "mensaje": "Grados reordenados automáticamente según su progresión educativa",
+            "redirect": url_for('grados.lista_grados')
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "success": False,
+            "icon": "error",
+            "mensaje": f"Error al reordenar grados: {str(e)}"
         })

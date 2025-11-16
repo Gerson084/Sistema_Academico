@@ -162,15 +162,18 @@
     };
 
     // Mostrar información del estudiante seleccionado
-    document.getElementById('id_estudiante').addEventListener('change', function() {
+    document.getElementById('id_estudiante').addEventListener('change', async function() {
         const studentId = this.value;
         const studentInfo = document.getElementById('studentInfo');
         const studentDetails = document.getElementById('studentDetails');
         
+        console.log('🔄 Estudiante cambiado:', studentId);
+        
         // Limpiar el div de estado previo
-        const estadoDiv = document.getElementById('estadoEstudiante');
+        const estadoDiv = document.getElementById('estadoValidacion');
         if (estadoDiv) {
             estadoDiv.remove();
+            console.log('🧹 Div de validación eliminado');
         }
         
         // Habilitar el botón por defecto al cambiar estudiante
@@ -194,10 +197,17 @@
             `;
             studentInfo.classList.add('active');
             
+            // Cargar información del año anterior inmediatamente
+            console.log('📚 Cargando info del año anterior...');
+            await cargarInfoAnioAnterior(studentId);
+            
             // Verificar estado si ya hay una sección seleccionada
             const seccionSelect = document.getElementById('id_seccion');
             if (seccionSelect.value) {
-                verificarEstadoEstudiante(studentId, seccionSelect.options[seccionSelect.selectedIndex]);
+                console.log('🎓 Hay sección seleccionada, verificando...');
+                await verificarEstadoEstudiante(studentId, seccionSelect.options[seccionSelect.selectedIndex]);
+            } else {
+                console.log('⚠️ No hay sección seleccionada aún');
             }
         } else {
             studentInfo.classList.remove('active');
@@ -206,13 +216,15 @@
     });
 
     // Mostrar información de la sección seleccionada
-    document.getElementById('id_seccion').addEventListener('change', function() {
+    document.getElementById('id_seccion').addEventListener('change', async function() {
         const selectedOption = this.options[this.selectedIndex];
         const sectionInfo = document.getElementById('sectionInfo');
         const sectionDetails = document.getElementById('sectionDetails');
         
+        console.log('🔄 Sección cambiada:', this.value);
+        
         // Limpiar el div de estado previo al cambiar sección
-        const estadoDiv = document.getElementById('estadoEstudiante');
+        const estadoDiv = document.getElementById('estadoValidacion');
         if (estadoDiv) {
             estadoDiv.remove();
         }
@@ -241,7 +253,10 @@
             // Verificar estado del estudiante si ya hay uno seleccionado
             const estudianteSelect = document.getElementById('id_estudiante');
             if (estudianteSelect.value) {
-                verificarEstadoEstudiante(estudianteSelect.value, selectedOption);
+                console.log('👨‍🎓 Verificando estudiante:', estudianteSelect.value);
+                await verificarEstadoEstudiante(estudianteSelect.value, selectedOption);
+            } else {
+                console.log('⚠️ No hay estudiante seleccionado');
             }
         } else {
             sectionInfo.classList.remove('active');
@@ -249,25 +264,65 @@
         updateResumen();
     });
 
+    // Función para cargar información del año anterior
+    async function cargarInfoAnioAnterior(idEstudiante) {
+        try {
+            const response = await fetch(`{{ url_for('matricula.obtener_info_anio_anterior', id_estudiante=0) }}`.replace('0', idEstudiante));
+            const data = await response.json();
+            
+            const studentDetails = document.getElementById('studentDetails');
+            
+            if (data.success && data.tiene_registro) {
+                // Agregar información del año anterior
+                const infoAnterior = document.createElement('div');
+                infoAnterior.id = 'infoAnioAnterior';
+                infoAnterior.style.cssText = 'margin-top: 15px; padding: 12px; background-color: #f8f9fa; border-radius: 5px; border-left: 4px solid #0D2C63;';
+                
+                let estadoColor = '#6c757d';
+                let estadoIcono = '⏳';
+                if (data.estado_final === 'Aprobado') {
+                    estadoColor = '#28a745';
+                    estadoIcono = '✅';
+                } else if (data.estado_final === 'Reprobado') {
+                    estadoColor = '#dc3545';
+                    estadoIcono = '❌';
+                }
+                
+                infoAnterior.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #0D2C63;">📚 Historial Académico</div>
+                    <div style="font-size: 0.9em;">
+                        <div><strong>Último Año Cursado:</strong> ${data.ano_anterior}</div>
+                        <div><strong>Grado:</strong> ${data.grado_nombre}</div>
+                        <div><strong>Estado Final:</strong> <span style="color: ${estadoColor}; font-weight: bold;">${estadoIcono} ${data.estado_final || 'Pendiente'}</span></div>
+                    </div>
+                `;
+                
+                studentDetails.appendChild(infoAnterior);
+            } else if (data.success && !data.tiene_registro) {
+                // Es un estudiante nuevo
+                const infoAnterior = document.createElement('div');
+                infoAnterior.id = 'infoAnioAnterior';
+                infoAnterior.style.cssText = 'margin-top: 15px; padding: 12px; background-color: #e7f3ff; border-radius: 5px; border-left: 4px solid #17a2b8;';
+                
+                infoAnterior.innerHTML = `
+                    <div style="font-weight: bold; color: #117a8b;">ℹ️ Estudiante Nuevo</div>
+                    <div style="font-size: 0.9em; margin-top: 5px;">Sin matrículas en años anteriores</div>
+                `;
+                
+                studentDetails.appendChild(infoAnterior);
+            }
+        } catch (error) {
+            console.error('Error al cargar información del año anterior:', error);
+        }
+    }
+
     // Función para verificar el estado del estudiante
     async function verificarEstadoEstudiante(idEstudiante, seccionOption) {
         const ano = seccionOption.getAttribute('data-ano');
         const idSeccion = seccionOption.value;
         const studentInfo = document.getElementById('studentInfo');
         
-        // Obtener el grado de la sección seleccionada
-        let idGrado = null;
-        try {
-            // Buscar el id_grado desde las opciones de sección
-            const seccionData = {{ secciones|tojson }};
-            const seccionSeleccionada = seccionData.find(s => s.id_seccion == idSeccion);
-            if (seccionSeleccionada) {
-                // Necesitamos obtener el id_grado desde el servidor
-                // Por ahora lo hacemos con una llamada adicional o lo agregamos a data-attributes
-            }
-        } catch (e) {
-            console.log("No se pudo obtener id_grado", e);
-        }
+        console.log('🔍 Verificando estado del estudiante:', idEstudiante, 'Sección:', idSeccion);
         
         try {
             let url = `{{ url_for('matricula.verificar_estado_estudiante', id_estudiante=0) }}`.replace('0', idEstudiante) + `?ano_lectivo=${ano}`;
@@ -276,68 +331,66 @@
             const idGradoAttr = seccionOption.getAttribute('data-id-grado');
             if (idGradoAttr) {
                 url += `&id_grado=${idGradoAttr}`;
+                console.log('🎓 Grado seleccionado:', idGradoAttr);
             }
+            
+            console.log('📡 Llamando a:', url);
             
             const response = await fetch(url);
             const data = await response.json();
             
+            console.log('📥 Respuesta del servidor:', data);
+            
             if (data.success) {
-                let estadoHtml = '<div style="margin-top: 10px; padding: 10px; border-radius: 5px; border-left: 4px solid ';
+                let estadoHtml = '<div id="estadoValidacion" style="margin-top: 10px; padding: 10px; border-radius: 5px; border-left: 4px solid ';
                 
                 if (data.tiene_registro_anterior) {
                     if (data.estado_final === 'Aprobado') {
-                        estadoHtml += data.puede_matricularse ? '#28a745;"> <strong style="color: #28a745;">✅ Estado Aprobado</strong>' : '#dc3545;"> <strong style="color: #dc3545;">❌ Grado Incompatible</strong>';
+                        estadoHtml += data.puede_matricularse ? '#28a745;"> <strong style="color: #28a745;">✅ Validación Correcta</strong>' : '#dc3545;"> <strong style="color: #dc3545;">❌ ERROR: Grado Incompatible</strong>';
                     } else if (data.estado_final === 'Reprobado') {
-                        estadoHtml += data.puede_matricularse ? '#ffc107;"> <strong style="color: #856404;">⚠️ Repitiendo Grado</strong>' : '#dc3545;"> <strong style="color: #dc3545;">❌ Estado Reprobado</strong>';
+                        estadoHtml += data.puede_matricularse ? '#ffc107;"> <strong style="color: #856404;">⚠️ Repitiendo Grado</strong>' : '#dc3545;"> <strong style="color: #dc3545;">❌ ERROR: Debe Repetir</strong>';
                     } else if (data.estado_final === 'Pendiente') {
-                        estadoHtml += '#ffc107;"> <strong style="color: #856404;">⏳ Estado Pendiente</strong>';
+                        estadoHtml += '#dc3545;"> <strong style="color: #dc3545;">❌ ERROR: Estado Pendiente</strong>';
                     } else {
-                        estadoHtml += '#6c757d;"> <strong style="color: #6c757d;">⚠️ Sin Evaluar</strong>';
+                        estadoHtml += '#dc3545;"> <strong style="color: #dc3545;">❌ ERROR: Sin Evaluar</strong>';
                     }
                     
-                    estadoHtml += `
-                        <div style="margin-top: 8px; font-size: 0.9em;">
-                            <div><strong>Año Anterior:</strong> ${data.ano_anterior}</div>
-                            <div><strong>Grado Anterior:</strong> ${data.grado_anterior}</div>
-                            <!-- Conducta eliminada -->
-                            <!-- Asistencia eliminada -->
-                        </div>
-                        <div style="margin-top: 8px; font-style: italic; ${data.puede_matricularse ? 'color: #28a745;' : 'color: #dc3545;'}">${data.mensaje}</div>
-                    `;
+                    estadoHtml += `<div style="margin-top: 8px; font-style: italic; font-size: 0.95em; ${data.puede_matricularse ? 'color: #28a745;' : 'color: #dc3545;'}">${data.mensaje}</div>`;
                 } else {
-                    estadoHtml += '#17a2b8;"> <strong style="color: #117a8b;">ℹ️ Nuevo Estudiante</strong>';
+                    estadoHtml += '#17a2b8;"> <strong style="color: #117a8b;">✅ Estudiante Nuevo - Validación OK</strong>';
                     estadoHtml += `<div style="margin-top: 8px; font-style: italic;">${data.mensaje}</div>`;
                 }
                 
                 estadoHtml += '</div>';
                 
-                // Limpiar y actualizar el div de estado
-                let estadoDiv = document.getElementById('estadoEstudiante');
-                if (!estadoDiv) {
-                    // Crear el div si no existe
-                    estadoDiv = document.createElement('div');
-                    estadoDiv.id = 'estadoEstudiante';
-                    document.getElementById('studentDetails').appendChild(estadoDiv);
+                // Agregar o actualizar el div de validación
+                let estadoDiv = document.getElementById('estadoValidacion');
+                if (estadoDiv) {
+                    estadoDiv.outerHTML = estadoHtml;
+                } else {
+                    document.getElementById('studentDetails').insertAdjacentHTML('beforeend', estadoHtml);
                 }
-                // Siempre actualizar el contenido (reemplazar, no agregar)
-                estadoDiv.innerHTML = estadoHtml;
                 
                 // Deshabilitar el botón de envío si no puede matricularse
                 const submitButton = document.querySelector('button[type="submit"]');
+                console.log('🔘 Puede matricularse:', data.puede_matricularse);
+                
                 if (!data.puede_matricularse) {
                     submitButton.disabled = true;
                     submitButton.style.opacity = '0.5';
                     submitButton.style.cursor = 'not-allowed';
-                    submitButton.title = 'No se puede matricular debido al estado del estudiante';
+                    submitButton.title = 'No se puede matricular debido a las validaciones académicas';
+                    console.log('❌ Botón DESHABILITADO');
                 } else {
                     submitButton.disabled = false;
                     submitButton.style.opacity = '1';
                     submitButton.style.cursor = 'pointer';
                     submitButton.title = '';
+                    console.log('✅ Botón HABILITADO');
                 }
             }
         } catch (error) {
-            console.error('Error al verificar estado:', error);
+            console.error('❌ Error al verificar estado:', error);
         }
     }
 

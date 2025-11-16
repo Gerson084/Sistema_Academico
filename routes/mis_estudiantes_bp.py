@@ -35,7 +35,7 @@ def mis_estudiantes():
         # Obtener asignaciones del docente
         asignaciones = MateriaSeccion.query.filter_by(id_maestro=user_id).all()
         for asignacion in asignaciones:
-            matriculas = Matricula.query.filter_by(id_seccion=asignacion.id_seccion, activa=True).all()
+            matriculas = Matricula.query.filter_by(id_seccion=asignacion.id_seccion).all()
             for m in matriculas:
                 estudiante = Estudiante.query.get(m.id_estudiante)
                 if estudiante:
@@ -52,7 +52,7 @@ def mis_estudiantes():
         # Si además coordina secciones, agregarlas (boleta completa con id_asignacion=0)
         secciones_coord = Seccion.query.filter_by(id_coordinador=user_id, activo=True).all()
         for seccion in secciones_coord:
-            matriculas = Matricula.query.filter_by(id_seccion=seccion.id_seccion, activa=True).all()
+            matriculas = Matricula.query.filter_by(id_seccion=seccion.id_seccion).all()
             for m in matriculas:
                 estudiante = Estudiante.query.get(m.id_estudiante)
                 if estudiante:
@@ -90,7 +90,7 @@ def mis_estudiantes():
         # 1) Alumnos de las secciones que coordina (boleta completa)
         secciones_coord = Seccion.query.filter_by(id_coordinador=user_id, activo=True).all()
         for seccion in secciones_coord:
-            matriculas = Matricula.query.filter_by(id_seccion=seccion.id_seccion, activa=True).all()
+            matriculas = Matricula.query.filter_by(id_seccion=seccion.id_seccion).all()
             for m in matriculas:
                 estudiante = Estudiante.query.get(m.id_estudiante)
                 if estudiante:
@@ -107,7 +107,7 @@ def mis_estudiantes():
         # 2) Alumnos de las materias que imparte (boleta por materia)
         asignaciones_doc = MateriaSeccion.query.filter_by(id_maestro=user_id).all()
         for asig in asignaciones_doc:
-            matriculas = Matricula.query.filter_by(id_seccion=asig.id_seccion, activa=True).all()
+            matriculas = Matricula.query.filter_by(id_seccion=asig.id_seccion).all()
             for m in matriculas:
                 estudiante = Estudiante.query.get(m.id_estudiante)
                 if estudiante:

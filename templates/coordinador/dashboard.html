@@ -510,11 +510,50 @@
     </div>
 
     <div class="container">
+        <!-- Filtro Global de Año Lectivo -->
+        <div class="mb-4">
+            <form method="GET" action="{{ url_for('coordinador.dashboard') }}" class="d-flex align-items-center gap-3 flex-wrap">
+                <label for="ano_lectivo_filtro" class="fw-bold mb-0" style="color: var(--primary-blue); font-size: 1.1rem;">
+                    <i class="fas fa-calendar-alt"></i> Filtrar por Año Lectivo:
+                </label>
+                <select name="ano_lectivo" id="ano_lectivo_filtro" class="form-select" style="width: auto; min-width: 200px;" onchange="this.form.submit()">
+                    <option value="">Año Actual</option>
+                    {% for ano in anos_lectivos %}
+                    <option value="{{ ano.id_ano_lectivo }}" 
+                            {% if ano_seleccionado == ano.id_ano_lectivo %}selected{% endif %}>
+                        {{ ano.ano }} {% if ano.activo %}(Actual){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if ano_seleccionado %}
+                <a href="{{ url_for('coordinador.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-times"></i> Limpiar Filtro
+                </a>
+                {% endif %}
+            </form>
+            {% if ano_seleccionado %}
+            <div class="alert alert-info mt-3 mb-0">
+                <i class="fas fa-info-circle"></i>
+                <strong>Vista filtrada:</strong> Mostrando registros del año lectivo seleccionado. 
+                Las secciones y materias de otros años no se mostrarán.
+            </div>
+            {% endif %}
+        </div>
+        
         <!-- SECCIÓN 1: COORDINADOR -->
         {% if es_coordinador %}
         <div class="mb-5">
             <div class="section-title mb-4">
                 <i class="fas fa-user-tie"></i> Secciones Coordinadas
+                {% if ano_seleccionado %}
+                    {% for ano in anos_lectivos %}
+                        {% if ano.id_ano_lectivo == ano_seleccionado %}
+                            <span class="badge bg-primary ms-2">Año {{ ano.ano }}</span>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <span class="badge bg-success ms-2">Año Actual</span>
+                {% endif %}
             </div>
             <div class="mb-4 d-flex flex-wrap gap-3">
                 <a href="{{ url_for('mis_estudiantes.mis_estudiantes') }}" class="btn btn-success" style="font-weight:600;font-size:1.1rem;padding:0.75rem 2rem;">
@@ -533,9 +572,11 @@
                                 Sección {{ item.seccion.nombre_seccion }}
                             </div>
                             <div class="seccion-info">
-                                Año Lectivo: {{ item.seccion.ano_lectivo.ano }}
-                                {% if item.seccion.ano_lectivo.activo %}
-                                <span class="badge bg-success ms-2">Actual</span>
+                                <i class="fas fa-calendar"></i> Año Lectivo: {{ item.ano_lectivo }}
+                                {% if item.ano_activo %}
+                                <span class="badge bg-success ms-2"><i class="fas fa-star"></i> Actual</span>
+                                {% else %}
+                                <span class="badge bg-secondary ms-2"><i class="fas fa-history"></i> Histórico</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -575,34 +616,24 @@
         <div>
             <div class="section-title mb-4">
                 <i class="fas fa-chalkboard-teacher"></i> Mis Materias Asignadas
+                {% if ano_seleccionado %}
+                    {% for ano in anos_lectivos %}
+                        {% if ano.id_ano_lectivo == ano_seleccionado %}
+                            <span class="badge bg-primary ms-2">Año {{ ano.ano }}</span>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <span class="badge bg-success ms-2">Año Actual</span>
+                {% endif %}
             </div>
 
-            <!-- Filtros y Búsqueda -->
+            <!-- Búsqueda -->
             <div class="action-bar">
-                <form method="GET" action="{{ url_for('coordinador.dashboard') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; flex: 1;">
-                    <div class="filter-group">
-                        <label for="ano_lectivo" class="filter-label">Año Lectivo</label>
-                        <select name="ano_lectivo" id="ano_lectivo" class="filter-select" onchange="this.form.submit()">
-                            <option value="">Todos los años</option>
-                            {% for ano in anos_lectivos %}
-                            <option value="{{ ano.id_ano_lectivo }}" 
-                                    {% if ano_seleccionado == ano.id_ano_lectivo %}selected{% endif %}>
-                                {{ ano.ano }} {% if ano.activo %}(Actual){% endif %}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="search-box">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="buscar" class="search-input" 
-                               placeholder="Buscar por materia, grado o sección...">
-                    </div>
-
-                    <a href="{{ url_for('coordinador.dashboard') }}" class="btn-clear">
-                        <i class="fas fa-times"></i> Limpiar
-                    </a>
-                </form>
+                <div class="search-box" style="flex: 1; max-width: 500px;">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="buscar" class="search-input" 
+                           placeholder="Buscar por materia, grado o sección...">
+                </div>
             </div>
 
             <!-- Cards de Materias -->
@@ -639,7 +670,9 @@
                                         <strong>Año Lectivo:</strong> 
                                         <span class="badge-info">{{ asig.ano_lectivo }}</span>
                                         {% if asig.ano_activo %}
-                                        <span class="badge-success">Actual</span>
+                                        <span class="badge-success"><i class="fas fa-star"></i> Actual</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary"><i class="fas fa-history"></i> Histórico</span>
                                         {% endif %}
                                     </span>
                                 </div>
@@ -676,7 +709,12 @@
             <div class="empty-state">
                 <i class="fas fa-exclamation-triangle"></i>
                 <h4>No tienes materias asignadas</h4>
-                <p>No se encontraron materias asignadas para los filtros seleccionados.</p>
+                <p>No se encontraron materias asignadas para el año lectivo seleccionado.</p>
+                {% if ano_seleccionado %}
+                <a href="{{ url_for('coordinador.dashboard') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-calendar-alt"></i> Ver Año Actual
+                </a>
+                {% endif %}
             </div>
             {% endif %}
         </div>
@@ -687,7 +725,12 @@
         <div class="empty-state">
             <i class="fas fa-exclamation-triangle"></i>
             <h4>No tienes asignaciones</h4>
-            <p>No tienes secciones coordinadas ni materias asignadas.</p>
+            <p>No tienes secciones coordinadas ni materias asignadas{% if ano_seleccionado %} para el año lectivo seleccionado{% endif %}.</p>
+            {% if ano_seleccionado %}
+            <a href="{{ url_for('coordinador.dashboard') }}" class="btn btn-primary mt-3">
+                <i class="fas fa-calendar-alt"></i> Ver Año Actual
+            </a>
+            {% endif %}
         </div>
         {% endif %}
     </div>

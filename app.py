@@ -45,6 +45,7 @@ from routes.incidentes_bp import incidentes_bp
 from routes.conducta_grado_route import conducta_grado_bp
 from routes.evaluacion_integral_bp import evaluacion_integral_bp
 from routes.anos_lectivos_route import anos_lectivos_bp
+from routes.admin_notas_route import admin_notas_bp
 
 
 
@@ -103,6 +104,7 @@ app.register_blueprint(incidentes_bp)
 app.register_blueprint(conducta_grado_bp)
 app.register_blueprint(evaluacion_integral_bp)
 app.register_blueprint(anos_lectivos_bp)
+app.register_blueprint(admin_notas_bp)
 
 # Rutas de compatibilidad: redirigen a los endpoints del blueprint con prefijo
 @app.route('/reporte_conducta_estudiante')

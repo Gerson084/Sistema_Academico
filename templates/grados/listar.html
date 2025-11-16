@@ -239,13 +239,16 @@
         <a href="{{ url_for('grados.nuevo_grado') }}" class="btn btn-success">
             <i class="fas fa-plus"></i> Nuevo Grado
         </a>
+        <button onclick="reordenarGrados()" class="btn btn-delete" style="background:#0D2C63;">
+            <i class="fas fa-sort-numeric-up"></i> Reordenar Automáticamente
+        </button>
     </div>
 
     <div class="table-container">
         <table class=" table custom-table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Orden</th>
                     <th>Nombre</th>
                     <th>Nivel</th>
                     <th>Activo</th>
@@ -255,7 +258,7 @@
             <tbody>
                 {% for grado in grados %}
                 <tr>
-                    <td>{{ grado.id_grado }}</td>
+                    <td><strong>{{ grado.orden }}</strong></td>
                     <td>{{ grado.nombre_grado }}</td>
                     <td>{{ grado.nivel }}</td>
                     <td>{{ 'Sí' if grado.activo else 'No' }}</td>
@@ -380,7 +383,50 @@ function toggleGrado(id, nombre, activar) {
         }
     });
 }
+
+function reordenarGrados() {
+    Swal.fire({
+        title: '¿Reordenar grados?',
+        html: 'Esto asignará automáticamente el orden correcto a todos los grados según su nivel y nombre.<br><br><strong>Parvularia:</strong> 1-4<br><strong>Básico:</strong> 5-13<br><strong>Bachillerato:</strong> 14-16',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#0D2C63',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, reordenar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/grados/reordenar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    icon: data.icon || (data.success ? 'success' : 'error'),
+                    title: data.success ? '¡Reordenado!' : 'Error',
+                    text: data.mensaje,
+                    confirmButtonColor: '#0D2C63'
+                }).then(() => {
+                    if (data.success && data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                });
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al reordenar los grados',
+                    confirmButtonColor: '#0D2C63'
+                });
+            });
+        }
+    });
+}
 </script>
 
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 {% endblock %}

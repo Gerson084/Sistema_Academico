@@ -11,6 +11,44 @@ from datetime import datetime
 # Blueprint para matrículas
 matriculas_bp = Blueprint('matricula', __name__, template_folder="templates")
 
+# Función helper para obtener el siguiente grado en la secuencia
+def obtener_siguiente_grado(grado_actual_id):
+    """
+    Obtiene el siguiente grado basado en el campo 'orden' de la tabla grados.
+    Retorna el siguiente grado o None si no hay siguiente.
+    """
+    # Obtener el grado actual
+    grado_actual = Grado.query.get(grado_actual_id)
+    if not grado_actual:
+        print(f"❌ ERROR: Grado ID={grado_actual_id} no encontrado")
+        return None
+    
+    print(f"🔍 DEBUG obtener_siguiente_grado:")
+    print(f"   Grado actual: ID={grado_actual.id_grado}, {grado_actual.nombre_grado} ({grado_actual.nivel}), Orden={grado_actual.orden}")
+    
+    # Buscar el siguiente grado por orden (el que tenga orden = actual.orden + 1)
+    siguiente_grado = Grado.query.filter(
+        Grado.orden == grado_actual.orden + 1,
+        Grado.activo == True
+    ).first()
+    
+    if siguiente_grado:
+        print(f"   ✅ Siguiente grado: ID={siguiente_grado.id_grado}, {siguiente_grado.nombre_grado} ({siguiente_grado.nivel}), Orden={siguiente_grado.orden}")
+        return siguiente_grado
+    else:
+        # Si no hay un grado con orden+1, buscar el siguiente orden disponible mayor
+        siguiente_grado = Grado.query.filter(
+            Grado.orden > grado_actual.orden,
+            Grado.activo == True
+        ).order_by(Grado.orden).first()
+        
+        if siguiente_grado:
+            print(f"   ⚠️ Siguiente grado (orden {siguiente_grado.orden}): {siguiente_grado.nombre_grado} ({siguiente_grado.nivel})")
+            return siguiente_grado
+        else:
+            print(f"   🎓 No hay siguiente grado (último del sistema)")
+            return None
+
 # LISTAR MATRÍCULAS - Filtrado por año activo
 @matriculas_bp.route("/")
 def lista_matriculas():
@@ -248,8 +286,23 @@ def crear_matricula(id_estudiante=None):
                     grado_anterior_id = resultado_ano_anterior.id_grado
                     grado_anterior_nombre = f"{resultado_ano_anterior.nombre_grado} {resultado_ano_anterior.nivel}"
                     
+                    # DEBUG: Imprimir información de la matrícula anterior
+                    print(f"🔍 DEBUG - Matrícula anterior encontrada:")
+                    print(f"   Estudiante ID: {id_estudiante}")
+                    print(f"   Grado anterior ID: {grado_anterior_id} - {grado_anterior_nombre}")
+                    print(f"   Año anterior: {ano_anterior}")
+                    print(f"   Estado final: {estado}")
+                    
                     # Obtener el grado de la sección seleccionada
                     grado_nuevo = Grado.query.get(seccion.id_grado)
+                    print(f"   Grado nuevo ID: {grado_nuevo.id_grado} - {grado_nuevo.nombre_grado}")
+                    
+                    # Verificar qué grado siguiente se está calculando
+                    grado_sig_test = obtener_siguiente_grado(grado_anterior_id)
+                    if grado_sig_test:
+                        print(f"   Grado siguiente calculado: {grado_sig_test.id_grado} - {grado_sig_test.nombre_grado}")
+                    else:
+                        print(f"   Grado siguiente calculado: None (último grado)")
                     
                     # Si no tiene estado final, no puede matricularse en un nuevo año
                     if not estado or estado == 'Pendiente':
@@ -259,22 +312,32 @@ def crear_matricula(id_estudiante=None):
                         })
                     
                     elif estado == 'Reprobado':
-                        # Si reprobó, solo puede matricularse en el MISMO grado o en uno INFERIOR
-                        if grado_nuevo.id_grado > grado_anterior_id:
+                        # Si reprobó, SOLO puede matricularse en el MISMO grado (repetir)
+                        if grado_nuevo.id_grado != grado_anterior_id:
                             return jsonify({
                                 "success": False, 
-                                "mensaje": f"El estudiante reprobó {grado_anterior_nombre} en el año {ano_anterior}. Solo puede matricularse nuevamente en {grado_anterior_nombre} o en un grado inferior para repetir."
+                                "mensaje": f"❌ El estudiante reprobó {grado_anterior_nombre} en el año {ano_anterior}. Solo puede matricularse nuevamente en {grado_anterior_nombre} para repetir el año."
                             })
-                        # Si es el mismo grado o inferior, puede continuar (está repitiendo)
+                        # Si es el mismo grado, puede continuar (está repitiendo)
                         
                     elif estado == 'Aprobado':
-                        # Si aprobó, NO puede matricularse en el mismo grado o inferior
-                        if grado_nuevo.id_grado <= grado_anterior_id:
+                        # Si aprobó, SOLO puede matricularse en el grado SIGUIENTE en la secuencia
+                        grado_siguiente = obtener_siguiente_grado(grado_anterior_id)
+                        
+                        if grado_siguiente:
+                            if grado_nuevo.id_grado != grado_siguiente.id_grado:
+                                grado_siguiente_nombre = f"{grado_siguiente.nombre_grado} {grado_siguiente.nivel}"
+                                return jsonify({
+                                    "success": False, 
+                                    "mensaje": f"❌ El estudiante aprobó {grado_anterior_nombre} en el año {ano_anterior}. Solo puede matricularse en el grado siguiente: {grado_siguiente_nombre}. No puede saltar grados ni retroceder."
+                                })
+                            # Si es el grado siguiente correcto, puede continuar
+                        else:
+                            # El estudiante ya completó el último grado disponible
                             return jsonify({
                                 "success": False, 
-                                "mensaje": f"El estudiante ya aprobó {grado_anterior_nombre} en el año {ano_anterior}. Debe matricularse en un grado superior, no puede repetir un grado ya aprobado."
+                                "mensaje": f"❌ El estudiante ya aprobó {grado_anterior_nombre} en {ano_anterior}, que es el último grado disponible en el sistema. No puede matricularse en ningún otro grado."
                             })
-                        # Si es un grado superior, puede continuar
 
             # Validar que el estudiante no esté inscrito ya en ese año lectivo
             existente = (
@@ -325,12 +388,12 @@ def crear_matricula(id_estudiante=None):
     
     # Obtener solo las secciones del año lectivo activo
     secciones_query = text("""
-        SELECT s.id_seccion, s.nombre_seccion, g.id_grado, g.nombre_grado, g.nivel, al.ano 
+        SELECT s.id_seccion, s.nombre_seccion, g.id_grado, g.nombre_grado, g.nivel, g.orden, al.ano 
         FROM secciones s
         JOIN grados g ON s.id_grado = g.id_grado
         JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
         WHERE al.activo = 1
-        ORDER BY g.nombre_grado, s.nombre_seccion
+        ORDER BY g.orden, s.nombre_seccion
     """)
     
     secciones_result = db.session.execute(secciones_query)
@@ -446,21 +509,32 @@ def editar_matricula(id):
                         if estado == 'Pendiente':
                             return jsonify({
                                 "success": False, 
-                                "mensaje": f"El estudiante tiene el estado 'Pendiente' del año {ano_anterior} en {grado_anterior_nombre}. El coordinador debe actualizar el estado primero."
+                                "mensaje": f"⏳ El estudiante tiene el estado 'Pendiente' del año {ano_anterior} en {grado_anterior_nombre}. El coordinador debe actualizar el estado primero."
                             })
                         elif estado == 'Reprobado':
-                            # Si reprobó, solo puede matricularse en el MISMO grado
+                            # Si reprobó, SOLO puede matricularse en el MISMO grado (repetir)
                             if grado_nuevo.id_grado != grado_anterior_id:
                                 return jsonify({
                                     "success": False, 
-                                    "mensaje": f"El estudiante reprobó el año {ano_anterior} en {grado_anterior_nombre}. Solo puede matricularse nuevamente en {grado_anterior_nombre}, no en un grado diferente."
+                                    "mensaje": f"❌ El estudiante reprobó el año {ano_anterior} en {grado_anterior_nombre}. Solo puede matricularse nuevamente en {grado_anterior_nombre} para repetir el año."
                                 })
                         elif estado == 'Aprobado':
-                            # Si aprobó, NO puede matricularse en el mismo grado
-                            if grado_nuevo.id_grado == grado_anterior_id:
+                            # Si aprobó, SOLO puede matricularse en el grado SIGUIENTE en la secuencia
+                            grado_siguiente = obtener_siguiente_grado(grado_anterior_id)
+                            
+                            if grado_siguiente:
+                                if grado_nuevo.id_grado != grado_siguiente.id_grado:
+                                    grado_siguiente_nombre = f"{grado_siguiente.nombre_grado} {grado_siguiente.nivel}"
+                                    return jsonify({
+                                        "success": False, 
+                                        "mensaje": f"❌ El estudiante aprobó {grado_anterior_nombre} en el año {ano_anterior}. Solo puede matricularse en el grado siguiente: {grado_siguiente_nombre}. No puede saltar grados ni retroceder."
+                                    })
+                                # Si es el grado siguiente correcto, puede continuar
+                            else:
+                                # El estudiante ya completó el último grado disponible
                                 return jsonify({
                                     "success": False, 
-                                    "mensaje": f"El estudiante ya aprobó {grado_anterior_nombre} en el año {ano_anterior}. Debe matricularse en un grado superior."
+                                    "mensaje": f"❌ El estudiante ya aprobó {grado_anterior_nombre} en {ano_anterior}, que es el último grado disponible. No puede matricularse en ningún otro grado."
                                 })
 
             # Validar que no quede duplicado en el mismo año lectivo (excluyendo la actual)
@@ -608,21 +682,32 @@ def activar_matricula(id):
             if estado == 'Pendiente':
                 return jsonify({
                     "success": False, 
-                    "mensaje": f"No se puede activar la matrícula porque el estado del año {ano_anterior} está 'Pendiente'. El coordinador debe actualizar el estado primero."
+                    "mensaje": f"⏳ No se puede activar la matrícula porque el estado del año {ano_anterior} está 'Pendiente'. El coordinador debe actualizar el estado primero."
                 })
             elif estado == 'Reprobado':
-                # Si reprobó, solo puede estar matriculado en el MISMO grado
+                # Si reprobó, SOLO puede estar matriculado en el MISMO grado
                 if grado_matricula.id_grado != grado_anterior_id:
                     return jsonify({
                         "success": False, 
-                        "mensaje": f"No se puede activar la matrícula porque el estudiante reprobó el año {ano_anterior} en {grado_anterior_nombre}. Solo puede matricularse en {grado_anterior_nombre}, no en un grado diferente."
+                        "mensaje": f"❌ No se puede activar la matrícula porque el estudiante reprobó el año {ano_anterior} en {grado_anterior_nombre}. Solo puede estar matriculado en {grado_anterior_nombre} para repetir."
                     })
             elif estado == 'Aprobado':
-                # Si aprobó, NO puede estar en el mismo grado
-                if grado_matricula.id_grado == grado_anterior_id:
+                # Si aprobó, SOLO puede estar en el grado SIGUIENTE en la secuencia
+                grado_siguiente = obtener_siguiente_grado(grado_anterior_id)
+                
+                if grado_siguiente:
+                    if grado_matricula.id_grado != grado_siguiente.id_grado:
+                        grado_siguiente_nombre = f"{grado_siguiente.nombre_grado} {grado_siguiente.nivel}"
+                        return jsonify({
+                            "success": False, 
+                            "mensaje": f"❌ No se puede activar porque el estudiante aprobó {grado_anterior_nombre} en {ano_anterior}. Solo puede estar en el grado siguiente: {grado_siguiente_nombre}."
+                        })
+                    # Si es el grado siguiente correcto, puede continuar
+                else:
+                    # El estudiante ya completó el último grado disponible
                     return jsonify({
                         "success": False, 
-                        "mensaje": f"No se puede activar la matrícula porque el estudiante ya aprobó {grado_anterior_nombre} en el año {ano_anterior}. Debe estar en un grado superior."
+                        "mensaje": f"❌ No se puede activar porque el estudiante ya aprobó {grado_anterior_nombre} en {ano_anterior}, que es el último grado disponible."
                     })
 
     # Validar que no tenga otra matrícula activa en el mismo año lectivo
@@ -668,7 +753,7 @@ def verificar_estado_estudiante(id_estudiante):
                 "mensaje": "Debe seleccionar un año lectivo"
             })
         
-        # Buscar la ÚLTIMA matrícula del estudiante (no solo del año anterior)
+        # Buscar la ÚLTIMA matrícula del estudiante en años anteriores al año nuevo
         query_estado = text("""
             SELECT 
                 pa.estado_final,
@@ -676,21 +761,21 @@ def verificar_estado_estudiante(id_estudiante):
                 g.id_grado,
                 g.nombre_grado,
                 g.nivel,
-                s.nombre_seccion,
-                # campo eliminado: conducta_final
+                s.nombre_seccion
             FROM matriculas m
             INNER JOIN secciones s ON m.id_seccion = s.id_seccion
             INNER JOIN grados g ON s.id_grado = g.id_grado
             INNER JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
-            LEFT JOIN calificaciones c ON c.id_estudiante = m.id_estudiante
-            LEFT JOIN promedios_periodo pp ON pp.id_calificacion = c.id_calificacion
-            LEFT JOIN promedios_anuales pa ON pa.id_promedio_periodo = pp.id_promedio_periodo
+            LEFT JOIN (
+                SELECT DISTINCT c.id_estudiante, pa.estado_final, p.id_ano_lectivo
+                FROM calificaciones c
+                INNER JOIN periodos p ON c.id_periodo = p.id_periodo
+                INNER JOIN promedios_periodo pp ON pp.id_calificacion = c.id_calificacion
+                INNER JOIN promedios_anuales pa ON pa.id_promedio_periodo = pp.id_promedio_periodo
+            ) pa ON pa.id_estudiante = m.id_estudiante AND pa.id_ano_lectivo = al.id_ano_lectivo
             WHERE m.id_estudiante = :id_estudiante
-            AND (al.ano < :ano_nuevo OR (al.ano = :ano_nuevo AND al.id_ano_lectivo != (
-                SELECT id_ano_lectivo FROM anos_lectivos WHERE ano = :ano_nuevo ORDER BY id_ano_lectivo DESC LIMIT 1
-            )))
-            AND m.activa = 1
-            ORDER BY al.ano DESC, g.id_grado DESC
+            AND al.ano < :ano_nuevo
+            ORDER BY al.ano DESC, m.fecha_matricula DESC
             LIMIT 1
         """)
         
@@ -719,18 +804,41 @@ def verificar_estado_estudiante(id_estudiante):
                 # Puede matricularse SOLO en el mismo grado
                 if id_grado_nuevo and id_grado_nuevo != grado_anterior_id:
                     puede_matricularse = False
-                    mensaje = f"❌ El estudiante reprobó {grado_anterior_nombre} en {resultado.ano}. Solo puede repetir {grado_anterior_nombre}, no puede avanzar a otro grado."
+                    mensaje = f"❌ El estudiante reprobó {grado_anterior_nombre} en {resultado.ano}. Solo puede repetir {grado_anterior_nombre}, no puede cambiar de grado."
                 else:
                     puede_matricularse = True
-                    mensaje = f"⚠️ El estudiante reprobó {grado_anterior_nombre} en {resultado.ano}. Puede matricularse para repetir el mismo grado."
+                    mensaje = f"⚠️ El estudiante reprobó {grado_anterior_nombre} en {resultado.ano}. Debe matricularse para repetir el mismo grado."
             elif estado == 'Aprobado':
-                # NO puede matricularse en el mismo grado
-                if id_grado_nuevo and id_grado_nuevo == grado_anterior_id:
-                    puede_matricularse = False
-                    mensaje = f"❌ El estudiante ya aprobó {grado_anterior_nombre} en {resultado.ano}. Debe matricularse en un grado superior."
+                # Puede matricularse SOLO en el grado SIGUIENTE en la secuencia
+                print(f"🎓 Estado Aprobado - Validando grado siguiente:")
+                print(f"   Grado anterior ID: {grado_anterior_id} ({grado_anterior_nombre})")
+                print(f"   Grado nuevo ID: {id_grado_nuevo}")
+                
+                grado_siguiente = obtener_siguiente_grado(grado_anterior_id)
+                
+                if grado_siguiente:
+                    print(f"   Grado siguiente permitido: {grado_siguiente.id_grado} ({grado_siguiente.nombre_grado})")
+                    
+                    if id_grado_nuevo:
+                        print(f"   Comparando: {id_grado_nuevo} != {grado_siguiente.id_grado}")
+                        if id_grado_nuevo != grado_siguiente.id_grado:
+                            grado_siguiente_nombre = f"{grado_siguiente.nombre_grado} {grado_siguiente.nivel}"
+                            puede_matricularse = False
+                            mensaje = f"❌ El estudiante aprobó {grado_anterior_nombre} en {resultado.ano}. Solo puede matricularse en el grado siguiente: {grado_siguiente_nombre}. No puede saltar grados ni retroceder."
+                            print(f"   ❌ BLOQUEADO: Grado seleccionado no coincide con el siguiente")
+                        else:
+                            puede_matricularse = True
+                            grado_siguiente_nombre = f"{grado_siguiente.nombre_grado} {grado_siguiente.nivel}"
+                            mensaje = f"✅ El estudiante aprobó {grado_anterior_nombre} en {resultado.ano}. Puede matricularse en {grado_siguiente_nombre}."
+                            print(f"   ✅ PERMITIDO: Grado correcto")
+                    else:
+                        puede_matricularse = True
+                        grado_siguiente_nombre = f"{grado_siguiente.nombre_grado} {grado_siguiente.nivel}"
+                        mensaje = f"ℹ️ El estudiante aprobó {grado_anterior_nombre} en {resultado.ano}. Debe matricularse en el grado siguiente: {grado_siguiente_nombre}."
                 else:
-                    puede_matricularse = True
-                    mensaje = f"✅ El estudiante aprobó {grado_anterior_nombre} en {resultado.ano}. Puede matricularse en un grado superior."
+                    # Ya completó el último grado
+                    puede_matricularse = False
+                    mensaje = f"❌ El estudiante ya aprobó {grado_anterior_nombre} en {resultado.ano}, que es el último grado disponible. No puede matricularse en ningún otro grado."
             
             return jsonify({
                 "success": True,
@@ -756,6 +864,73 @@ def verificar_estado_estudiante(id_estudiante):
         return jsonify({
             "success": False,
             "mensaje": f"Error al verificar estado: {str(e)}"
+        })
+
+
+# Ruta para obtener información del año anterior del estudiante
+@matriculas_bp.route('/api/estudiante/<int:id_estudiante>/info-anio-anterior', methods=['GET'])
+def obtener_info_anio_anterior(id_estudiante):
+    try:
+        # Obtener el año lectivo activo
+        ano_activo = AnoLectivo.query.filter_by(activo=True).first()
+        if not ano_activo:
+            return jsonify({
+                "success": False,
+                "mensaje": "No hay año lectivo activo"
+            })
+        
+        # Buscar la ÚLTIMA matrícula del estudiante ANTERIOR al año activo
+        query_ano_anterior = text("""
+            SELECT 
+                pa.estado_final, 
+                al.ano, 
+                g.id_grado, 
+                g.nombre_grado, 
+                g.nivel
+            FROM matriculas m
+            INNER JOIN secciones s ON m.id_seccion = s.id_seccion
+            INNER JOIN grados g ON s.id_grado = g.id_grado
+            INNER JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
+            LEFT JOIN (
+                SELECT DISTINCT c.id_estudiante, pa.estado_final, p.id_ano_lectivo
+                FROM calificaciones c
+                INNER JOIN periodos p ON c.id_periodo = p.id_periodo
+                INNER JOIN promedios_periodo pp ON pp.id_calificacion = c.id_calificacion
+                INNER JOIN promedios_anuales pa ON pa.id_promedio_periodo = pp.id_promedio_periodo
+            ) pa ON pa.id_estudiante = m.id_estudiante AND pa.id_ano_lectivo = al.id_ano_lectivo
+            WHERE m.id_estudiante = :id_estudiante
+            AND al.ano < :ano_actual
+            ORDER BY al.ano DESC, m.fecha_matricula DESC
+            LIMIT 1
+        """)
+        
+        resultado = db.session.execute(query_ano_anterior, {
+            'id_estudiante': id_estudiante,
+            'ano_actual': ano_activo.ano
+        }).fetchone()
+        
+        if resultado:
+            grado_nombre_completo = f"{resultado.nombre_grado} {resultado.nivel}"
+            
+            return jsonify({
+                "success": True,
+                "tiene_registro": True,
+                "ano_anterior": resultado.ano,
+                "grado_nombre": grado_nombre_completo,
+                "grado_id": resultado.id_grado,
+                "estado_final": resultado.estado_final
+            })
+        else:
+            return jsonify({
+                "success": True,
+                "tiene_registro": False
+            })
+            
+    except Exception as e:
+        print(f"Error en obtener_info_anio_anterior: {str(e)}")
+        return jsonify({
+            "success": False,
+            "mensaje": f"Error: {str(e)}"
         })
 
 

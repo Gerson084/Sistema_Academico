@@ -27,38 +27,65 @@ def dashboard():
     print(f"ID Usuario: {id_usuario}")
     print(f"Rol Usuario: {session.get('user_role')}")
     
+    # Obtener año lectivo seleccionado del filtro
+    ano_seleccionado = request.args.get('ano_lectivo', type=int)
+    
     # ========== SECCIÓN 1: COORDINADOR ==========
-    # Obtener las secciones que coordina
-    secciones = Seccion.query.filter_by(
-        id_coordinador=id_usuario,
-        activo=True
-    ).all()
+    # Obtener las secciones que coordina (filtradas por año lectivo si se selecciona)
+    query_secciones = text("""
+        SELECT 
+            s.id_seccion,
+            s.nombre_seccion,
+            s.id_grado,
+            s.id_ano_lectivo,
+            s.id_coordinador,
+            s.activo,
+            g.nombre_grado,
+            g.nivel,
+            al.ano as ano_lectivo,
+            al.activo as ano_activo,
+            (SELECT COUNT(*) FROM matriculas mat 
+             WHERE mat.id_seccion = s.id_seccion) as total_estudiantes,
+            (SELECT COUNT(*) FROM materia_seccion ms 
+             WHERE ms.id_seccion = s.id_seccion) as total_materias
+        FROM secciones s
+        INNER JOIN grados g ON s.id_grado = g.id_grado
+        INNER JOIN anos_lectivos al ON s.id_ano_lectivo = al.id_ano_lectivo
+        WHERE s.id_coordinador = :id_coordinador
+        AND s.activo = 1
+        AND (:ano_lectivo IS NOT NULL AND al.id_ano_lectivo = :ano_lectivo 
+             OR :ano_lectivo IS NULL AND al.activo = 1)
+        ORDER BY al.ano DESC, g.nombre_grado, s.nombre_seccion
+    """)
     
-    print(f"Secciones encontradas como coordinador: {len(secciones)}")
+    result_secciones = db.session.execute(query_secciones, {
+        'id_coordinador': id_usuario,
+        'ano_lectivo': ano_seleccionado
+    })
     
-    # Obtener información detallada de cada sección
     secciones_info = []
-    for seccion in secciones:
-        # Contar estudiantes matriculados
-        total_estudiantes = Matricula.query.filter_by(
-            id_seccion=seccion.id_seccion,
-            activa=True
-        ).count()
-        
-        # Contar materias asignadas
-        total_materias = MateriaSeccion.query.filter_by(
-            id_seccion=seccion.id_seccion
-        ).count()
-        
+    for row in result_secciones:
         secciones_info.append({
-            'seccion': seccion,
-            'total_estudiantes': total_estudiantes,
-            'total_materias': total_materias
+            'seccion': {
+                'id_seccion': row.id_seccion,
+                'nombre_seccion': row.nombre_seccion,
+                'id_grado': row.id_grado,
+                'id_ano_lectivo': row.id_ano_lectivo,
+                'id_coordinador': row.id_coordinador,
+                'activo': row.activo,
+                'grado': {'nombre_grado': row.nombre_grado, 'nivel': row.nivel},
+                'ano_lectivo': {'ano': row.ano_lectivo, 'activo': row.ano_activo}
+            },
+            'total_estudiantes': row.total_estudiantes,
+            'total_materias': row.total_materias,
+            'ano_lectivo': row.ano_lectivo,
+            'ano_activo': row.ano_activo
         })
+    
+    print(f"Secciones encontradas como coordinador: {len(secciones_info)}")
     
     # ========== SECCIÓN 2: DOCENTE ==========
     # Obtener las materias asignadas como docente
-    ano_seleccionado = request.args.get('ano_lectivo', type=int)
     
     print(f"Buscando materias como docente...")
     
@@ -77,7 +104,7 @@ def dashboard():
             al.ano as ano_lectivo,
             al.activo as ano_activo,
             (SELECT COUNT(*) FROM matriculas mat 
-             WHERE mat.id_seccion = s.id_seccion AND mat.activa = 1) as total_estudiantes
+             WHERE mat.id_seccion = s.id_seccion) as total_estudiantes
         FROM materia_seccion ms
         INNER JOIN materias m ON ms.id_materia = m.id_materia
         INNER JOIN secciones s ON ms.id_seccion = s.id_seccion
@@ -114,8 +141,8 @@ def dashboard():
             'total_estudiantes': row.total_estudiantes
         })
     
-    # Obtener años lectivos activos para el filtro
-    anos_lectivos = AnoLectivo.query.filter_by(activo=True).order_by(AnoLectivo.ano.desc()).all()
+    # Obtener años lectivos para el filtro (todos, no solo activos)
+    anos_lectivos = AnoLectivo.query.order_by(AnoLectivo.ano.desc()).all()
     
     # Determinar qué mostrar
     es_coordinador = len(secciones_info) > 0
@@ -194,6 +221,7 @@ def ver_estudiantes(id_seccion):
             e.apellidos,
             e.fecha_nacimiento,
             mat.id_matricula,
+            mat.activa as matricula_activa,
             (SELECT pa.estado_final 
              FROM promedios_anuales pa 
              WHERE pa.id_promedio_periodo IN (
@@ -206,7 +234,6 @@ def ver_estudiantes(id_seccion):
         FROM estudiantes e
         INNER JOIN matriculas mat ON e.id_estudiante = mat.id_estudiante
         WHERE mat.id_seccion = :id_seccion
-        AND mat.activa = 1
         AND e.activo = 1
         ORDER BY e.apellidos, e.nombres
     """)

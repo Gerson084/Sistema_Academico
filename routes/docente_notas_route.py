@@ -46,7 +46,7 @@ def mis_materias():
                 al.ano as ano_lectivo,
                 al.activo as ano_activo,
                 (SELECT COUNT(*) FROM matriculas mat 
-                 WHERE mat.id_seccion = s.id_seccion AND mat.activa = 1) as total_estudiantes
+                 WHERE mat.id_seccion = s.id_seccion) as total_estudiantes
             FROM materia_seccion ms
             INNER JOIN materias m ON ms.id_materia = m.id_materia
             INNER JOIN secciones s ON ms.id_seccion = s.id_seccion
@@ -182,7 +182,6 @@ def ingresar_notas(id_asignacion):
         FROM estudiantes e
         INNER JOIN matriculas mat ON e.id_estudiante = mat.id_estudiante
         WHERE mat.id_seccion = :id_seccion
-        AND mat.activa = 1
         AND e.activo = 1
         ORDER BY e.apellidos, e.nombres
     """)
@@ -340,7 +339,6 @@ def ver_notas_finales(id_asignacion):
         FROM estudiantes e
         INNER JOIN matriculas mat ON e.id_estudiante = mat.id_estudiante
         WHERE mat.id_seccion = :id_seccion
-        AND mat.activa = 1
         AND e.activo = 1
         ORDER BY e.apellidos, e.nombres
     """)
